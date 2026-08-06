@@ -1,0 +1,102 @@
+{
+  "ok": true,
+  "proofStatements": [
+    "_:c14n0 <http://purl.org/dc/terms/created> \"2026-08-03T17:07:26Z\"^^<http://www.w3.org/2001/XMLSchema#dateTime> .",
+    "_:c14n0 <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://w3id.org/security#BbsBlsSignature2020> .",
+    "_:c14n0 <https://w3id.org/security#proofPurpose> <https://w3id.org/security#assertionMethod> .",
+    "_:c14n0 <https://w3id.org/security#verificationMethod> <did:example:issuer#key-bbs-ldp> ."
+  ],
+  "documentStatements": [
+    "<did:example:holder> <https://example.org/vocab#documentNumber> \"X123\" .",
+    "<did:example:holder> <https://example.org/vocab#name> \"Ada\" .",
+    "<did:example:holder> <https://example.org/vocab#secret> \"hidden\" .",
+    "<urn:uuid:phase2-demo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://example.org/vocab#GenericCredential> .",
+    "<urn:uuid:phase2-demo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2018/credentials#VerifiableCredential> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#credentialSubject> <did:example:holder> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#issuanceDate> \"2026-01-01T00:00:00Z\"^^<http://www.w3.org/2001/XMLSchema#dateTime> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#issuer> <did:example:issuer> ."
+  ],
+  "revealDocumentStatements": [
+    "<did:example:holder> <https://example.org/vocab#name> \"Ada\" .",
+    "<urn:uuid:phase2-demo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://example.org/vocab#GenericCredential> .",
+    "<urn:uuid:phase2-demo> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://www.w3.org/2018/credentials#VerifiableCredential> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#credentialSubject> <did:example:holder> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#issuanceDate> \"2026-01-01T00:00:00Z\"^^<http://www.w3.org/2001/XMLSchema#dateTime> .",
+    "<urn:uuid:phase2-demo> <https://www.w3.org/2018/credentials#issuer> <did:example:issuer> ."
+  ],
+  "revealIndices": [
+    0,
+    1,
+    2,
+    3,
+    5,
+    7,
+    8,
+    9,
+    10,
+    11
+  ],
+  "messagesB64": [
+    "XzpjMTRuMCA8aHR0cDovL3B1cmwub3JnL2RjL3Rlcm1zL2NyZWF0ZWQ+ICIyMDI2LTA4LTAzVDE3OjA3OjI2WiJeXjxodHRwOi8vd3d3LnczLm9yZy8yMDAxL1hNTFNjaGVtYSNkYXRlVGltZT4gLg==",
+    "XzpjMTRuMCA8aHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zI3R5cGU+IDxodHRwczovL3czaWQub3JnL3NlY3VyaXR5I0Jic0Jsc1NpZ25hdHVyZTIwMjA+IC4=",
+    "XzpjMTRuMCA8aHR0cHM6Ly93M2lkLm9yZy9zZWN1cml0eSNwcm9vZlB1cnBvc2U+IDxodHRwczovL3czaWQub3JnL3NlY3VyaXR5I2Fzc2VydGlvbk1ldGhvZD4gLg==",
+    "XzpjMTRuMCA8aHR0cHM6Ly93M2lkLm9yZy9zZWN1cml0eSN2ZXJpZmljYXRpb25NZXRob2Q+IDxkaWQ6ZXhhbXBsZTppc3N1ZXIja2V5LWJicy1sZHA+IC4=",
+    "PGRpZDpleGFtcGxlOmhvbGRlcj4gPGh0dHBzOi8vZXhhbXBsZS5vcmcvdm9jYWIjZG9jdW1lbnROdW1iZXI+ICJYMTIzIiAu",
+    "PGRpZDpleGFtcGxlOmhvbGRlcj4gPGh0dHBzOi8vZXhhbXBsZS5vcmcvdm9jYWIjbmFtZT4gIkFkYSIgLg==",
+    "PGRpZDpleGFtcGxlOmhvbGRlcj4gPGh0dHBzOi8vZXhhbXBsZS5vcmcvdm9jYWIjc2VjcmV0PiAiaGlkZGVuIiAu",
+    "PHVybjp1dWlkOnBoYXNlMi1kZW1vPiA8aHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zI3R5cGU+IDxodHRwczovL2V4YW1wbGUub3JnL3ZvY2FiI0dlbmVyaWNDcmVkZW50aWFsPiAu",
+    "PHVybjp1dWlkOnBoYXNlMi1kZW1vPiA8aHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zI3R5cGU+IDxodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscyNWZXJpZmlhYmxlQ3JlZGVudGlhbD4gLg==",
+    "PHVybjp1dWlkOnBoYXNlMi1kZW1vPiA8aHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMjY3JlZGVudGlhbFN1YmplY3Q+IDxkaWQ6ZXhhbXBsZTpob2xkZXI+IC4=",
+    "PHVybjp1dWlkOnBoYXNlMi1kZW1vPiA8aHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMjaXNzdWFuY2VEYXRlPiAiMjAyNi0wMS0wMVQwMDowMDowMFoiXl48aHR0cDovL3d3dy53My5vcmcvMjAwMS9YTUxTY2hlbWEjZGF0ZVRpbWU+IC4=",
+    "PHVybjp1dWlkOnBoYXNlMi1kZW1vPiA8aHR0cHM6Ly93d3cudzMub3JnLzIwMTgvY3JlZGVudGlhbHMjaXNzdWVyPiA8ZGlkOmV4YW1wbGU6aXNzdWVyPiAu"
+  ],
+  "compactedProof": {
+    "@context": "https://w3id.org/security/v2",
+    "type": "sec:BbsBlsSignature2020",
+    "created": "2026-08-03T17:07:26Z",
+    "proofPurpose": "assertionMethod",
+    "proofValue": "ooPtOw7065bhyhTqHuu8g3HcB1Y2Lu2mFP5LUU1rdBWq0LN0tc+rmoZzO4wJIJVXYUHlKfzccE4m7waZyoLEkBLFiK2g54Q2i+CdtYBgDdkUDsoULSBMcH1MwGHwdjfXpldFNFrHFx/IAvLVniyeMQ==",
+    "verificationMethod": "did:example:issuer#key-bbs-ldp"
+  },
+  "compactedDocument": {
+    "@context": "https://w3id.org/security/v2",
+    "id": "urn:uuid:phase2-demo",
+    "type": [
+      "https://www.w3.org/2018/credentials#VerifiableCredential",
+      "https://example.org/vocab#GenericCredential"
+    ],
+    "https://www.w3.org/2018/credentials#credentialSubject": {
+      "id": "did:example:holder",
+      "https://example.org/vocab#documentNumber": "X123",
+      "https://example.org/vocab#name": "Ada",
+      "https://example.org/vocab#secret": "hidden"
+    },
+    "https://www.w3.org/2018/credentials#issuanceDate": {
+      "type": "xsd:dateTime",
+      "@value": "2026-01-01T00:00:00Z"
+    },
+    "https://www.w3.org/2018/credentials#issuer": {
+      "id": "did:example:issuer"
+    }
+  },
+  "revealDocumentResult": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://w3id.org/security/bbs/v1",
+      {
+        "@vocab": "https://example.org/vocab#"
+      }
+    ],
+    "id": "urn:uuid:phase2-demo",
+    "type": [
+      "GenericCredential",
+      "VerifiableCredential"
+    ],
+    "credentialSubject": {
+      "id": "did:example:holder",
+      "name": "Ada"
+    },
+    "issuanceDate": "2026-01-01T00:00:00Z",
+    "issuer": "did:example:issuer"
+  }
+}

@@ -1,0 +1,68 @@
+{
+  "credential": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://w3id.org/security/bbs/v1",
+      {
+        "@vocab": "https://example.org/vocab#"
+      }
+    ],
+    "id": "urn:uuid:phase2-demo",
+    "type": [
+      "VerifiableCredential",
+      "GenericCredential"
+    ],
+    "issuer": "did:example:issuer",
+    "issuanceDate": "2026-01-01T00:00:00Z",
+    "credentialSubject": {
+      "id": "did:example:holder",
+      "name": "Ada",
+      "documentNumber": "X123",
+      "secret": "hidden"
+    },
+    "proof": {
+      "type": "BbsBlsSignature2020",
+      "created": "2026-08-03T17:07:26Z",
+      "proofPurpose": "assertionMethod",
+      "proofValue": "ooPtOw7065bhyhTqHuu8g3HcB1Y2Lu2mFP5LUU1rdBWq0LN0tc+rmoZzO4wJIJVXYUHlKfzccE4m7waZyoLEkBLFiK2g54Q2i+CdtYBgDdkUDsoULSBMcH1MwGHwdjfXpldFNFrHFx/IAvLVniyeMQ==",
+      "verificationMethod": "did:example:issuer#key-bbs-ldp"
+    }
+  },
+  "revealDocument": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://w3id.org/security/bbs/v1",
+      {
+        "@vocab": "https://example.org/vocab#"
+      }
+    ],
+    "type": [
+      "VerifiableCredential",
+      "GenericCredential"
+    ],
+    "credentialSubject": {
+      "@explicit": true,
+      "id": {},
+      "name": {}
+    }
+  },
+  "nonce": "phase2-challenge",
+  "issuerDidDocument": {
+    "@context": [
+      "https://www.w3.org/ns/did/v1",
+      "https://w3id.org/security/bbs/v1"
+    ],
+    "id": "did:example:issuer",
+    "verificationMethod": [
+      {
+        "id": "did:example:issuer#key-bbs-ldp",
+        "type": "Bls12381G2Key2020",
+        "controller": "did:example:issuer",
+        "publicKeyBase58": "21ssAenVAgJoaH71k6MFjD58fJuQqeF8ZN7rTSqzDGTsRyJQiFiATHXiMBGdQygvaihVWq8FygoP6qgV3YAZzZGbuKBtN3pxmKGrc5aDXwdVm1Lm53FvWPkuv1Dg4C9wemiR"
+      }
+    ],
+    "assertionMethod": [
+      "did:example:issuer#key-bbs-ldp"
+    ]
+  }
+}

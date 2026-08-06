@@ -1,0 +1,156 @@
+# ─────────────────────────────────────────────────────────────
+# Quark identity stack — local dev
+#
+# Infrastructure:  postgres · rabbitmq · pgadmin (opcional)
+# Identity APIs:   quark-issuer-service   :9001
+#                  quark-verifier-service :9002
+#                  quark-holder-service   :9005
+#
+# Usage:
+#   docker compose up -d
+#   docker compose up -d quark-issuer-service quark-holder-service
+#   docker compose logs -f quark-holder-service
+# ─────────────────────────────────────────────────────────────
+
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: quarkid
+      RABBITMQ_DEFAULT_PASS: quarkid
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - quarkid
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: quarkid
+      POSTGRES_PASSWORD: quarkid
+      POSTGRES_MULTIPLE_DATABASES: quarkid_holder,quarkid_issuer,quarkid_verifier
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
+    ports:
+      - "5432:5432"
+    networks:
+      - quarkid
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quarkid"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4:9
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@quarkid.dev
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    networks:
+      - quarkid
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # Build context: repo root — Dockerfiles in */source copy packages/identity-core.
+
+  quark-issuer-service:
+    build:
+      context: .
+      dockerfile: quark-issuer-service/source/Dockerfile
+    restart: unless-stopped
+    env_file: quark-issuer-service/source/.env
+    environment:
+      PORT: 9001
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: quarkid
+      DB_PASSWORD: quarkid
+      DB_DATABASE: quarkid_issuer
+      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_issuer
+      ASKAR_STORE_ID: quarkid_issuer
+      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      NODE_ENV: development
+      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+    ports:
+      - "9001:9001"
+    networks:
+      - quarkid
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  quark-verifier-service:
+    build:
+      context: .
+      dockerfile: quark-verifier-service/source/Dockerfile
+    restart: unless-stopped
+    env_file: quark-verifier-service/source/.env
+    environment:
+      PORT: 9002
+      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_verifier
+      ASKAR_STORE_ID: quarkid_verifier
+      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      NODE_ENV: development
+      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+    ports:
+      - "9002:9002"
+    networks:
+      - quarkid
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+  quark-holder-service:
+    build:
+      context: .
+      dockerfile: quark-holder-service/source/Dockerfile
+    restart: unless-stopped
+    env_file: quark-holder-service/source/.env
+    environment:
+      PORT: 9005
+      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_holder
+      ASKAR_STORE_ID: quarkid_holder
+      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      NODE_ENV: development
+      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+    ports:
+      - "9005:9005"
+    networks:
+      - quarkid
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  rabbitmq_data:
+
+networks:
+  quarkid:
+    driver: bridge

@@ -1,0 +1,15 @@
+﻿node_modules/
+.dart_tool/
+build/
+dist/
+coverage/
+.idea/
+.vscode/
+*.log
+.env
+.env.*
+!.env.example
+
+# Rust / native build
+**/native/**/target/
+**/target/

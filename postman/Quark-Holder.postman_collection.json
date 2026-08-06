@@ -1,0 +1,208 @@
+{
+  "info": {
+    "name": "Quark Holder - API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "description": "Holder multi-tenant (QuarkID 2.0).\n\n**Flujo DIDComm principal (igual que wallet):**\n1. Issuer: `POST .../didcomm/offer` → copiar `invitation` (short URL `/oob/:id`)\n2. Holder: `POST .../didcomm/receive-invitation`\n3. Auto: conexión + accept offer + store VC (listeners)\n4. `GET .../records?type=W3cCredentialRecord`\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/holders`, `/v1/holders/:id/records/*`, OID4VC\n- `/v1/holders/:id/didcomm/receive-invitation` — único endpoint DIDComm",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "holderBaseUrl", "value": "http://localhost:9005" },
+    { "key": "holderId", "value": "holder-wallet" },
+    { "key": "invitationUrl", "value": "" },
+    { "key": "offerUri", "value": "" },
+    { "key": "requestUri", "value": "" },
+    { "key": "lastDecodedCredentials", "value": "" },
+    { "key": "recordType", "value": "W3cCredentialRecord" },
+    { "key": "recordId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "00 - Admin",
+      "item": [
+        {
+          "name": "GET /v1/holders (listar disponibles)",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/holders"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Listado holders', () => pm.expect(res.holders).to.be.an('array'));",
+                  "if (res.holders?.length) {",
+                  "  const first = res.holders[0];",
+                  "  pm.collectionVariables.set('holderId', first.holderId);",
+                  "  if (first.did) pm.collectionVariables.set('holderDid', first.did);",
+                  "  console.log(JSON.stringify(res.holders, null, 2));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /v1/holders (crear tenant)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"holderId\": \"{{holderId}}\"\n}"
+            },
+            "url": "{{holderBaseUrl}}/v1/holders",
+            "description": "Crea tenant + DidRecord (did:key) + StorageVersionRecord."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.holderId) pm.collectionVariables.set('holderId', res.holderId);",
+                  "if (res.did) {",
+                  "  try { pm.environment.set('holderDid', res.did); } catch (e) {}",
+                  "}",
+                  "pm.test('Holder creado', () => pm.expect(res.holderId).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - DIDComm ({{holderId}})",
+      "item": [
+        {
+          "name": "1. POST receive-invitation (invitar+offer del issuer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitationUrl\": \"{{invitationUrl}}\"\n}"
+            },
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/didcomm/receive-invitation",
+            "description": "**Flujo principal (como wallet).** Pegá `invitation` de Issuer `POST .../didcomm/offer`. Luego `GET .../records?type=W3cCredentialRecord`."
+          }
+        },
+        {
+          "name": "2. GET records W3cCredentialRecord (tras auto-offer)",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=W3cCredentialRecord"
+          }
+        },
+        {
+          "name": "GET records ConnectionRecord",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=ConnectionRecord"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - OID4VCI / OID4VP ({{holderId}})",
+      "item": [
+        {
+          "name": "POST /v1/holders/{{holderId}}/openid4vc/receive-offer",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerUri\": \"{{offerUri}}\"\n}"
+            },
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/openid4vc/receive-offer"
+          }
+        },
+        {
+          "name": "POST /v1/holders/{{holderId}}/openid4vc/present",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestUri\": \"{{requestUri}}\"\n}"
+            },
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/openid4vc/present"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Records ({{holderId}})",
+      "item": [
+        {
+          "name": "GET /{{holderId}}/records/types",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records/types"
+          }
+        },
+        {
+          "name": "GET /{{holderId}}/records?type=W3cCredentialRecord",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=W3cCredentialRecord&page=1&limit=20",
+              "host": ["{{holderBaseUrl}}"],
+              "path": ["{{holderId}}", "records"],
+              "query": [
+                { "key": "type", "value": "W3cCredentialRecord" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /{{holderId}}/records/:recordType/:recordId",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records/{{recordType}}/{{recordId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Health",
+      "item": [
+        {
+          "name": "GET /v1/health",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/health"
+          }
+        },
+        {
+          "name": "GET /v1/health/ready",
+          "request": {
+            "method": "GET",
+            "url": "{{holderBaseUrl}}/v1/health/ready",
+            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('ready true', () => pm.expect(res.ready).to.be.true);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

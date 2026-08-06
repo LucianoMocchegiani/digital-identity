@@ -1,0 +1,20 @@
+[package]
+name = "quark_bbs"
+version = "0.1.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "C FFI for BBS+ pairing (bbs 0.4.x) — MATTR-compatible blsCreateProof / blsVerifyProof"
+publish = false
+
+[lib]
+name = "bbs"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+bbs = { version = "0.4.1", default-features = false }
+arrayref = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+
+[dev-dependencies]
+base64 = "0.22"
+serde_json = "1.0"

@@ -1,0 +1,1 @@
+objetivo, dar con la configuracion de metadata y requerimientos necezarios para verificar desde quark-verifier con eudi-wallet

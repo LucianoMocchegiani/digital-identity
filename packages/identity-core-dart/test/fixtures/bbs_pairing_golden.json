@@ -1,0 +1,15 @@
+{
+  "description": "Pairing golden from @mattrglobal/bbs-signatures@1.2.0 (no secret key). Proofs are randomized — use verifyProof on this proof, and createProof round-trip via MATTR verify.",
+  "source": "@mattrglobal/bbs-signatures blsSign/blsCreateProof/blsVerifyProof",
+  "publicKey": "o/30OeDSMBfcaulINj1tL2Q5eV6tDu5T/OPaCFtWTRSj5rOCIjp7HbMBmspyKfmQBLYGaN51zMDAtZa413fiRpNphEMTSH0U7TwLQY7u1c9f3JCg+9FtdguMVmsKyCZK",
+  "messages": [
+    "bWVzc2FnZTE=",
+    "bWVzc2FnZTI=",
+    "bWVzc2FnZTM="
+  ],
+  "signature": "k+gLv2PVzBmwRpKmU/OGx6f24q0MgRUVsxQEDmXi45iWoaiGNXJI8wKIMhWnwntkYUHlKfzccE4m7waZyoLEkBLFiK2g54Q2i+CdtYBgDdkUDsoULSBMcH1MwGHwdjfXpldFNFrHFx/IAvLVniyeMQ==",
+  "nonce": "bm9uY2U=",
+  "revealed": [0],
+  "proof": "AAMBrlJJa3P9t6LDDrTDnvXIiy4J3FT7tZDJnznyU2nshB0PrzVPRfW5lS0Vk5gTdHGlgRJ3BcWuwnNES2Xj5v8SxJyY5AhskIlRoxJ/OI+gzVcx6PRwWvFrGbr0A3rMLobEriPupqlpDa3PNz6xxFlMgUbYsJnIt6n0oXZ/JDZugobe/fZR7zU8R3i0IHrzPKEsAAAAdKZ7395lKHf8BEM8S4ib78UIdRT0421FzGSmKs5XGztocIz7o1lfVO4Eykk+Zvp/4QAAAAIy0BOHwetuONivVTsiHMXTBG3J+6e6QPqiOB7+iVc7jQrgkaHMIrCqo+eH2cq53tZZYBUgq1SOJ+jwKHHVhIRGqwUVwxpLdObJOWNZZYfzuOA1+q5Y06e5fLaLlFf2EFC9xE9Ymzh2vJoIjRCe1pkiAAAABEf7KutJ5IRDqa9UqaXQ5w/5uDLsCq/OzFFbfQDRIhQTauLmZx0+KTG/R9x+vCuVfaUY66gUgvwwhsenWOG+UswU9Aj/njcdFvrmepWVYp3z1aGP85Xs0sqgZd1qwDwx9yZsyzHIqZtliW90ZHjTggzPGSYDvIY67aCnDygoBrJr",
+  "verifyOk": true
+}

@@ -1,0 +1,63 @@
+{
+  "publicKeyBase64Url": "ebVWLo_mVPlAeLES6KmLp5AfhTrmlb7X4OORC60ElmQ",
+  "vp": {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://identity.foundation/presentation-exchange/submission/v1"
+    ],
+    "type": [
+      "VerifiablePresentation",
+      "PresentationSubmission"
+    ],
+    "holder": "did:example:holder",
+    "presentation_submission": {
+      "id": "submission-1",
+      "definition_id": "definition-1",
+      "descriptor_map": [
+        {
+          "id": "descriptor-1",
+          "format": "ldp_vc",
+          "path": "$.verifiableCredential[0]"
+        }
+      ]
+    },
+    "verifiableCredential": [
+      {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "http://schema.org/",
+          {
+            "TestCredential": "https://www.w3.org/2018/credentials#TestCredential"
+          }
+        ],
+        "id": "urn:uuid:5c1a4c6d-3f0f-4c8f-9b3a-000000000001",
+        "type": [
+          "VerifiableCredential",
+          "TestCredential"
+        ],
+        "issuer": "did:example:issuer",
+        "issuanceDate": "2026-01-01T00:00:00Z",
+        "credentialSubject": {
+          "id": "did:example:holder",
+          "name": "Juan Prueba",
+          "documentNumber": "12345678"
+        },
+        "proof": {
+          "type": "Ed25519Signature2018",
+          "created": "2026-01-01T00:00:00Z",
+          "verificationMethod": "did:example:issuer#key-1",
+          "proofPurpose": "assertionMethod",
+          "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..ZmFrZS1maXJtYS1zb2xvLXBhcmEtY2Fub25pemFyLWVsLWRvY3VtZW50bw"
+        }
+      }
+    ],
+    "proof": {
+      "type": "Ed25519Signature2018",
+      "created": "2026-01-02T03:04:05Z",
+      "verificationMethod": "did:example:holder#key-1",
+      "proofPurpose": "authentication",
+      "challenge": "challenge-test-123",
+      "jws": "eyJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2UsImNyaXQiOlsiYjY0Il19..7J3WEOjg7Hg7KOkziZAqIA813l2QsiPCpIBKhUjgeHdTLJe4eeOgVNAWwjJg5KiBMPcOF0V5vWV7qFP3hGDNCA"
+    }
+  }
+}

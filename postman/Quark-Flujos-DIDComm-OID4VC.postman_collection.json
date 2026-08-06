@@ -1,0 +1,2167 @@
+{
+  "info": {
+    "_postman_id": "cea40bb8-d224-4792-9cca-1377b9b20684",
+    "name": "QuarkID 2.0 - Flujos DIDComm y OID4VC",
+    "description": "Coleccion E2E multi-tenant para servicios de identidad (Docker Compose).\n\nOrden recomendado:\n1. 00.A - Provision tenants (POST /v1/issuers, /v1/holders, /v1/verifiers)\n2. 00 - Setup & Conectividad\n3. 00.R - Resolver\n4. 01 - DIDComm Flow\n5. 02 - OpenID4VC Flow\n6. 03 - Revocacion\n\nVariables (environment Quark Local Docker):\n- issuerId, holderId, verifierId, issuerDid, verifierDid, holderDid\n- issuerBaseUrl, holderBaseUrl, verifierBaseUrl, resolverBaseUrl\n- credentialConfigurationId, vct, invitationUrl, pendingOfferId, pendingRequestId, offerUri, requestUri, etc.\n\n**QR wallet (flujo principal DIDComm):** `01.0 Issuer - DIDComm offer` y `01.0b Verifier - DIDComm request` → pestaña **Visualize** → escanear.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "31738941"
+  },
+  "item": [
+    {
+      "name": "00.A - Provision tenants",
+      "item": [
+        {
+          "name": "00.A0 Issuer - GET /issuers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Listado issuers', () => pm.expect(res.issuers).to.be.an('array'));",
+                  "if (res.issuers?.length) {",
+                  "  const pick = res.issuers[0];",
+                  "  pm.environment.set('issuerId', pick.issuerId);",
+                  "  if (pick.did) pm.environment.set('issuerDid', pick.did);",
+                  "  console.log('Usando issuer:', pick.issuerId, pick.did || '');",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers"
+              ]
+            },
+            "description": "Ver issuers ya registrados antes de crear uno nuevo."
+          },
+          "response": []
+        },
+        {
+          "name": "00.A1 Issuer - POST /issuers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.issuerId) pm.environment.set('issuerId', res.issuerId);",
+                  "if (res.did) pm.environment.set('issuerDid', res.did);",
+                  "pm.test('Issuer provisioned', () => pm.expect(res.issuerId).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"issuerId\": \"{{issuerId}}\",\n  \"oid4vc\": {\n    \"display\": [\n      {\n        \"name\": \"{{issuerId}}\",\n        \"locale\": \"es\",\n        \"background_color\": \"#74ACDF\",\n        \"text_color\": \"#FFFFFF\",\n        \"logo\": {\n          \"uri\": \"https://upload.wikimedia.org/wikipedia/commons/8/8e/Escarapela_wiki.svg\",\n          \"alt_text\": \"Escarapela Argentina\"\n        }\n      }\n    ],\n    \"dpopSigningAlgValuesSupported\": [\"ES256\"],\n    \"credentialConfigurationsSupported\": {\n      \"{{credentialConfigurationId}}\": {\n        \"format\": \"dc+sd-jwt\",\n        \"vct\": \"{{vct}}\",\n        \"cryptographic_binding_methods_supported\": [\"did:jwk\", \"jwk\"],\n        \"credential_signing_alg_values_supported\": [\"ES256\"],\n        \"proof_types_supported\": {\n          \"jwt\": { \"proof_signing_alg_values_supported\": [\"ES256\"] }\n        },\n        \"claims\": {\n          \"name\": {\n            \"display\": [{ \"name\": \"Nombre completo\", \"locale\": \"es\" }]\n          },\n          \"email\": {\n            \"display\": [{ \"name\": \"Correo electrónico\", \"locale\": \"es\" }]\n          },\n          \"role\": {\n            \"display\": [{ \"name\": \"Rol\", \"locale\": \"es\" }]\n          }\n        },\n        \"display\": [\n          {\n            \"name\": \"{{vct}}\",\n            \"locale\": \"es\",\n            \"background_color\": \"#74ACDF\",\n            \"text_color\": \"#FFFFFF\",\n            \"background_image\": {\n              \"uri\": \"https://img.magnific.com/fotos-premium/argentina-bandera-metalica-bandera-texturizada-bandera-grunge_559531-11109.jpg?semt=ais_hybrid&w=740&q=80\"\n            }\n          }\n        ]\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers"
+              ]
+            },
+            "description": "Crea tenant + DidRecord + OpenId4VcIssuerRecord."
+          },
+          "response": []
+        },
+        {
+          "name": "00.A2 Holder - GET /holders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Listado holders', () => pm.expect(res.holders).to.be.an('array'));",
+                  "if (res.holders?.length) {",
+                  "  const pick = res.holders[0];",
+                  "  pm.environment.set('holderId', pick.holderId);",
+                  "  if (pick.did) pm.environment.set('holderDid', pick.did);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.A2b Holder - POST /holders",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.holderId) pm.environment.set('holderId', res.holderId);",
+                  "if (res.did) pm.environment.set('holderDid', res.did);",
+                  "pm.test('Holder provisioned', () => pm.expect(res.holderId).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"holderId\": \"{{holderId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.A3 Verifier - GET /verifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Listado verifiers', () => pm.expect(res.verifiers).to.be.an('array'));",
+                  "if (res.verifiers?.length) {",
+                  "  const pick = res.verifiers[0];",
+                  "  pm.environment.set('verifierId', pick.verifierId);",
+                  "  if (pick.did) pm.environment.set('verifierDid', pick.did);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "00.A3b Verifier - POST /verifiers",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.verifierId) pm.environment.set('verifierId', res.verifierId);",
+                  "if (res.did) pm.environment.set('verifierDid', res.did);",
+                  "pm.test('Verifier provisioned', () => pm.expect(res.verifierId).to.be.a('string'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"verifierId\": \"{{verifierId}}\",\n  \"oid4vp\": {\n    \"clientMetadata\": { \"client_name\": \"Quark Verifier\" }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "description": "Crear wallets antes de didcomm/openid4vc. Repetir si el contenedor se reinició (mapa en memoria vacío)."
+    },
+    {
+      "name": "00 - Setup & Conectividad",
+      "item": [
+        {
+          "name": "00.1 Issuer - Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Issuer healthy', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Issuer ok', () => pm.expect(res.ok).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/health",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Health check del issuer ({ ok: true })."
+          },
+          "response": []
+        },
+        {
+          "name": "00.1r Issuer - Ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Issuer ready', () => pm.response.to.have.status(200));",
+                  "pm.test('ready true', () => pm.expect(pm.response.json().ready).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/health/ready",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Readiness del issuer (agent Credo inicializado)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.2 Holder - Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Holder healthy', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Holder ok', () => pm.expect(res.ok).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/health",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Verifica que el holder esté listo."
+          },
+          "response": []
+        },
+        {
+          "name": "00.2r Holder - Ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Holder ready', () => pm.response.to.have.status(200));",
+                  "pm.test('ready true', () => pm.expect(pm.response.json().ready).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/health/ready",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Readiness del holder (agent Credo inicializado)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.3 Verifier - Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verifier healthy', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Verifier ok', () => pm.expect(res.ok).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/health",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Verifica que el verifier esté listo."
+          },
+          "response": []
+        },
+        {
+          "name": "00.3r Verifier - Ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verifier ready', () => pm.response.to.have.status(200));",
+                  "pm.test('ready true', () => pm.expect(pm.response.json().ready).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/health/ready",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Readiness del verifier (agent Credo inicializado)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.4 Issuer - DID Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/{{issuerId}}/did.json",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "{{issuerId}}",
+                "did.json"
+              ]
+            },
+            "description": "DID Document did:web del tenant issuer (ejecutar 00.A1 antes)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.5 Verifier - DID Document",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/{{verifierId}}/did.json",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "{{verifierId}}",
+                "did.json"
+              ]
+            },
+            "description": "DID Document did:web del tenant verifier (ejecutar 00.A3 antes)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "00.R - Resolver",
+      "item": [
+        {
+          "name": "00.R1 Resolver - Health",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Resolver healthy', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/health",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "Liveness del resolver."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R1r Resolver - Ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Resolver ready', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('ready true', () => pm.expect(res.ready).to.be.true);",
+                  "pm.test('index up', () => pm.expect(res.checks.index).to.be.true);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/health/ready",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health",
+                "ready"
+              ]
+            },
+            "description": "Readiness del resolver (conectividad con quark-index). 503 si index no responde."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R2 Resolver - did:web Issuer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expectedDid = pm.environment.get('issuerDid');",
+                  "if (!expectedDid) console.warn('issuerDid vacio: ejecutar 00.A1 primero');",
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('didDocument presente', () => pm.expect(res.didDocument).to.be.an('object'));",
+                  "if (expectedDid) {",
+                  "  pm.test('didDocument.id coincide con issuerDid', () => pm.expect(res.didDocument.id).to.equal(expectedDid));",
+                  "}",
+                  "pm.test('didResolutionMetadata.source', () => pm.expect(res.didResolutionMetadata.source).to.be.oneOf(['index', 'did:web', 'algorithmic']));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/did+ld+json"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/{{issuerDid}}",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "{{issuerDid}}"
+              ]
+            },
+            "description": "Resuelve el did:web del issuer (issuerDid guardado en 00.A1). Si falla 404, codificar el DID en la URL (ej. : como %3A)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R3 Resolver - did:web Verifier",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const expectedDid = pm.environment.get('verifierDid');",
+                  "if (!expectedDid) console.warn('verifierDid vacio: ejecutar 00.A3 primero');",
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('didDocument presente', () => pm.expect(res.didDocument).to.be.an('object'));",
+                  "if (expectedDid) {",
+                  "  pm.test('didDocument.id coincide con verifierDid', () => pm.expect(res.didDocument.id).to.equal(expectedDid));",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/did+ld+json"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/{{verifierDid}}",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "{{verifierDid}}"
+              ]
+            },
+            "description": "Resuelve el did:web del verifier (verifierDid de 00.A3)."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R4 Resolver - did:key (ejemplo Ed25519)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('didDocument presente', () => pm.expect(res.didDocument).to.be.an('object'));",
+                  "pm.test('source algorítmico', () => pm.expect(res.didResolutionMetadata.source).to.equal('algorithmic'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/did+ld+json"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+              ]
+            },
+            "description": "Resuelve un did:key Ed25519 de forma algorítmica (sin red). Reemplazar por {{holderDid}} tras el flujo DIDComm si se quiere resolver el DID real del holder."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R5 Resolver - did:jwk (ejemplo Ed25519)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('didDocument presente', () => pm.expect(res.didDocument).to.be.an('object'));",
+                  "pm.test('source algorítmico', () => pm.expect(res.didResolutionMetadata.source).to.equal('algorithmic'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/did+ld+json"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6Ijl3UXFxdkw4RFhEMzhRdXlENlRRcmhQY0hmbERYWXlCblhQczhTRTNDM00ifQ",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "did:jwk:eyJrdHkiOiJPS1AiLCJjcnYiOiJFZDI1NTE5IiwieCI6Ijl3UXFxdkw4RFhEMzhRdXlENlRRcmhQY0hmbERYWXlCblhQczhTRTNDM00ifQ"
+              ]
+            },
+            "description": "Resuelve un did:jwk de forma algorítmica (sin red). Usado como binding key en SD-JWT/OID4VP."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R6 Resolver - Error método no soportado (did:peer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', () => pm.response.to.have.status(400));",
+                  "const res = pm.response.json();",
+                  "pm.test('error methodNotSupported', () => pm.expect(res.error).to.equal('methodNotSupported'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/did+ld+json"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/did:peer:2.Ez6LSbysY2xFMRpGMhb7tFTLMpeuPRaqaWM1yECx2AtzE3KCc",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "did:peer:2.Ez6LSbysY2xFMRpGMhb7tFTLMpeuPRaqaWM1yECx2AtzE3KCc"
+              ]
+            },
+            "description": "Debe retornar 400 con error='methodNotSupported'."
+          },
+          "response": []
+        },
+        {
+          "name": "00.R7 Resolver - Error Accept no soportado",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 406', () => pm.response.to.have.status(406));",
+                  "const res = pm.response.json();",
+                  "pm.test('error notAcceptable', () => pm.expect(res.error).to.equal('notAcceptable'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/xml"
+              }
+            ],
+            "url": {
+              "raw": "{{resolverBaseUrl}}/v1/dids/resolve/did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH",
+              "host": [
+                "{{resolverBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "dids",
+                "resolve",
+                "did:key:z6MkpTHR8VNsBxYAAWHut2Geadd9jSwuBV8xRoAnwWsdvktH"
+              ]
+            },
+            "description": "Debe retornar 406 con error='notAcceptable'."
+          },
+          "response": []
+        }
+      ],
+      "description": "Pruebas del quark-resolver (did:web, did:key, did:jwk). Los requests de did:web usan los DID reales del issuer/verifier. did:key y did:jwk resuelven algorítmicamente sin red."
+    },
+    {
+      "name": "01 - DIDComm Flow",
+      "item": [
+        {
+          "name": "01.0 Issuer - DIDComm offer (invitar + ofrecer) + QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) {",
+                  "  pm.environment.set('invitationUrl', res.invitation);",
+                  "  pm.environment.set('issuerDidcommInvitationUrl', res.invitation);",
+                  "  pm.test('Invitation URL recibida', () => pm.expect(res.invitation).to.be.a('string'));",
+                  "}",
+                  "if (res.pendingOfferId) {",
+                  "  pm.environment.set('pendingOfferId', res.pendingOfferId);",
+                  "  console.log('pendingOfferId:', res.pendingOfferId);",
+                  "}",
+                  "if (res.expiresAt) {",
+                  "  pm.environment.set('pendingOfferExpiresAt', res.expiresAt);",
+                  "  console.log('expiresAt:', res.expiresAt);",
+                  "}",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  const pending = res.pendingOfferId || '';",
+                  "  const exp = res.expiresAt || '';",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:8px'>DIDComm — Offer (invitar + ofrecer)</h3>",
+                  "      <p style='margin:0 0 16px 0;font-size:13px;color:#555'>Escanear con quark-wallet. El offer llega solo al conectar.</p>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingOfferId: ${pending}<br/>expiresAt: ${exp}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": {\n    \"credentialSubject\": {\n      \"name\": \"Juan Perez\",\n      \"documentNumber\": \"12345678\"\n    },\n    \"type\": [\"GenericCredential\"]\n  },\n  \"proofType\": \"Ed25519Signature2018\",\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/didcomm/offer",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "didcomm",
+                "offer"
+              ]
+            },
+            "description": "**Override Ed25519.** OOB + pending offer con `Ed25519Signature2018`. Default identity-core es BBS+ (ver request hermano QUARK-990)."
+          },
+          "response": []
+        },
+        {
+          "name": "01.0-bbs Issuer - DIDComm offer BBS+ + QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) {",
+                  "  pm.environment.set('invitationUrl', res.invitation);",
+                  "  pm.environment.set('issuerDidcommInvitationUrl', res.invitation);",
+                  "  pm.test('Invitation URL recibida', () => pm.expect(res.invitation).to.be.a('string'));",
+                  "}",
+                  "if (res.pendingOfferId) {",
+                  "  pm.environment.set('pendingOfferId', res.pendingOfferId);",
+                  "  console.log('pendingOfferId:', res.pendingOfferId);",
+                  "}",
+                  "if (res.expiresAt) {",
+                  "  pm.environment.set('pendingOfferExpiresAt', res.expiresAt);",
+                  "  console.log('expiresAt:', res.expiresAt);",
+                  "}",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  const pending = res.pendingOfferId || '';",
+                  "  const exp = res.expiresAt || '';",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:8px'>DIDComm — Offer BBS+</h3>",
+                  "      <p style='margin:0 0 16px 0;font-size:13px;color:#555'>proofType BbsBlsSignature2020. Escanear con holder/wallet.</p>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingOfferId: ${pending}<br/>expiresAt: ${exp}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": {\n    \"credentialSubject\": {\n      \"name\": \"Juan Perez\",\n      \"documentNumber\": \"12345678\"\n    },\n    \"type\": [\"GenericCredential\"]\n  },\n  \"proofType\": \"BbsBlsSignature2020\",\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/didcomm/offer",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "didcomm",
+                "offer"
+              ]
+            },
+            "description": "**QUARK-990.** Emisión DIDComm con `BbsBlsSignature2020`. Luego usá `01.0b-bbs` para pedir proof con selective disclosure."
+          },
+          "response": []
+        },
+        {
+          "name": "[WALLET] Escanear DIDComm offer (01.0)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                  "console.log('issuerDidcommInvitationUrl:', pm.environment.get('issuerDidcommInvitationUrl') || pm.environment.get('invitationUrl'));",
+                  "console.log('pendingOfferId:', pm.environment.get('pendingOfferId'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/health",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "**Paso manual.** Ejecutar antes `01.0`. Abrir **Visualize** de ese request y escanear el QR con quark-wallet. Aceptar conexión y credencial en la app."
+          },
+          "response": []
+        },
+        {
+          "name": "01.2 Holder - Recibir invitacion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitationUrl\": \"{{invitationUrl}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/didcomm/receive-invitation",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "didcomm",
+                "receive-invitation"
+              ]
+            },
+            "description": "**Alternativa Nest (sin wallet):** pegá `invitation` de `01.0` / `01.0-bbs`. Mismo path que quark-wallet: short URL → conexión → auto-offer → auto-accept. Esperá 5–10 s → `01.5`."
+          },
+          "response": []
+        },
+        {
+          "name": "01.5 Holder - Listar W3cCredentialRecord (records)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const list = body.items || body.records || body.credentials || [];",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('Records list', () => pm.expect(list).to.be.an('array'));",
+                  "console.log(JSON.stringify(list, null, 2));",
+                  "pm.environment.set('lastDecodedCredentials', JSON.stringify(list));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=W3cCredentialRecord",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "W3cCredentialRecord"
+                }
+              ]
+            },
+            "description": "Verifica que el holder recibió la credencial DIDComm vía records (ya no existe GET .../didcomm/credentials)."
+          },
+          "response": []
+        },
+        {
+          "name": "01.0b Verifier - DIDComm request Ed25519 + QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) {",
+                  "  pm.environment.set('invitationUrl', res.invitation);",
+                  "  pm.environment.set('verifierDidcommInvitationUrl', res.invitation);",
+                  "  pm.test('Invitation URL recibida', () => pm.expect(res.invitation).to.be.a('string'));",
+                  "}",
+                  "if (res.pendingRequestId) {",
+                  "  pm.environment.set('pendingRequestId', res.pendingRequestId);",
+                  "  console.log('pendingRequestId:', res.pendingRequestId);",
+                  "}",
+                  "if (res.expiresAt) {",
+                  "  pm.environment.set('pendingRequestExpiresAt', res.expiresAt);",
+                  "  console.log('expiresAt:', res.expiresAt);",
+                  "}",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  const pending = res.pendingRequestId || '';",
+                  "  const exp = res.expiresAt || '';",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:8px'>DIDComm — Request (invitar + verificar)</h3>",
+                  "      <p style='margin:0 0 16px 0;font-size:13px;color:#555'>Escanear con quark-wallet. El request-presentation llega solo al conectar.</p>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingRequestId: ${pending}<br/>expiresAt: ${exp}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presentationDefinition\": {\n    \"id\": \"pd-generic-jsonld\",\n    \"name\": \"Verificación de credencial genérica JSON-LD\",\n    \"purpose\": \"Verificar identidad y número de documento\",\n    \"input_descriptors\": [\n      {\n        \"id\": \"generic-credential\",\n        \"name\": \"Credencial genérica\",\n        \"purpose\": \"Presentar una GenericCredential que incluya nombre y documento\",\n        \"format\": {\n          \"ldp_vc\": {\n            \"proof_type\": [\"Ed25519Signature2018\"]\n          }\n        },\n        \"constraints\": {\n          \"fields\": [\n            {\n              \"path\": [\"$.type\"],\n              \"filter\": {\n                \"type\": \"array\",\n                \"contains\": { \"const\": \"GenericCredential\" }\n              }\n            },\n            { \"path\": [\"$.credentialSubject.name\"] },\n            { \"path\": [\"$.credentialSubject.documentNumber\"] }\n          ]\n        }\n      }\n    ]\n  },\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/request",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "didcomm",
+                "request"
+              ]
+            },
+            "description": "**Ed25519 / VC completa.** PEX sin selective disclosure cripto. Para BBS+ SD usá `01.0b-bbs`."
+          },
+          "response": []
+        },
+        {
+          "name": "01.0b-bbs Verifier - DIDComm request BBS+ SD + QR",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) {",
+                  "  pm.environment.set('invitationUrl', res.invitation);",
+                  "  pm.environment.set('verifierDidcommInvitationUrl', res.invitation);",
+                  "  pm.test('Invitation URL recibida', () => pm.expect(res.invitation).to.be.a('string'));",
+                  "}",
+                  "if (res.pendingRequestId) {",
+                  "  pm.environment.set('pendingRequestId', res.pendingRequestId);",
+                  "  console.log('pendingRequestId:', res.pendingRequestId);",
+                  "}",
+                  "if (res.expiresAt) {",
+                  "  pm.environment.set('pendingRequestExpiresAt', res.expiresAt);",
+                  "  console.log('expiresAt:', res.expiresAt);",
+                  "}",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  const pending = res.pendingRequestId || '';",
+                  "  const exp = res.expiresAt || '';",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:8px'>DIDComm — Request BBS+ (SD)</h3>",
+                  "      <p style='margin:0 0 16px 0;font-size:13px;color:#555'>Solo revela name. Requiere VC emitida con 01.0-bbs.</p>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingRequestId: ${pending}<br/>expiresAt: ${exp}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presentationDefinition\": {\n    \"id\": \"pd-generic-bbs\",\n    \"name\": \"Verificación BBS+ con selective disclosure\",\n    \"purpose\": \"Revelar solo el nombre; documentNumber queda oculto\",\n    \"input_descriptors\": [\n      {\n        \"id\": \"generic-credential-bbs\",\n        \"name\": \"GenericCredential BBS+\",\n        \"purpose\": \"Presentar VC firmada con BbsBlsSignature2020 revelando solo name\",\n        \"format\": {\n          \"ldp_vc\": {\n            \"proof_type\": [\"BbsBlsSignature2020\", \"BbsBlsSignatureProof2020\"]\n          }\n        },\n        \"constraints\": {\n          \"fields\": [\n            {\n              \"path\": [\"$.type\"],\n              \"filter\": {\n                \"type\": \"array\",\n                \"contains\": { \"const\": \"GenericCredential\" }\n              }\n            },\n            { \"path\": [\"$.credentialSubject.name\"] }\n          ]\n        }\n      }\n    ]\n  },\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/request",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "didcomm",
+                "request"
+              ]
+            },
+            "description": "**QUARK-990.** PEX BBS+: solo `credentialSubject.name` → deriveProof. Sin `limit_disclosure` (Credo no modela BBS SD). Emisión previa con `01.0-bbs`."
+          },
+          "response": []
+        },
+        {
+          "name": "[WALLET] Escanear DIDComm request verificador (01.0b)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                  "console.log('verifierDidcommInvitationUrl:', pm.environment.get('verifierDidcommInvitationUrl') || pm.environment.get('invitationUrl'));",
+                  "console.log('pendingRequestId:', pm.environment.get('pendingRequestId'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/health",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "health"
+              ]
+            },
+            "description": "**Paso manual.** Ejecutar antes `01.0b`. Abrir **Visualize** y escanear el QR con quark-wallet (con credencial emitida en `01.0`)."
+          },
+          "response": []
+        },
+        {
+          "name": "01.11 Verifier - Consultar request por pendingRequestId",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Request encontrado', () => pm.expect(res.pendingRequestId).to.be.a('string'));",
+                  "if (res.proofExchangeRecordId) pm.environment.set(\"proofExchangeRecordId\", res.proofExchangeRecordId);",
+                  "console.log('status:', res.status, 'isVerified:', res.isVerified);",
+                  "if (res.status === 'done') {",
+                  "  const subject = res.presentation?.verifiableCredential?.[0]?.credentialSubject;",
+                  "  console.log('claims:', subject);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/request/{{pendingRequestId}}",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "didcomm",
+                "request",
+                "{{pendingRequestId}}"
+              ]
+            },
+            "description": "Consulta el resultado del QR con el mismo `pendingRequestId` de `01.0b` (análogo a sesión OID4VP). Estados: `pending` → `request-sent` → `done`. Claims en `presentation.verifiableCredential[0].credentialSubject`."
+          },
+          "response": []
+        },
+        {
+          "name": "01.12 Verifier - Ver resultado por proofExchangeRecordId",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/proofs/{{proofExchangeRecordId}}",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "didcomm",
+                "proofs",
+                "{{proofExchangeRecordId}}"
+              ]
+            },
+            "description": "Opcional: detalle por ID de Credo. Preferir `01.11` con `pendingRequestId`. Para listar: `GET .../records?type=DidCommProofExchangeRecord`."
+          },
+          "response": []
+        },
+        {
+          "name": "01.8 Holder - Recibir invitacion de verifier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invitationUrl\": \"{{invitationUrl}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/didcomm/receive-invitation",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "didcomm",
+                "receive-invitation"
+              ]
+            },
+            "description": "**Alternativa sin wallet:** el holder-service acepta la invitación de `01.0b`. Preferir escanear con quark-wallet (`[WALLET] Escanear DIDComm request verificador`)."
+          },
+          "response": []
+        }
+      ],
+      "description": "Flujo principal wallet: `01.0` offer + QR → escanear → `01.0b` request + QR → escanear → `01.11` resultado.\nOpcional via quark-holder: `01.2` / `01.8` receive-invitation + `01.5`/`01.6` listar credenciales.\n`01.12` detalle Credo por proofExchangeRecordId."
+    },
+    {
+      "name": "02 - OpenID4VC Flow",
+      "item": [
+        {
+          "name": "02.1 Issuer - Crear credential offer OID4VCI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.offerUri) {",
+                  "  pm.environment.set('offerUri', res.offerUri);",
+                  "  console.log('offerUri:', res.offerUri);",
+                  "}",
+                  "if (res.issuanceSessionId) {",
+                  "  pm.environment.set('issuanceSessionId', res.issuanceSessionId);",
+                  "  console.log('issuanceSessionId:', res.issuanceSessionId);",
+                  "}",
+                  "pm.test('Offer creado', () => pm.expect(res.offerUri).to.be.a('string').and.include('openid-credential-offer'));",
+                  "if (res.offerUri) {",
+                  "  const uri = res.offerUri;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>Credential Offer QR</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialConfigurationId\": \"{{credentialConfigurationId}}\",\n  \"vct\": \"{{vct}}\",\n  \"claims\": {\n    \"name\": \"Juan Perez\",\n    \"email\": \"juan@example.com\",\n    \"role\": \"member\"\n  },\n  \"claimsDisplay\": {\n    \"name\":  { \"name\": \"Nombre completo\", \"locale\": \"es\" },\n    \"email\": { \"name\": \"Correo electrónico\", \"locale\": \"es\" },\n    \"role\":  { \"name\": \"Rol\", \"locale\": \"es\" }\n  },\n  \"disclosureFrame\": {\n    \"_sd\": [\"email\", \"role\"]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/openid4vc/offer",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "openid4vc",
+                "offer"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02.2 Holder - Recibir offer OID4VCI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Credencial recibida', () => {",
+                  "  pm.expect(res.credentials).to.be.an('array').with.length.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerUri\": \"{{offerUri}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/openid4vc/receive-offer",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "openid4vc",
+                "receive-offer"
+              ]
+            },
+            "description": "Ejecuta el flujo pre-authorized completo: resolve → token → credencial. Puede tardar varios segundos."
+          },
+          "response": []
+        },
+        {
+          "name": "02.3 Holder - Listar SdJwtVcRecord (records)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const body = pm.response.json();",
+                  "const list = body.items || body.records || body.credentials || [];",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('SdJwt records', () => pm.expect(list).to.be.an('array'));",
+                  "console.log(JSON.stringify(list, null, 2));",
+                  "pm.environment.set('lastDecodedCredentials', JSON.stringify(list));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=SdJwtVcRecord",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "SdJwtVcRecord"
+                }
+              ]
+            },
+            "description": "Verifica que la credencial OID4VCI fue almacenada (SdJwtVcRecord vía records)."
+          },
+          "response": []
+        },
+        {
+          "name": "02.4 Verifier - Crear authorization request OID4VP (DCQL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.requestUri) {",
+                  "  pm.environment.set('requestUri', res.requestUri);",
+                  "  console.log('requestUri:', res.requestUri);",
+                  "}",
+                  "if (res.verificationSessionId) {",
+                  "  pm.environment.set('verificationSessionId', res.verificationSessionId);",
+                  "  console.log('verificationSessionId:', res.verificationSessionId);",
+                  "}",
+                  "pm.test('Request URI recibida', () => pm.expect(res.requestUri).to.be.a('string'));",
+                  "if (res.requestUri) {",
+                  "  const uri = res.requestUri;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>Authorization Request QR</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"dcqlQuery\": {\n    \"credentials\": [\n      {\n        \"id\": \"quark-credential\",\n        \"format\": \"dc+sd-jwt\",\n        \"meta\": {\n          \"vct_values\": [\"QuarkCredential\"]\n        },\n        \"claims\": [\n          { \"path\": [\"name\"] },\n          { \"path\": [\"email\"] },\n          { \"path\": [\"role\"] }\n        ]\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/openid4vc/request",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "openid4vc",
+                "request"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "02.5 Verifier - Crear authorization request OID4VP (PEX)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.requestUri) {",
+                  "  pm.environment.set('requestUri', res.requestUri);",
+                  "  console.log('requestUri:', res.requestUri);",
+                  "}",
+                  "if (res.verificationSessionId) {",
+                  "  pm.environment.set('verificationSessionId', res.verificationSessionId);",
+                  "  console.log('verificationSessionId:', res.verificationSessionId);",
+                  "}",
+                  "pm.test('Request URI recibida', () => pm.expect(res.requestUri).to.be.a('string'));",
+                  "if (res.requestUri) {",
+                  "  const uri = res.requestUri;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>Authorization Request QR</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"presentationDefinition\": {\n    \"id\": \"pd-quark-sdjwt\",\n    \"input_descriptors\": [\n      {\n        \"id\": \"quark-credential\",\n        \"name\": \"Quark Credential\",\n        \"purpose\": \"Presentar credencial Quark\",\n        \"constraints\": {\n          \"fields\": [\n            { \"path\": [\"$.vct\"], \"filter\": { \"const\": \"QuarkCredential\" } },\n            { \"path\": [\"$.name\"] },\n            { \"path\": [\"$.email\"] },\n            { \"path\": [\"$.role\"] }\n          ]\n        }\n      }\n    ]\n  }\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/openid4vc/request",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "openid4vc",
+                "request"
+              ]
+            },
+            "description": "**OID4VP + PEX para SD-JWT VC.** Mantiene la misma estructura DIF PEX que el request DIDComm (`presentationDefinition`, `input_descriptors`, `constraints.fields`). Los paths cambian porque la credencial es SD-JWT: `$.vct` y claims superiores (`$.name`, `$.email`, `$.role`), mientras DIDComm JSON-LD usa `$.type` y `$.credentialSubject.*`."
+          },
+          "response": []
+        },
+        {
+          "name": "02.6 Holder - Presentar OID4VP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200 o 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"requestUri\": \"{{requestUri}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/openid4vc/present",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "openid4vc",
+                "present"
+              ]
+            },
+            "description": "Selecciona automáticamente la primera credencial que satisfaga el presentation definition."
+          },
+          "response": []
+        },
+        {
+          "name": "02.7 Verifier - Consultar sesion OID4VP",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function b64urlDecode(str) {",
+                  "    str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                  "    while (str.length % 4) str += '=';",
+                  "    return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                  "}",
+                  "function decodeSdJwt(compact) {",
+                  "    var chunks = compact.split('~');",
+                  "    var payload = JSON.parse(b64urlDecode(chunks[0].split('.')[1]));",
+                  "    var skip = ['_sd','_sd_alg','cnf','iss','iat','vct'];",
+                  "    var claims = {};",
+                  "    Object.keys(payload).forEach(function(k) { if (skip.indexOf(k) === -1) claims[k] = payload[k]; });",
+                  "    chunks.slice(1).filter(function(p) {",
+                  "        try { var a = JSON.parse(b64urlDecode(p)); return Array.isArray(a) && a.length === 3; } catch(e) { return false; }",
+                  "    }).forEach(function(p) {",
+                  "        var arr = JSON.parse(b64urlDecode(p)); claims[arr[1]] = arr[2];",
+                  "    });",
+                  "    return { vct: payload.vct, issuer: payload.iss, issuedAt: payload.iat ? new Date(payload.iat*1000).toISOString() : null, claims: claims };",
+                  "}",
+                  "try {",
+                  "    var body = pm.response.json();",
+                  "    pm.test('Estado sesion: ' + (body.state || '?'), function() {",
+                  "        pm.expect(body.state).to.be.a('string');",
+                  "    });",
+                  "    var vpToken = body.authorizationResponsePayload && body.authorizationResponsePayload.vp_token;",
+                  "    if (!vpToken) { console.log('Sin vp_token en la sesion (todavia no fue presentada)'); return; }",
+                  "    var decoded = [];",
+                  "    var parsed; try { parsed = JSON.parse(vpToken); } catch(e) { parsed = vpToken; }",
+                  "    if (typeof parsed === 'string') {",
+                  "        decoded.push({ descriptor: 'vp_token', decoded: decodeSdJwt(parsed) });",
+                  "    } else {",
+                  "        Object.keys(parsed).forEach(function(key) {",
+                  "            var list = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];",
+                  "            list.forEach(function(compact) {",
+                  "                if (typeof compact === 'string' && compact.indexOf('.') > 0) {",
+                  "                    decoded.push({ descriptor: key, decoded: decodeSdJwt(compact) });",
+                  "                }",
+                  "            });",
+                  "        });",
+                  "    }",
+                  "    pm.test('Credencial(es) presentada(s) (' + decoded.length + ')', function() {",
+                  "        console.log(JSON.stringify(decoded, null, 2));",
+                  "        pm.expect(decoded.length).to.be.above(0);",
+                  "    });",
+                  "} catch(e) {",
+                  "    pm.test('Error decodificando vp_token', function() { pm.expect.fail(e.message); });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/openid4vc/session/{{verificationSessionId}}",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "verifiers",
+                "{{verifierId}}",
+                "openid4vc",
+                "session",
+                "{{verificationSessionId}}"
+              ]
+            },
+            "description": "Verifica el estado de la sesión de verificación. Estado esperado: done."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "03 - Revocacion (Token Status List)",
+      "item": [
+        {
+          "name": "03.B1 Issuer - Crear credential offer OID4VCI con revocación",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.offerUri) {",
+                  "  pm.environment.set('offerUri', res.offerUri);",
+                  "  console.log('offerUri:', res.offerUri);",
+                  "}",
+                  "if (res.issuanceSessionId) {",
+                  "  pm.environment.set('issuanceSessionId', res.issuanceSessionId);",
+                  "  console.log('issuanceSessionId:', res.issuanceSessionId);",
+                  "}",
+                  "pm.test('Offer creado', () => pm.expect(res.offerUri).to.be.a('string').and.include('openid-credential-offer'));",
+                  "if (res.offerUri) {",
+                  "  const uri = res.offerUri;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>Credential Offer QR (con StatusList)</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialConfigurationId\": \"{{credentialConfigurationId}}\",\n  \"vct\": \"{{vct}}\",\n  \"claims\": {\n    \"name\": \"Juan Perez\",\n    \"email\": \"juan@example.com\",\n    \"role\": \"member\"\n  },\n  \"claimsDisplay\": {\n    \"name\":  { \"name\": \"Nombre completo\", \"locale\": \"es\" },\n    \"email\": { \"name\": \"Correo electrónico\", \"locale\": \"es\" },\n    \"role\":  { \"name\": \"Rol\", \"locale\": \"es\" }\n  },\n  \"disclosureFrame\": { \"_sd\": [\"email\", \"role\"] }\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/openid4vc/offer",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "openid4vc",
+                "offer"
+              ]
+            },
+            "description": "Crea offer OID4VCI. Internamente allocateIndex() crea la StatusList si no existe y asigna un índice. El status se propaga al SD-JWT emitido."
+          },
+          "response": []
+        },
+        {
+          "name": "03.B2 Holder - Recibir offer OID4VCI",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('Credencial recibida', () => {",
+                  "  pm.expect(res.credentials).to.be.an('array').with.length.greaterThan(0);",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"offerUri\": \"{{offerUri}}\"\n}"
+            },
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/openid4vc/receive-offer",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "openid4vc",
+                "receive-offer"
+              ]
+            },
+            "description": "Recibe el offer, ejecuta flujo pre-authorized (resolve → token → credencial). La credencial SD-JWT incluirá status.status_list."
+          },
+          "response": []
+        },
+        {
+          "name": "03.B3 Holder - Verificar credencial incluye status_list",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "function b64urlDecode(str) {",
+                  "  str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (str.length % 4) str += '=';",
+                  "  return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                  "}",
+                  "function compactFromRecord(r) {",
+                  "  return r.credentialInstances?.[0]?.compactSdJwtVc || r.compactSdJwtVc || null;",
+                  "}",
+                  "try {",
+                  "  const body = pm.response.json();",
+                  "  const records = body.records || body.items || [];",
+                  "  const vct = pm.environment.get('vct');",
+                  "  const sdJwt = records.map(compactFromRecord).find(Boolean);",
+                  "  if (!sdJwt) { pm.expect.fail('No se encontro credencial SD-JWT en records'); return; }",
+                  "  pm.environment.set('vcSdJwt', sdJwt);",
+                  "  const payload = JSON.parse(b64urlDecode(sdJwt.split('.')[1]));",
+                  "  if (!payload.status?.status_list) {",
+                  "    pm.expect.fail('No status.status_list en payload - la integracion KMS no esta aplicada en createSdJwtOffer');",
+                  "    return;",
+                  "  }",
+                  "  const { idx, uri } = payload.status.status_list;",
+                  "  pm.environment.set('vcIndex', idx);",
+                  "  pm.environment.set('vcStatusListUri', uri);",
+                  "  pm.test('Credencial incluye status_list', () => pm.expect(payload.status.status_list).to.be.an('object'));",
+                  "  pm.test('idx es numero >= 0', () => pm.expect(idx).to.be.a('number').and.at.least(0));",
+                  "  pm.test('uri es URL valida', () => pm.expect(uri).to.be.a('string').and.match(/^https?:\\/\\//));",
+                  "  pm.test('vct coincide', () => pm.expect(payload.vct).to.equal(vct));",
+                  "  console.log('vcIndex:', idx, '| vcStatusListUri:', uri);",
+                  "} catch(e) {",
+                  "  pm.test('Error decodificando', () => pm.expect.fail(e.message));",
+                  "}"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{holderBaseUrl}}/v1/holders/{{holderId}}/records?type=SdJwtVcRecord",
+              "host": [
+                "{{holderBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "holders",
+                "{{holderId}}",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "SdJwtVcRecord"
+                }
+              ]
+            },
+            "description": "Lista SdJwtVcRecord vía records y extrae vcIndex / vcStatusListUri para revocación."
+          },
+          "response": []
+        },
+        {
+          "name": "03.C1 Issuer - Revocar credencial por índice",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200 o 201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (res.revokedAt) pm.environment.set('revokedAt', res.revokedAt);",
+                  "pm.test('Respuesta con revokedAt', () => pm.expect(res).to.have.property('revokedAt'));"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenFromAuth}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"index\": {{vcIndex}},\n  \"reason\": \"Test E2E revocation flow\"\n}"
+            },
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/revocation/status-list/{{vct}}/revoke",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "revocation",
+                "status-list",
+                "{{vct}}",
+                "revoke"
+              ]
+            },
+            "description": "Revoca la credencial asignada al índice vcIndex. Marca el bit correspondiente como 1 (INVALID) en la StatusList."
+          },
+          "response": []
+        },
+        {
+          "name": "03.C2 Issuer - Re-obtener StatusList JWT (validar firma KMS)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "function b64urlDecode(str) {",
+                  "  str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                  "  while (str.length % 4) str += '=';",
+                  "  return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                  "}",
+                  "const res = pm.response.json();",
+                  "pm.environment.set('statusListJwt', res.jwt);",
+                  "pm.environment.set('statusListUri', res.uri);",
+                  "pm.test('URI coincide con vcStatusListUri', () => pm.expect(res.uri).to.equal(pm.environment.get('vcStatusListUri')));",
+                  "const decoded = {",
+                  "  header: JSON.parse(b64urlDecode(res.jwt.split('.')[0])),",
+                  "  payload: JSON.parse(b64urlDecode(res.jwt.split('.')[1]))",
+                  "};",
+                  "const issuerDid = pm.environment.get('issuerDid');",
+                  "pm.test('typ = statuslist+jwt', () => pm.expect(decoded.header.typ).to.equal('statuslist+jwt'));",
+                  "pm.test('alg = ES256', () => pm.expect(decoded.header.alg).to.equal('ES256'));",
+                  "if (issuerDid) {",
+                  "  pm.test('kid = issuerDid#key-p256 (firma real KMS)', () => pm.expect(decoded.header.kid).to.equal(issuerDid + '#key-p256'));",
+                  "  pm.test('iss = issuerDid', () => pm.expect(decoded.payload.iss).to.equal(issuerDid));",
+                  "}",
+                  "pm.test('sub = statusListUri', () => pm.expect(decoded.payload.sub).to.equal(res.uri));",
+                  "pm.test('status_list.bits presente', () => pm.expect(decoded.payload.status_list.bits).to.be.oneOf([1,2,4,8]));",
+                  "pm.test('status_list.lst es base64url', () => pm.expect(decoded.payload.status_list.lst).to.be.a('string').and.match(/^[A-Za-z0-9_-]+$/));",
+                  "console.log('StatusList JWT header:', JSON.stringify(decoded.header));",
+                  "console.log('StatusList JWT payload:', JSON.stringify(decoded.payload));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/revocation/status-list/{{vct}}",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "revocation",
+                "status-list",
+                "{{vct}}"
+              ]
+            },
+            "description": "Re-obtiene el JWT firmado de la StatusList. Decodifica header y payload para validar:\n- typ = 'statuslist+jwt'\n- alg = 'ES256'\n- kid = issuerDid#key-p256 (PRUEBA DE FIRMA REAL CON KMS)\n- iss = issuerDid\n- sub = statusListUri\n- status_list.bits y status_list.lst presentes"
+          },
+          "response": []
+        },
+        {
+          "name": "03.C3 Issuer - Consultar status del índice revocado (server-side)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('status = 1 (revocado)', () => pm.expect(res.status).to.equal(1));",
+                  "pm.test('revoked = true', () => pm.expect(res.revoked).to.be.true);",
+                  "console.log('Status index', pm.environment.get('vcIndex'), ':', res.status, '| updatedAt:', res.updatedAt);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/revocation/status-list/{{vct}}/{{vcIndex}}",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "issuers",
+                "{{issuerId}}",
+                "revocation",
+                "status-list",
+                "{{vct}}",
+                "{{vcIndex}}"
+              ]
+            },
+            "description": "Consulta directa del status en la StatusList del issuer. Valida que el índice está revocado (status === 1) sin necesidad de decodificar el bitstring."
+          },
+          "response": []
+        },
+        {
+          "name": "03.D1 Verifier - Consultar status de credencial revocada",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('revoked = true', () => pm.expect(res.revoked).to.be.true);",
+                  "pm.test('status = 1', () => pm.expect(res.status).to.equal(1));",
+                  "console.log('Verifier consulta status idx', pm.environment.get('vcIndex'), ': revoked =', res.revoked, '| status =', res.status);"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/revocation/status-check?uri={{vcStatusListUri}}&idx={{vcIndex}}",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "revocation",
+                "status-check"
+              ],
+              "query": [
+                {
+                  "key": "uri",
+                  "value": "{{vcStatusListUri}}"
+                },
+                {
+                  "key": "idx",
+                  "value": "{{vcIndex}}"
+                }
+              ]
+            },
+            "description": "El verifier consulta directamente el status del índice en la StatusList. Debe retornar revoked === true, status === 1."
+          },
+          "response": []
+        },
+        {
+          "name": "03.D2 Verifier - Verificar credencial revocada (E2E completo)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "pm.test('valid = false (cred revocada)', () => pm.expect(res.valid).to.be.false);",
+                  "pm.test('errors contiene STATUS_INVALID', () => {",
+                  "  const hasStatusInvalid = res.errors?.some(e => e.code === 'STATUS_INVALID');",
+                  "  pm.expect(hasStatusInvalid).to.be.true;",
+                  "});",
+                  "pm.test('Error menciona revoked/suspended', () => {",
+                  "  const msg = res.errors?.find(e => e.code === 'STATUS_INVALID')?.message || '';",
+                  "  pm.expect(msg.toLowerCase()).to.include('revoked');",
+                  "});",
+                  "if (res.payload) console.log('Payload decodificado:', JSON.stringify(res.payload, null, 2));",
+                  "console.log('Verify result: valid =', res.valid, '| errors:', JSON.stringify(res.errors));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialJwt\": \"{{vcSdJwt}}\"\n}"
+            },
+            "url": {
+              "raw": "{{verifierBaseUrl}}/v1/revocation/verify",
+              "host": [
+                "{{verifierBaseUrl}}"
+              ],
+              "path": [
+                "v1",
+                "revocation",
+                "verify"
+              ]
+            },
+            "description": "TEST FINAL: El verifier recibe la credencial SD-JWT, extrae status_list reference, verifica revocación. Debe retornar valid === false con error STATUS_INVALID."
+          },
+          "response": []
+        }
+      ],
+      "description": "Flujo E2E de revocación con Token Status List (IETF TSL).\n\nOrden de ejecución:\n1. 00.A1 - Provision issuer\n2. 00.1 - Health check\n3. 03.B1 → crear offer (StatusList se crea + asigna índice automáticamente)\n4. 03.B2 → holder recibe credencial con status.status_list\n5. 03.B3 → verificar que la credencial incluye status_list (idx + uri)\n6. 03.C1 → revocar el índice\n7. 03.C2 → re-obtener JWT firmado y validar header/payload (prueba KMS real)\n8. 03.C3 → consultar status server-side (status === 1)\n9. 03.D1 → verifier consulta status (revoked === true)\n10. 03.D2 → verifier verifica credencial revocada (valid === false)\n\nVariables usadas: vcIndex, vcStatusListUri, vcSdJwt, statusListJwt, statusListUri, revokedAt"
+    }
+  ]
+}
