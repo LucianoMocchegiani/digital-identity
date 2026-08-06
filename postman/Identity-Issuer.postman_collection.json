@@ -2,7 +2,7 @@
   "info": {
     "name": "Identity Issuer - API + Credo Routes",
     "_postman_id": "0f7b31d1-7b82-4ba3-8dfd-4bda5e41d9a8",
-    "description": "Issuer multi-tenant (Identity 2.0).\n\n**DIDComm offer (invitar + ofrecer) — dos opciones:**\n- `POST .../didcomm/offer (Ed25519)` — `Ed25519Signature2018`\n- `POST .../didcomm/offer (BBS+ BbsBlsSignature2020)` — default QUARK-990; selective disclosure al presentar\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/issuers`, records, OID4VCI\n- Short URL: `/oob/:pendingOfferId`",
+    "description": "Issuer multi-tenant (Identity 2.0).\n\n**DIDComm offer (invitar + ofrecer) — dos opciones:**\n- `POST .../didcomm/offer (Ed25519)` — `Ed25519Signature2018`\n- `POST .../didcomm/offer (BBS+ BbsBlsSignature2020)` — default QUARK-990; selective disclosure al presentar\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/issuers`, records, OID4VCI\n- Short URL: `/oob/:pendingOfferId`\n\n**Auth:** header `X-API-Key: {{issuerApiKey}}` (key del producto en billing). Rutas públicas (health, did.json, well-known, OID4VC protocol) sin key.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -53,6 +53,10 @@
     {
       "key": "recordId",
       "value": ""
+    },
+    {
+      "key": "issuerApiKey",
+      "value": ""
     }
   ],
   "item": [
@@ -64,7 +68,14 @@
           "request": {
             "method": "GET",
             "url": "{{issuerBaseUrl}}/v1/issuers",
-            "description": "Issuers registrados en el proceso (memoria + tenants cargados al arranque). Usar issuerId en rutas /{{issuerId}}/..."
+            "description": "Issuers registrados en el proceso (memoria + tenants cargados al arranque). Usar issuerId en rutas /{{issuerId}}/...",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
+              }
+            ]
           },
           "event": [
             {
@@ -93,6 +104,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -128,6 +144,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -156,7 +177,10 @@
           "request": {
             "method": "GET",
             "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer",
-            "description": "Comprueba que el PATCH publicó logo (issuer.display) y background_image (credential display). Ejecutar después del PATCH y antes de crear offer."
+            "description": "Comprueba que el PATCH publicó logo (issuer.display) y background_image (credential display). Ejecutar después del PATCH y antes de crear offer.",
+            "auth": {
+              "type": "noauth"
+            }
           },
           "event": [
             {
@@ -192,7 +216,10 @@
           "name": "GET /v1/health",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/v1/health"
+            "url": "{{issuerBaseUrl}}/v1/health",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -200,7 +227,10 @@
           "request": {
             "method": "GET",
             "url": "{{issuerBaseUrl}}/v1/health/ready",
-            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó."
+            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó.",
+            "auth": {
+              "type": "noauth"
+            }
           },
           "event": [
             {
@@ -221,7 +251,10 @@
           "request": {
             "method": "GET",
             "url": "{{issuerBaseUrl}}/{{issuerId}}/did.json",
-            "description": "DID Document did:web del tenant."
+            "description": "DID Document did:web del tenant.",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -232,6 +265,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -277,6 +315,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -322,6 +365,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -365,7 +413,14 @@
           "name": "GET /{{issuerId}}/records/types",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/types"
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/types",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         },
         {
@@ -395,14 +450,28 @@
                   "value": "20"
                 }
               ]
-            }
+            },
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         },
         {
           "name": "GET /{{issuerId}}/records/:recordType/:recordId",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/{{recordType}}/{{recordId}}"
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/{{recordType}}/{{recordId}}",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{issuerApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         }
       ]
@@ -414,35 +483,50 @@
           "name": "GET /.well-known/openid-credential-issuer/.../{{issuerId}}",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/.well-known/openid-credential-issuer/openid4vc-flow/{{issuerId}}"
+            "url": "{{issuerBaseUrl}}/.well-known/openid-credential-issuer/openid4vc-flow/{{issuerId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /.well-known/oauth-authorization-server/.../{{issuerId}}",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/.well-known/oauth-authorization-server/openid4vc-flow/{{issuerId}}"
+            "url": "{{issuerBaseUrl}}/.well-known/oauth-authorization-server/openid4vc-flow/{{issuerId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /openid4vc-flow/{{issuerId}}/.well-known/oauth-authorization-server",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/oauth-authorization-server"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/oauth-authorization-server",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /openid4vc-flow/{{issuerId}}/offers/{{offerId}}",
           "request": {
             "method": "GET",
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/offers/{{offerId}}"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/offers/{{offerId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -470,7 +554,10 @@
                 }
               ]
             },
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/token"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/token",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -491,7 +578,10 @@
               "mode": "raw",
               "raw": "{\n  \"format\": \"dc+sd-jwt\",\n  \"proof\": {\n    \"proof_type\": \"jwt\",\n    \"jwt\": \"<holder-proof-jwt>\"\n  }\n}"
             },
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/credential"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/credential",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -508,10 +598,33 @@
               "mode": "raw",
               "raw": "{\n  \"notification_id\": \"\",\n  \"event\": \"\"\n}"
             },
-            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/notification"
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/notification",
+            "auth": {
+              "type": "noauth"
+            }
           }
         }
       ]
     }
-  ]
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{issuerApiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  }
 }

@@ -6,6 +6,7 @@ import {
   Param,
 } from '@nestjs/common'
 import { DidCommService } from './didcomm.service'
+import { Public } from '../auth/public.decorator'
 
 /**
  * Short URL pública de invitaciones OOB (Aries RFC 0434 § URL Shortening).
@@ -24,6 +25,7 @@ export class OobShortUrlController {
    * @returns Mensaje OOB Credo
    * @throws {NotFoundException} Si el id no existe o el TTL expiró
    */
+  @Public()
   @Get(':invitationId')
   @Header('Content-Type', 'application/json; charset=utf-8')
   getInvitation(@Param('invitationId') invitationId: string) {

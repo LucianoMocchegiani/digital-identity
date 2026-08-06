@@ -28,6 +28,6 @@ export function registerTenant(walletId: string, tenantId: string): void {
 export function withWallet<T>(walletId: string, callback: (agent: Agent) => Promise<T>): Promise<T> {
   if (!rootAgent) throw new Error('Agent not initialized')
   const tenantId = tenantMap.get(walletId)
-  if (!tenantId) throw new NotFoundException(`Wallet '${walletId}' not found`)
+  if (!tenantId) throw new NotFoundException(`Wallet '${walletId}' no encontrada`)
   return withTenant(rootAgent, tenantId, callback)
 }

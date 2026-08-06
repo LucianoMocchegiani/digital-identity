@@ -2,7 +2,7 @@
   "info": {
     "name": "Identity Verifier - API + Credo Routes",
     "_postman_id": "e3beff57-a1d9-487d-b9f8-f171ea7d4f44",
-    "description": "Verifier multi-tenant (Identity 2.0).\n\n**DIDComm request (invitar + pedir proof) — dos opciones:**\n- `POST .../didcomm/request (Ed25519)` — VC completa, proof Ed25519\n- `POST .../didcomm/request (BBS+ selective disclosure)` — solo revela paths del PD (p. ej. name); requiere VC emitida con offer BBS+\n\nLuego: pegá `invitation` en Holder `receive-invitation` → `GET .../didcomm/request/:pendingRequestId`.\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/verifiers`, records, OID4VP\n- Short URL: `/oob/:pendingRequestId`",
+    "description": "Verifier multi-tenant (Identity 2.0).\n\n**DIDComm request (invitar + pedir proof) — dos opciones:**\n- `POST .../didcomm/request (Ed25519)` — VC completa, proof Ed25519\n- `POST .../didcomm/request (BBS+ selective disclosure)` — solo revela paths del PD (p. ej. name); requiere VC emitida con offer BBS+\n\nLuego: pegá `invitation` en Holder `receive-invitation` → `GET .../didcomm/request/:pendingRequestId`.\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/verifiers`, records, OID4VP\n- Short URL: `/oob/:pendingRequestId`\n\n**Auth:** header `X-API-Key: {{verifierApiKey}}` (key del producto en billing). Rutas públicas (health, did.json, well-known, OID4VC protocol) sin key.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -73,6 +73,10 @@
     {
       "key": "x5cPrivateJwkD",
       "value": ""
+    },
+    {
+      "key": "verifierApiKey",
+      "value": ""
     }
   ],
   "item": [
@@ -83,7 +87,14 @@
           "name": "GET /v1/verifiers (listar disponibles)",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/v1/verifiers"
+            "url": "{{verifierBaseUrl}}/v1/verifiers",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           },
           "event": [
             {
@@ -112,6 +123,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -146,6 +162,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -163,6 +184,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -196,7 +222,10 @@
           "name": "GET /v1/health",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/v1/health"
+            "url": "{{verifierBaseUrl}}/v1/health",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -204,7 +233,10 @@
           "request": {
             "method": "GET",
             "url": "{{verifierBaseUrl}}/v1/health/ready",
-            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó."
+            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó.",
+            "auth": {
+              "type": "noauth"
+            }
           },
           "event": [
             {
@@ -224,7 +256,10 @@
           "name": "GET /{{verifierId}}/did.json",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/{{verifierId}}/did.json"
+            "url": "{{verifierBaseUrl}}/{{verifierId}}/did.json",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -235,6 +270,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -283,6 +323,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -328,7 +373,14 @@
           "request": {
             "method": "GET",
             "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/request/{{pendingRequestId}}",
-            "description": "Consulta el progreso / resultado del QR. Análogo a `GET .../openid4vc/session/:id`.\n\nEstados: `pending` → `request-sent` → `done` (o `error`). Cuando `status=done`, `isVerified` y `presentation.verifiableCredential` contienen lo verificado."
+            "description": "Consulta el progreso / resultado del QR. Análogo a `GET .../openid4vc/session/:id`.\n\nEstados: `pending` → `request-sent` → `done` (o `error`). Cuando `status=done`, `isVerified` y `presentation.verifiableCredential` contienen lo verificado.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           },
           "event": [
             {
@@ -349,7 +401,14 @@
           "request": {
             "method": "GET",
             "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/didcomm/proofs/{{proofExchangeRecordId}}",
-            "description": "Opcional: detalle por ID de Credo. Preferir GET .../didcomm/request/:pendingRequestId. Para listar: GET .../records?type=DidCommProofExchangeRecord."
+            "description": "Opcional: detalle por ID de Credo. Preferir GET .../didcomm/request/:pendingRequestId. Para listar: GET .../records?type=DidCommProofExchangeRecord.",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         },
         {
@@ -360,6 +419,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -402,6 +466,11 @@
               {
                 "key": "Content-Type",
                 "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
               }
             ],
             "body": {
@@ -441,7 +510,14 @@
           "name": "GET /v1/verifiers/{{verifierId}}/openid4vc/session/{{verificationSessionId}}",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/openid4vc/session/{{verificationSessionId}}"
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/openid4vc/session/{{verificationSessionId}}",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           },
           "event": [
             {
@@ -509,7 +585,14 @@
           "name": "GET /{{verifierId}}/records/types",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/records/types"
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/records/types",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         },
         {
@@ -539,14 +622,28 @@
                   "value": "20"
                 }
               ]
-            }
+            },
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         },
         {
           "name": "GET /{{verifierId}}/records/:recordType/:recordId",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/records/{{recordType}}/{{recordId}}"
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{verifierId}}/records/{{recordType}}/{{recordId}}",
+            "header": [
+              {
+                "key": "X-API-Key",
+                "value": "{{verifierApiKey}}",
+                "type": "text"
+              }
+            ]
           }
         }
       ]
@@ -558,21 +655,30 @@
           "name": "GET /.well-known/oauth-authorization-server/.../{{verifierId}}",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/.well-known/oauth-authorization-server/openid4vc-auth/{{verifierId}}"
+            "url": "{{verifierBaseUrl}}/.well-known/oauth-authorization-server/openid4vc-auth/{{verifierId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /openid4vc-auth/{{verifierId}}/.well-known/oauth-authorization-server",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/.well-known/oauth-authorization-server"
+            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/.well-known/oauth-authorization-server",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
           "name": "GET /openid4vc-auth/{{verifierId}}/authorize/{{authorizationRequestId}}",
           "request": {
             "method": "GET",
-            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/authorize/{{authorizationRequestId}}"
+            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/authorize/{{authorizationRequestId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         },
         {
@@ -605,10 +711,33 @@
                 }
               ]
             },
-            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/authorize/{{authorizationRequestId}}"
+            "url": "{{verifierBaseUrl}}/openid4vc-auth/{{verifierId}}/authorize/{{authorizationRequestId}}",
+            "auth": {
+              "type": "noauth"
+            }
           }
         }
       ]
     }
-  ]
+  ],
+  "auth": {
+    "type": "apikey",
+    "apikey": [
+      {
+        "key": "key",
+        "value": "X-API-Key",
+        "type": "string"
+      },
+      {
+        "key": "value",
+        "value": "{{verifierApiKey}}",
+        "type": "string"
+      },
+      {
+        "key": "in",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  }
 }

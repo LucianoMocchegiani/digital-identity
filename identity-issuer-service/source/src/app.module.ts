@@ -16,10 +16,12 @@ import { AskarStoreModule } from './askar/askar-store.module'
 import { RecordStorageModule } from './records/record-storage.module'
 import { StatusListStorageModule } from './revocation/status-list-storage.module'
 import { KeyManagementModule } from './kms/key-management.module'
+import { AuthModule } from './auth/auth.module'
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [environmentConfig] }),
+    AuthModule,
     DatabaseModule,
     AskarStoreModule,
     RecordStorageModule,

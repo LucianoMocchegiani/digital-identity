@@ -7,7 +7,6 @@ import {
   Param,
   Post,
   Res,
-  UseGuards,
 } from '@nestjs/common'
 import type { Response } from 'express'
 import { CredentialAlreadyRevokedError } from '@identity/core'
@@ -21,11 +20,7 @@ import {
   RevokeCredentialResponseDto,
   GetStatusResponseDto,
 } from './dto/revocation.dto'
-import { JwtAuthGuard } from '../common/guards/jwt-auth.guard'
-import {
-  IssuerScopesGuard,
-  RequireScopes,
-} from '../common/guards/issuer-scopes.guard'
+import { Public } from '../auth/public.decorator'
 
 /**
  * Controlador HTTP para gestión de StatusList y revocación de credenciales SD-JWT VC.
@@ -39,8 +34,8 @@ import {
  * - `POST   /status-list/:vct/revoke`     → marca un índice como revocado.
  * - `GET    /status-list/:vct/:idx`       → consulta el estado de un índice.
  *
- * Los endpoints de mutación (`allocate`, `revoke`) requieren autenticación JWT
- * (`JwtAuthGuard`) y autorización por scope (`IssuerScopesGuard` con `@RequireScopes`).
+ * Mutaciones admin requieren `X-API-Key` del issuer (guard global).
+ * Lecturas de StatusList JWT / índice son públicas (verificadores / wallets).
  */
 @Controller('issuers/:walletId/revocation')
 export class RevocationController {
@@ -57,6 +52,7 @@ export class RevocationController {
     })
   }
 
+  @Public()
   @Get('status-list/:vct')
   async getStatusListJwt(
     @Param('walletId') walletId: string,
@@ -69,8 +65,6 @@ export class RevocationController {
   }
 
   @Post('status-list/:vct/allocate')
-  @UseGuards(JwtAuthGuard, IssuerScopesGuard)
-  @RequireScopes('vcs:allocate')
   async allocateIndex(
     @Param('walletId') walletId: string,
     @Param('vct') vct: string,
@@ -83,8 +77,6 @@ export class RevocationController {
   }
 
   @Post('status-list/:vct/revoke')
-  @UseGuards(JwtAuthGuard, IssuerScopesGuard)
-  @RequireScopes('vcs:revoke')
   async revokeCredential(
     @Param('walletId') walletId: string,
     @Param('vct') vct: string,
@@ -113,6 +105,7 @@ export class RevocationController {
     }
   }
 
+  @Public()
   @Get('status-list/:vct/:idx')
   async getStatus(
     @Param('walletId') walletId: string,

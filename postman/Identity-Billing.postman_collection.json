@@ -1,0 +1,449 @@
+{
+  "info": {
+    "name": "Identity Billing - Auth · Products · Cupos · API Keys",
+    "_postman_id": "b1ll1ng0-1d3n-4t1t-9api-key5phase2002",
+    "description": "Billing: register/login (JWT), productos (cada uno = issuer O verifier + key), cupos (maxProducts · rateLimitRpm · monthlyTxQuota), admin, validate-and-meter.\n\nFlujo: register (sin productos) → POST /products issuer → POST /products verifier.\n\n**Auth usuario:** `Authorization: Bearer {{accessToken}}`\n**Auth admin:** `X-Admin-Key`\n**Internal:** `X-Internal-Token`\n\nLas API keys solo se muestran **una vez** al crear o rotar.\nPlanes: free (2 productos) | pro | business.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "billingBaseUrl", "value": "http://localhost:9000" },
+    { "key": "adminApiKey", "value": "dev-admin-change-me" },
+    { "key": "billingInternalToken", "value": "dev-internal-change-me" },
+    { "key": "accessToken", "value": "" },
+    { "key": "accountId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "issuerResourceId", "value": "" },
+    { "key": "verifierResourceId", "value": "" },
+    { "key": "issuerApiKey", "value": "" },
+    { "key": "verifierApiKey", "value": "" },
+    { "key": "issuerId", "value": "demo" },
+    { "key": "verifierId", "value": "demo" },
+    { "key": "email", "value": "demo@example.com" },
+    { "key": "password", "value": "password123" },
+    { "key": "plan", "value": "free" },
+    { "key": "productName", "value": "Demo Product" },
+    { "key": "apiKeyId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "00 - Health",
+      "item": [
+        {
+          "name": "GET /health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{billingBaseUrl}}/health"
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 - Auth (self-serve)",
+      "item": [
+        {
+          "name": "POST /v1/auth/register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (pm.response.code === 409) {",
+                  "  console.warn('Email ya registrado → usá POST /v1/auth/login');",
+                  "  return;",
+                  "}",
+                  "pm.test('Registered', () => {",
+                  "  pm.expect([200, 201]).to.include(pm.response.code);",
+                  "  pm.expect(res.accessToken).to.be.a('string');",
+                  "  pm.expect(res.account.id).to.be.a('string');",
+                  "});",
+                  "if (!res.accessToken || !res.account) return;",
+                  "pm.collectionVariables.set('accessToken', res.accessToken);",
+                  "pm.environment.set('accessToken', res.accessToken);",
+                  "pm.collectionVariables.set('accountId', res.account.id);",
+                  "pm.environment.set('accountId', res.account.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Demo Account\",\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/auth/register",
+            "description": "Crea account free sin productos. Después: POST /products (issuer) y POST /products (verifier)."
+          }
+        },
+        {
+          "name": "POST /v1/auth/login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.accessToken);",
+                  "  pm.environment.set('accessToken', res.accessToken);",
+                  "}",
+                  "if (res.account) {",
+                  "  pm.collectionVariables.set('accountId', res.account.id);",
+                  "  pm.environment.set('accountId', res.account.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/auth/login"
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 - Me",
+      "item": [
+        {
+          "name": "GET /v1/me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/me"
+          }
+        },
+        {
+          "name": "GET /v1/me/usage",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/me/usage"
+          }
+        },
+        {
+          "name": "GET /v1/me/plans",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/me/plans"
+          }
+        },
+        {
+          "name": "POST /v1/me/checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"plan\": \"pro\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/me/checkout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Products (JWT)",
+      "item": [
+        {
+          "name": "GET /v1/products",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/products"
+          }
+        },
+        {
+          "name": "POST /v1/products (issuer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('productId', res.product.id);",
+                  "pm.collectionVariables.set('issuerResourceId', res.product.resourceId);",
+                  "pm.collectionVariables.set('issuerApiKey', res.product.apiKey);",
+                  "pm.collectionVariables.set('issuerId', res.product.walletId);",
+                  "pm.environment.set('issuerApiKey', res.product.apiKey);",
+                  "pm.environment.set('issuerId', res.product.walletId);",
+                  "pm.environment.set('issuerResourceId', res.product.resourceId);",
+                  "console.log('ISSUER_API_KEY=', res.product.apiKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mi Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{issuerId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto + key, provisiona tenant en issuer y deja resource active. Requiere issuer arriba."
+          }
+        },
+        {
+          "name": "POST /v1/products (verifier)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('verifierResourceId', res.product.resourceId);",
+                  "pm.collectionVariables.set('verifierApiKey', res.product.apiKey);",
+                  "pm.collectionVariables.set('verifierId', res.product.walletId);",
+                  "pm.environment.set('verifierApiKey', res.product.apiKey);",
+                  "pm.environment.set('verifierId', res.product.walletId);",
+                  "pm.environment.set('verifierResourceId', res.product.resourceId);",
+                  "console.log('VERIFIER_API_KEY=', res.product.apiKey);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Mi Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{verifierId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto + key, provisiona tenant en verifier y deja resource active. Requiere verifier arriba."
+          }
+        },
+        {
+          "name": "GET /v1/products/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/products/{{productId}}"
+          }
+        },
+        {
+          "name": "PATCH /v1/products/:id",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Demo Product Renombrado\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/products/{{productId}}"
+          }
+        },
+        {
+          "name": "GET /v1/products/:id/resources",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "url": "{{billingBaseUrl}}/v1/products/{{productId}}/resources"
+          }
+        },
+        {
+          "name": "POST rotate key (JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"keyName\": \"issuer-rotated\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/resources/{{issuerResourceId}}/keys/rotate"
+          }
+        },
+        {
+          "name": "POST revoke api-key (JWT)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{billingBaseUrl}}/v1/api-keys/{{apiKeyId}}/revoke",
+            "description": "Setear `apiKeyId` desde GET product resources (prefix id)."
+          }
+        },
+        {
+          "name": "DELETE /v1/products/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+            ],
+            "url": "{{billingBaseUrl}}/v1/products/{{productId}}",
+            "description": "Archiva producto (puede quedar en 0 productos)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 - Internal",
+      "item": [
+        {
+          "name": "POST validate-and-meter",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Internal-Token", "value": "{{billingInternalToken}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiKey\": \"{{issuerApiKey}}\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{issuerId}}\",\n  \"count\": 1\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/internal/validate-and-meter",
+            "description": "Lo que llaman los guards de issuer/verifier. 429 rate / 402 cuota."
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 - Admin",
+      "item": [
+        {
+          "name": "GET /v1/admin/accounts",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Admin-Key", "value": "{{adminApiKey}}" }],
+            "url": "{{billingBaseUrl}}/v1/admin/accounts"
+          }
+        },
+        {
+          "name": "GET /v1/admin/accounts/:id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Admin-Key", "value": "{{adminApiKey}}" }],
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}"
+          }
+        },
+        {
+          "name": "POST activate-paid (→ pro)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{}" },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/activate-paid"
+          }
+        },
+        {
+          "name": "POST set quota",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"maxProducts\": 5,\n  \"rateLimitRpm\": 600,\n  \"monthlyTxQuota\": 100000\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/quota"
+          }
+        },
+        {
+          "name": "POST set plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"plan\": \"pro\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/plan"
+          }
+        },
+        {
+          "name": "GET menu",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "X-Admin-Key", "value": "{{adminApiKey}}" }],
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/menu"
+          }
+        },
+        {
+          "name": "POST /v1/admin/accounts/:id/products (issuer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ops Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"ops-issuer\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/products",
+            "description": "Un producto = un issuer o verifier."
+          }
+        },
+        {
+          "name": "POST status",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/status"
+          }
+        },
+        {
+          "name": "POST checkout (admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "X-Admin-Key", "value": "{{adminApiKey}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"plan\": \"pro\"\n}" },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/checkout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 - Webhooks",
+      "item": [
+        {
+          "name": "POST /v1/webhooks/payments/manual",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"payment.succeeded\",\n  \"accountId\": \"{{accountId}}\",\n  \"plan\": \"pro\",\n  \"externalId\": \"manual_test_1\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/webhooks/payments/manual"
+          }
+        }
+      ]
+    }
+  ]
+}

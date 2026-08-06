@@ -1,44 +1,48 @@
 # ─────────────────────────────────────────────────────────────
-# Identity stack — local dev
+# Identity stack — local + Contabo (phase 1)
 #
-# Infrastructure:  postgres · rabbitmq · pgadmin (opcional)
-# Identity APIs:   identity-issuer-service   :9001
-#                  identity-verifier-service :9002
-#                  identity-holder-service   :9005
+# Activos:     postgres · billing · issuer · verifier
+# Comentados:  rabbitmq · pgadmin · holder  (descomentar cuando se usen)
 #
 # Usage:
-#   docker compose up -d
-#   docker compose up -d identity-issuer-service identity-holder-service
-#   docker compose logs -f identity-holder-service
+#   cp identity-billing-service/source/.env.example identity-billing-service/source/.env
+#   cp identity-issuer-service/source/.env.example identity-issuer-service/source/.env
+#   cp identity-verifier-service/source/.env.example identity-verifier-service/source/.env
+#   docker compose up -d --build
+#
+# Onboard (register + opcional provision):
+#   cd identity-billing-service/source && npm run onboard -- --name "ACME" --email a@b.com --password secret123 --issuer acme --verifier acme
 # ─────────────────────────────────────────────────────────────
 
 services:
-  rabbitmq:
-    image: rabbitmq:3.13-management-alpine
-    restart: unless-stopped
-    environment:
-      RABBITMQ_DEFAULT_USER: identity
-      RABBITMQ_DEFAULT_PASS: identity
-    ports:
-      - "5672:5672"
-      - "15672:15672"
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - identity
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # ─── opcional: descomentar para mensajería / index / audit ───
+  # rabbitmq:
+  #   image: rabbitmq:3.13-management-alpine
+  #   restart: unless-stopped
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: identity
+  #     RABBITMQ_DEFAULT_PASS: identity
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   networks:
+  #     - identity
+  #   healthcheck:
+  #     test: ["CMD", "rabbitmq-diagnostics", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   postgres:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: identity
-      POSTGRES_PASSWORD: identity
-      POSTGRES_MULTIPLE_DATABASES: identity_holder,identity_issuer,identity_verifier
+      POSTGRES_USER: ${POSTGRES_USER:-identity}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-identity}
+      # Incluye identity_holder por si se reactiva el holder-service
+      POSTGRES_MULTIPLE_DATABASES: identity_issuer,identity_verifier,identity_billing,identity_holder
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
@@ -47,30 +51,55 @@ services:
     networks:
       - identity
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U identity"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-identity}"]
       interval: 10s
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4:9
+  # ─── opcional: descomentar para UI de Postgres ───
+  # pgadmin:
+  #   image: dpage/pgadmin4:9
+  #   restart: unless-stopped
+  #   environment:
+  #     PGADMIN_DEFAULT_EMAIL: admin@identity.dev
+  #     PGADMIN_DEFAULT_PASSWORD: admin123
+  #     PGADMIN_CONFIG_SERVER_MODE: "False"
+  #     PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+  #   ports:
+  #     - "5050:80"
+  #   volumes:
+  #     - pgadmin_data:/var/lib/pgadmin
+  #   networks:
+  #     - identity
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+
+  identity-billing-service:
+    build:
+      context: .
+      dockerfile: identity-billing-service/source/Dockerfile
     restart: unless-stopped
+    env_file: identity-billing-service/source/.env
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@identity.dev
-      PGADMIN_DEFAULT_PASSWORD: admin123
-      PGADMIN_CONFIG_SERVER_MODE: "False"
-      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      PORT: 9000
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-identity}:${POSTGRES_PASSWORD:-identity}@postgres:5432/identity_billing
+      ADMIN_API_KEY: ${ADMIN_API_KEY:-dev-admin-change-me}
+      BILLING_INTERNAL_TOKEN: ${BILLING_INTERNAL_TOKEN:-dev-internal-change-me}
+      JWT_SECRET: ${JWT_SECRET:-dev-jwt-change-me}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+      PAYMENT_PROVIDER: manual
+      ISSUER_URL: http://identity-issuer-service:9001
+      VERIFIER_URL: http://identity-verifier-service:9002
+      PROVISION_ON_CREATE: ${PROVISION_ON_CREATE:-true}
     ports:
-      - "5050:80"
-    volumes:
-      - pgadmin_data:/var/lib/pgadmin
+      - "9000:9000"
     networks:
       - identity
     depends_on:
       postgres:
         condition: service_healthy
-
-  # Build context: repo root — Dockerfiles in */source copy packages/identity-core.
 
   identity-issuer-service:
     build:
@@ -80,16 +109,20 @@ services:
     env_file: identity-issuer-service/source/.env
     environment:
       PORT: 9001
+      NODE_ENV: ${NODE_ENV:-development}
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: identity
-      DB_PASSWORD: identity
+      DB_USERNAME: ${POSTGRES_USER:-identity}
+      DB_PASSWORD: ${POSTGRES_PASSWORD:-identity}
       DB_DATABASE: identity_issuer
-      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_issuer
+      DATABASE_URL: postgresql://${POSTGRES_USER:-identity}:${POSTGRES_PASSWORD:-identity}@postgres:5432/identity_issuer
       ASKAR_STORE_ID: identity_issuer
-      ASKAR_STORE_KEY: identity-dev-askar-store-key
-      NODE_ENV: development
-      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
+      ASKAR_STORE_KEY: ${ASKAR_STORE_KEY:-identity-dev-askar-store-key}
+      API_KEY_AUTH_ENABLED: ${API_KEY_AUTH_ENABLED:-true}
+      BILLING_URL: http://identity-billing-service:9000
+      BILLING_INTERNAL_TOKEN: ${BILLING_INTERNAL_TOKEN:-dev-internal-change-me}
+      # Con rabbitmq activo: amqp://identity:identity@rabbitmq:5672
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://identity:identity@127.0.0.1:5672}
     ports:
       - "9001:9001"
     networks:
@@ -97,8 +130,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      identity-billing-service:
+        condition: service_started
+      # rabbitmq:
+      #   condition: service_healthy
 
   identity-verifier-service:
     build:
@@ -108,11 +143,15 @@ services:
     env_file: identity-verifier-service/source/.env
     environment:
       PORT: 9002
-      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_verifier
+      NODE_ENV: ${NODE_ENV:-development}
+      DATABASE_URL: postgresql://${POSTGRES_USER:-identity}:${POSTGRES_PASSWORD:-identity}@postgres:5432/identity_verifier
       ASKAR_STORE_ID: identity_verifier
-      ASKAR_STORE_KEY: identity-dev-askar-store-key
-      NODE_ENV: development
-      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
+      ASKAR_STORE_KEY: ${ASKAR_STORE_KEY:-identity-dev-askar-store-key}
+      API_KEY_AUTH_ENABLED: ${API_KEY_AUTH_ENABLED:-true}
+      BILLING_URL: http://identity-billing-service:9000
+      BILLING_INTERNAL_TOKEN: ${BILLING_INTERNAL_TOKEN:-dev-internal-change-me}
+      # Con rabbitmq activo: amqp://identity:identity@rabbitmq:5672
+      RABBITMQ_URL: ${RABBITMQ_URL:-amqp://identity:identity@127.0.0.1:5672}
     ports:
       - "9002:9002"
     networks:
@@ -120,36 +159,39 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+      identity-billing-service:
+        condition: service_started
+      # rabbitmq:
+      #   condition: service_healthy
 
-  identity-holder-service:
-    build:
-      context: .
-      dockerfile: identity-holder-service/source/Dockerfile
-    restart: unless-stopped
-    env_file: identity-holder-service/source/.env
-    environment:
-      PORT: 9005
-      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_holder
-      ASKAR_STORE_ID: identity_holder
-      ASKAR_STORE_KEY: identity-dev-askar-store-key
-      NODE_ENV: development
-      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
-    ports:
-      - "9005:9005"
-    networks:
-      - identity
-    depends_on:
-      postgres:
-        condition: service_healthy
-      rabbitmq:
-        condition: service_healthy
+  # ─── opcional: descomentar para custodia / holder ───
+  # identity-holder-service:
+  #   build:
+  #     context: .
+  #     dockerfile: identity-holder-service/source/Dockerfile
+  #   restart: unless-stopped
+  #   env_file: identity-holder-service/source/.env
+  #   environment:
+  #     PORT: 9005
+  #     NODE_ENV: ${NODE_ENV:-development}
+  #     DATABASE_URL: postgresql://${POSTGRES_USER:-identity}:${POSTGRES_PASSWORD:-identity}@postgres:5432/identity_holder
+  #     ASKAR_STORE_ID: identity_holder
+  #     ASKAR_STORE_KEY: ${ASKAR_STORE_KEY:-identity-dev-askar-store-key}
+  #     RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
+  #   ports:
+  #     - "9005:9005"
+  #   networks:
+  #     - identity
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
+  #     rabbitmq:
+  #       condition: service_healthy
 
 volumes:
   postgres_data:
-  pgadmin_data:
-  rabbitmq_data:
+  # pgadmin_data:
+  # rabbitmq_data:
 
 networks:
   identity:

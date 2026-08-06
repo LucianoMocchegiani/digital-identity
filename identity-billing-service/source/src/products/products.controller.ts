@@ -1,0 +1,77 @@
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  Param,
+  ParseUUIDPipe,
+  Patch,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { BillingService } from '../billing/billing.service'
+import { CreateProductDto } from './dto/create-product.dto'
+import { PatchProductDto } from './dto/patch-product.dto'
+
+@Controller('products')
+@UseGuards(JwtAuthGuard)
+export class ProductsController {
+  constructor(private readonly billing: BillingService) {}
+
+  @Get()
+  list(@Req() req: { user: { accountId: string } }) {
+    return this.billing.listProducts(req.user.accountId)
+  }
+
+  @Post()
+  async create(
+    @Req() req: { user: { accountId: string } },
+    @Body() body: CreateProductDto,
+  ) {
+    const created = await this.billing.createProduct({
+      accountId: req.user.accountId,
+      name: body.name,
+      description: body.description,
+      service: body.service,
+      walletId: body.walletId,
+    })
+    return this.billing.toProductCreateResponse(created)
+  }
+
+  @Get(':productId')
+  get(
+    @Req() req: { user: { accountId: string } },
+    @Param('productId', ParseUUIDPipe) productId: string,
+  ) {
+    return this.billing.getProduct(req.user.accountId, productId)
+  }
+
+  @Patch(':productId')
+  patch(
+    @Req() req: { user: { accountId: string } },
+    @Param('productId', ParseUUIDPipe) productId: string,
+    @Body() body: PatchProductDto,
+  ) {
+    return this.billing.patchProduct(req.user.accountId, productId, body)
+  }
+
+  @Delete(':productId')
+  @HttpCode(204)
+  async remove(
+    @Req() req: { user: { accountId: string } },
+    @Param('productId', ParseUUIDPipe) productId: string,
+  ) {
+    await this.billing.archiveProduct(req.user.accountId, productId)
+  }
+
+  @Get(':productId/resources')
+  resources(
+    @Req() req: { user: { accountId: string } },
+    @Param('productId', ParseUUIDPipe) productId: string,
+  ) {
+    return this.billing.listProductResources(req.user.accountId, productId)
+  }
+}

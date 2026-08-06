@@ -59,14 +59,14 @@ export class IssuerScopesGuard implements CanActivate {
       | { scopes?: string[] }
       | undefined
     if (!user?.scopes?.length) {
-      throw new ForbiddenException('Insufficient scopes')
+      throw new ForbiddenException('Scopes insuficientes')
     }
 
     const hasAllScopes = requiredScopes.every((scope) =>
       user.scopes?.includes(scope),
     )
     if (!hasAllScopes) {
-      throw new ForbiddenException('Insufficient scopes')
+      throw new ForbiddenException('Scopes insuficientes')
     }
     return true
   }
