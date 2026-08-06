@@ -1,0 +1,517 @@
+{
+  "info": {
+    "name": "Identity Issuer - API + Credo Routes",
+    "_postman_id": "0f7b31d1-7b82-4ba3-8dfd-4bda5e41d9a8",
+    "description": "Issuer multi-tenant (Identity 2.0).\n\n**DIDComm offer (invitar + ofrecer) — dos opciones:**\n- `POST .../didcomm/offer (Ed25519)` — `Ed25519Signature2018`\n- `POST .../didcomm/offer (BBS+ BbsBlsSignature2020)` — default QUARK-990; selective disclosure al presentar\n\nConvención (`setGlobalPrefix('v1')` + `@Controller`):\n- Admin: `/v1/issuers`, records, OID4VCI\n- Short URL: `/oob/:pendingOfferId`",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "issuerBaseUrl",
+      "value": "http://localhost:9001"
+    },
+    {
+      "key": "issuerId",
+      "value": "Identity-Issuer"
+    },
+    {
+      "key": "issuerDid",
+      "value": ""
+    },
+    {
+      "key": "credentialConfigurationId",
+      "value": "Identity_demo"
+    },
+    {
+      "key": "vct",
+      "value": "IdentityCredential"
+    },
+    {
+      "key": "offerUri",
+      "value": ""
+    },
+    {
+      "key": "issuanceSessionId",
+      "value": ""
+    },
+    {
+      "key": "offerId",
+      "value": ""
+    },
+    {
+      "key": "connectionId",
+      "value": ""
+    },
+    {
+      "key": "holderDid",
+      "value": ""
+    },
+    {
+      "key": "recordType",
+      "value": "ConnectionRecord"
+    },
+    {
+      "key": "recordId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Admin",
+      "item": [
+        {
+          "name": "GET /v1/issuers (listar disponibles)",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/v1/issuers",
+            "description": "Issuers registrados en el proceso (memoria + tenants cargados al arranque). Usar issuerId en rutas /{{issuerId}}/..."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Listado issuers', () => pm.expect(res.issuers).to.be.an('array'));",
+                  "if (res.issuers?.length) {",
+                  "  const first = res.issuers[0];",
+                  "  pm.collectionVariables.set('issuerId', first.issuerId);",
+                  "  if (first.did) pm.collectionVariables.set('issuerDid', first.did);",
+                  "  console.log(JSON.stringify(res.issuers, null, 2));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /v1/issuers (crear tenant + OID4VCI)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"issuerId\": \"{{issuerId}}\",\n  \"oid4vc\": {\n    \"display\": [\n      {\n        \"name\": \"{{issuerId}}\",\n        \"locale\": \"es\",\n        \"background_color\": \"#74ACDF\",\n        \"text_color\": \"#FFFFFF\",\n        \"logo\": {\n          \"uri\": \"https://upload.wikimedia.org/wikipedia/commons/8/8e/Escarapela_wiki.svg\",\n          \"alt_text\": \"Escarapela Argentina\"\n        }\n      }\n    ],\n    \"dpopSigningAlgValuesSupported\": [\"ES256\"],\n    \"credentialConfigurationsSupported\": {\n      \"{{credentialConfigurationId}}\": {\n        \"format\": \"dc+sd-jwt\",\n        \"vct\": \"{{vct}}\",\n        \"cryptographic_binding_methods_supported\": [\"did:jwk\", \"jwk\"],\n        \"credential_signing_alg_values_supported\": [\"ES256\"],\n        \"proof_types_supported\": {\n          \"jwt\": { \"proof_signing_alg_values_supported\": [\"ES256\"] }\n        },\n        \"claims\": {\n          \"name\": {\n            \"display\": [{ \"name\": \"Nombre completo\", \"locale\": \"es\" }]\n          },\n          \"email\": {\n            \"display\": [{ \"name\": \"Correo electrónico\", \"locale\": \"es\" }]\n          },\n          \"role\": {\n            \"display\": [{ \"name\": \"Rol\", \"locale\": \"es\" }]\n          }\n        },\n        \"display\": [\n          {\n            \"name\": \"{{vct}}\",\n            \"locale\": \"es\",\n            \"background_color\": \"#74ACDF\",\n            \"text_color\": \"#FFFFFF\",\n            \"background_image\": {\n              \"uri\": \"https://img.magnific.com/fotos-premium/argentina-bandera-metalica-bandera-texturizada-bandera-grunge_559531-11109.jpg?semt=ais_hybrid&w=740&q=80\"\n            }\n          }\n        ]\n      }\n    }\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers",
+            "description": "Crea tenant Credo + DidRecord + OpenId4VcIssuerRecord. Ejecutar antes de didcomm/openid4vc si el proceso se reinició."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.issuerId) pm.collectionVariables.set('issuerId', res.issuerId);",
+                  "if (res.did) {",
+                  "  pm.collectionVariables.set('issuerDid', res.did);",
+                  "  try { pm.environment.set('issuerDid', res.did); } catch (e) {}",
+                  "}",
+                  "pm.test('Issuer creado', () => pm.expect(res.issuerId).to.be.a('string'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "PATCH /v1/issuers/{{issuerId}}/records/metadata",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display\": [\n    {\n      \"name\": \"{{issuerId}}\",\n      \"locale\": \"es\",\n      \"background_color\": \"#74ACDF\",\n      \"text_color\": \"#FFFFFF\",\n      \"logo\": {\n        \"uri\": \"https://upload.wikimedia.org/wikipedia/commons/8/8e/Escarapela_wiki.svg\",\n        \"alt_text\": \"Escarapela Argentina\"\n      }\n    }\n  ],\n  \"dpopSigningAlgValuesSupported\": [\"ES256\"],\n  \"credentialConfigurationsSupported\": {\n    \"{{credentialConfigurationId}}\": {\n      \"format\": \"dc+sd-jwt\",\n      \"vct\": \"{{vct}}\",\n      \"cryptographic_binding_methods_supported\": [\"did:jwk\", \"jwk\"],\n      \"credential_signing_alg_values_supported\": [\"ES256\"],\n      \"proof_types_supported\": {\n        \"jwt\": { \"proof_signing_alg_values_supported\": [\"ES256\"] }\n      },\n      \"claims\": {\n        \"name\": {\n          \"display\": [{ \"name\": \"Nombre completo\", \"locale\": \"es\" }]\n        },\n        \"email\": {\n          \"display\": [{ \"name\": \"Correo electrónico\", \"locale\": \"es\" }]\n        },\n        \"role\": {\n          \"display\": [{ \"name\": \"Rol\", \"locale\": \"es\" }]\n        }\n      },\n      \"display\": [\n        {\n          \"name\": \"{{vct}}\",\n          \"locale\": \"es\",\n          \"background_color\": \"#74ACDF\",\n          \"text_color\": \"#FFFFFF\",\n          \"background_image\": {\n            \"uri\": \"https://img.magnific.com/fotos-premium/argentina-bandera-metalica-bandera-texturizada-bandera-grunge_559531-11109.jpg?semt=ais_hybrid&w=740&q=80\"\n          }\n        }\n      ]\n    }\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/metadata",
+            "description": "Actualiza display OID4VCI del tenant existente (sin recrearlo).\n\n- `display` raíz → logo/nombre del **emisor** (VerifyIssuerSlide + logo en card).\n- `credentialConfigurationsSupported.*.display` → colores e imagen de fondo de la **credencial**.\n\nEjecutar cuando el well-known no trae logo/background_image (ej. tenant `Identity-Issuer` creado antes del cambio visual). Luego correr el GET well-known de verificación y emitir un offer nuevo."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Metadata actualizada (2xx)', () => pm.response.to.be.success);",
+                  "const res = pm.response.json();",
+                  "pm.test('Respuesta incluye issuerId', () => pm.expect(res.issuerId).to.eql(pm.collectionVariables.get('issuerId')));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET well-known (verificar display visual)",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer",
+            "description": "Comprueba que el PATCH publicó logo (issuer.display) y background_image (credential display). Ejecutar después del PATCH y antes de crear offer."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const configId = pm.collectionVariables.get('credentialConfigurationId');",
+                  "const issuerDisplay = res.display?.[0];",
+                  "const credDisplay = res.credential_configurations_supported?.[configId]?.display?.[0];",
+                  "pm.test('Issuer display tiene logo.uri', () => {",
+                  "  pm.expect(issuerDisplay?.logo?.uri).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Credential display tiene background_image.uri', () => {",
+                  "  pm.expect(credDisplay?.background_image?.uri).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Credential display tiene colores', () => {",
+                  "  pm.expect(credDisplay?.background_color).to.eql('#74ACDF');",
+                  "  pm.expect(credDisplay?.text_color).to.eql('#FFFFFF');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - NestJS ({{issuerId}})",
+      "item": [
+        {
+          "name": "GET /v1/health",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/v1/health"
+          }
+        },
+        {
+          "name": "GET /v1/health/ready",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/v1/health/ready",
+            "description": "Readiness: agent Credo inicializado. 503 si el bootstrap aún no terminó."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const res = pm.response.json();",
+                  "pm.test('ready true', () => pm.expect(res.ready).to.be.true);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "GET /{{issuerId}}/did.json",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/{{issuerId}}/did.json",
+            "description": "DID Document did:web del tenant."
+          }
+        },
+        {
+          "name": "POST /{{issuerId}}/didcomm/offer (Ed25519)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": {\n    \"credentialSubject\": {\n      \"name\": \"Juan Perez\",\n      \"documentNumber\": \"12345678\"\n    },\n    \"type\": [\"GenericCredential\"]\n  },\n  \"proofType\": \"Ed25519Signature2018\",\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/didcomm/offer",
+            "description": "**Override Ed25519.** Crea invitación OOB + pending offer con `Ed25519Signature2018`. Por defecto (sin proofType o con BbsBlsSignature2020) el issuer emite BBS+ (QUARK-990). `invitation` es short URL `/oob/:pendingOfferId`."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) pm.collectionVariables.set('invitationUrl', res.invitation);",
+                  "if (res.pendingOfferId) pm.collectionVariables.set('pendingOfferId', res.pendingOfferId);",
+                  "if (res.expiresAt) pm.collectionVariables.set('pendingOfferExpiresAt', res.expiresAt);",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>DIDComm Offer QR</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingOfferId: ${res.pendingOfferId || ''} · expiresAt: ${res.expiresAt || ''}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /{{issuerId}}/didcomm/offer (BBS+ BbsBlsSignature2020)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credential\": {\n    \"credentialSubject\": {\n      \"name\": \"Juan Perez\",\n      \"documentNumber\": \"12345678\"\n    },\n    \"type\": [\"GenericCredential\"]\n  },\n  \"proofType\": \"BbsBlsSignature2020\",\n  \"expiresInSeconds\": 1800\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/didcomm/offer",
+            "description": "**QUARK-990 / default BBS+.** Emite VC JSON-LD con `BbsBlsSignature2020` (clave `#key-bbs-ldp`). Mismo flujo OOB + QR que el offer Ed25519. Omitir `proofType` también resulta en BBS (default identity-core)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.invitation) pm.collectionVariables.set('invitationUrl', res.invitation);",
+                  "if (res.pendingOfferId) pm.collectionVariables.set('pendingOfferId', res.pendingOfferId);",
+                  "if (res.expiresAt) pm.collectionVariables.set('pendingOfferExpiresAt', res.expiresAt);",
+                  "if (res.invitation) {",
+                  "  const uri = res.invitation;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>DIDComm Offer QR (BBS+)</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "      <p style='font-size:12px;color:#666'>pendingOfferId: ${res.pendingOfferId || ''} · expiresAt: ${res.expiresAt || ''}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "POST /{{issuerId}}/openid4vc/offer (OID4VCI)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"credentialConfigurationId\": \"{{credentialConfigurationId}}\",\n  \"vct\": \"{{vct}}\",\n  \"claims\": {\n    \"name\": \"Juan Perez\",\n    \"email\": \"juan@example.com\",\n    \"role\": \"member\"\n  },\n  \"claimsDisplay\": {\n    \"name\": { \"name\": \"Nombre completo\", \"locale\": \"es\" },\n    \"email\": { \"name\": \"Correo electrónico\", \"locale\": \"es\" },\n    \"role\": { \"name\": \"Rol\", \"locale\": \"es\" }\n  },\n  \"disclosureFrame\": {\n    \"_sd\": [\"email\", \"role\"]\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/openid4vc/offer"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "if (res.offerUri) pm.collectionVariables.set('offerUri', res.offerUri);",
+                  "if (res.issuanceSessionId) pm.collectionVariables.set('issuanceSessionId', res.issuanceSessionId);",
+                  "if (res.offerUri) {",
+                  "  const uri = res.offerUri;",
+                  "  pm.visualizer.set(`",
+                  "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                  "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                  "      <h3 style='margin-bottom:16px'>Credential Offer QR</h3>",
+                  "      <div id='qr'></div>",
+                  "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                  "    </div>",
+                  "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                  "  `, { uri });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Records ({{issuerId}})",
+      "item": [
+        {
+          "name": "GET /{{issuerId}}/records/types",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/types"
+          }
+        },
+        {
+          "name": "GET /{{issuerId}}/records?type=ConnectionRecord",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records?type=ConnectionRecord&page=1&limit=20",
+              "host": [
+                "{{issuerBaseUrl}}"
+              ],
+              "path": [
+                "{{issuerId}}",
+                "records"
+              ],
+              "query": [
+                {
+                  "key": "type",
+                  "value": "ConnectionRecord"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /{{issuerId}}/records/:recordType/:recordId",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{issuerId}}/records/{{recordType}}/{{recordId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 - Credo OID4VCI Routes (no obvias)",
+      "item": [
+        {
+          "name": "GET /.well-known/openid-credential-issuer/.../{{issuerId}}",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/.well-known/openid-credential-issuer/openid4vc-flow/{{issuerId}}"
+          }
+        },
+        {
+          "name": "GET /.well-known/oauth-authorization-server/.../{{issuerId}}",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/.well-known/oauth-authorization-server/openid4vc-flow/{{issuerId}}"
+          }
+        },
+        {
+          "name": "GET /openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/openid-credential-issuer"
+          }
+        },
+        {
+          "name": "GET /openid4vc-flow/{{issuerId}}/.well-known/oauth-authorization-server",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/.well-known/oauth-authorization-server"
+          }
+        },
+        {
+          "name": "GET /openid4vc-flow/{{issuerId}}/offers/{{offerId}}",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/offers/{{offerId}}"
+          }
+        },
+        {
+          "name": "POST /openid4vc-flow/{{issuerId}}/token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/x-www-form-urlencoded"
+              }
+            ],
+            "body": {
+              "mode": "urlencoded",
+              "urlencoded": [
+                {
+                  "key": "grant_type",
+                  "value": "urn:ietf:params:oauth:grant-type:pre-authorized_code",
+                  "type": "text"
+                },
+                {
+                  "key": "pre-authorized_code",
+                  "value": "",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/token"
+          }
+        },
+        {
+          "name": "POST /openid4vc-flow/{{issuerId}}/credential",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer <access_token>"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"format\": \"dc+sd-jwt\",\n  \"proof\": {\n    \"proof_type\": \"jwt\",\n    \"jwt\": \"<holder-proof-jwt>\"\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/credential"
+          }
+        },
+        {
+          "name": "POST /openid4vc-flow/{{issuerId}}/notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notification_id\": \"\",\n  \"event\": \"\"\n}"
+            },
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{issuerId}}/notification"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "name": "@quarkid/identity-core",
+  "name": "@identity/core",
   "version": "0.1.0",
   "description": "Credo-TS agent utilities for QuarkID 2.0 — agents, wallets, KMS, DIDs, credentials and transport",
   "license": "MIT",

@@ -1,15 +1,15 @@
 # ─────────────────────────────────────────────────────────────
-# Quark identity stack — local dev
+# Identity stack — local dev
 #
 # Infrastructure:  postgres · rabbitmq · pgadmin (opcional)
-# Identity APIs:   quark-issuer-service   :9001
-#                  quark-verifier-service :9002
-#                  quark-holder-service   :9005
+# Identity APIs:   identity-issuer-service   :9001
+#                  identity-verifier-service :9002
+#                  identity-holder-service   :9005
 #
 # Usage:
 #   docker compose up -d
-#   docker compose up -d quark-issuer-service quark-holder-service
-#   docker compose logs -f quark-holder-service
+#   docker compose up -d identity-issuer-service identity-holder-service
+#   docker compose logs -f identity-holder-service
 # ─────────────────────────────────────────────────────────────
 
 services:
@@ -17,15 +17,15 @@ services:
     image: rabbitmq:3.13-management-alpine
     restart: unless-stopped
     environment:
-      RABBITMQ_DEFAULT_USER: quarkid
-      RABBITMQ_DEFAULT_PASS: quarkid
+      RABBITMQ_DEFAULT_USER: identity
+      RABBITMQ_DEFAULT_PASS: identity
     ports:
       - "5672:5672"
       - "15672:15672"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      - quarkid
+      - identity
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -36,18 +36,18 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: quarkid
-      POSTGRES_PASSWORD: quarkid
-      POSTGRES_MULTIPLE_DATABASES: quarkid_holder,quarkid_issuer,quarkid_verifier
+      POSTGRES_USER: identity
+      POSTGRES_PASSWORD: identity
+      POSTGRES_MULTIPLE_DATABASES: identity_holder,identity_issuer,identity_verifier
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./scripts/postgres-init.sh:/docker-entrypoint-initdb.d/init.sh:ro
     ports:
       - "5432:5432"
     networks:
-      - quarkid
+      - identity
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U quarkid"]
+      test: ["CMD-SHELL", "pg_isready -U identity"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -56,7 +56,7 @@ services:
     image: dpage/pgadmin4:9
     restart: unless-stopped
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@quarkid.dev
+      PGADMIN_DEFAULT_EMAIL: admin@identity.dev
       PGADMIN_DEFAULT_PASSWORD: admin123
       PGADMIN_CONFIG_SERVER_MODE: "False"
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
@@ -65,81 +65,81 @@ services:
     volumes:
       - pgadmin_data:/var/lib/pgadmin
     networks:
-      - quarkid
+      - identity
     depends_on:
       postgres:
         condition: service_healthy
 
   # Build context: repo root — Dockerfiles in */source copy packages/identity-core.
 
-  quark-issuer-service:
+  identity-issuer-service:
     build:
       context: .
-      dockerfile: quark-issuer-service/source/Dockerfile
+      dockerfile: identity-issuer-service/source/Dockerfile
     restart: unless-stopped
-    env_file: quark-issuer-service/source/.env
+    env_file: identity-issuer-service/source/.env
     environment:
       PORT: 9001
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: quarkid
-      DB_PASSWORD: quarkid
-      DB_DATABASE: quarkid_issuer
-      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_issuer
-      ASKAR_STORE_ID: quarkid_issuer
-      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      DB_USERNAME: identity
+      DB_PASSWORD: identity
+      DB_DATABASE: identity_issuer
+      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_issuer
+      ASKAR_STORE_ID: identity_issuer
+      ASKAR_STORE_KEY: identity-dev-askar-store-key
       NODE_ENV: development
-      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
     ports:
       - "9001:9001"
     networks:
-      - quarkid
+      - identity
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
-  quark-verifier-service:
+  identity-verifier-service:
     build:
       context: .
-      dockerfile: quark-verifier-service/source/Dockerfile
+      dockerfile: identity-verifier-service/source/Dockerfile
     restart: unless-stopped
-    env_file: quark-verifier-service/source/.env
+    env_file: identity-verifier-service/source/.env
     environment:
       PORT: 9002
-      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_verifier
-      ASKAR_STORE_ID: quarkid_verifier
-      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_verifier
+      ASKAR_STORE_ID: identity_verifier
+      ASKAR_STORE_KEY: identity-dev-askar-store-key
       NODE_ENV: development
-      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
     ports:
       - "9002:9002"
     networks:
-      - quarkid
+      - identity
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
 
-  quark-holder-service:
+  identity-holder-service:
     build:
       context: .
-      dockerfile: quark-holder-service/source/Dockerfile
+      dockerfile: identity-holder-service/source/Dockerfile
     restart: unless-stopped
-    env_file: quark-holder-service/source/.env
+    env_file: identity-holder-service/source/.env
     environment:
       PORT: 9005
-      DATABASE_URL: postgresql://quarkid:quarkid@postgres:5432/quarkid_holder
-      ASKAR_STORE_ID: quarkid_holder
-      ASKAR_STORE_KEY: quarkid-dev-askar-store-key
+      DATABASE_URL: postgresql://identity:identity@postgres:5432/identity_holder
+      ASKAR_STORE_ID: identity_holder
+      ASKAR_STORE_KEY: identity-dev-askar-store-key
       NODE_ENV: development
-      RABBITMQ_URL: amqp://quarkid:quarkid@rabbitmq:5672
+      RABBITMQ_URL: amqp://identity:identity@rabbitmq:5672
     ports:
       - "9005:9005"
     networks:
-      - quarkid
+      - identity
     depends_on:
       postgres:
         condition: service_healthy
@@ -152,5 +152,5 @@ volumes:
   rabbitmq_data:
 
 networks:
-  quarkid:
+  identity:
     driver: bridge

@@ -1,0 +1,60 @@
+name: identity_wallet
+description: Identity SSI wallet — holder de credenciales OID4VCI / OID4VP.
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+  flutter: '>=3.19.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.6
+  mobile_scanner: ^5.0.0
+  app_links: ^6.0.0
+
+  # Render de logos en formato SVG (ej. logo BA de las credenciales)
+  flutter_svg: ^2.0.10
+
+  # Secure storage (usado directamente para verificar si el wallet existe)
+  flutter_secure_storage: ^9.2.4
+
+  # SDK local
+  identity_core_dart:
+    path: ../packages/identity-core-dart
+
+  # State management
+  flutter_riverpod: ^2.6.1
+
+  # Navegación
+  go_router: ^14.6.2
+
+  # Biometría
+  local_auth: ^2.2.0
+
+  # PIN input
+  pinput: ^3.0.0
+
+  # Directorio de documentos de la app
+  path_provider: ^2.1.4
+
+  # Tipografía Manrope del design system (descarga/cachea las fuentes en runtime)
+  google_fonts: ^6.2.1
+
+  # Browser in-app para OID4VCI authorization_code (issuer EUDI)
+  webview_flutter: ^4.10.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - public/images/icons/
+    - public/images/logo/
+    - public/images/categorias/
+    - public/images/login/
+    - assets/trust/eudi/

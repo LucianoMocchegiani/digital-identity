@@ -307,7 +307,7 @@ function qrOfferExec(cred) {
     "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
     "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
     `      <h3 style='margin-bottom:16px'>${cred.label} — Offer QR</h3>`,
-    "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con quark-wallet</p>",
+    "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
     "      <div id='qr'></div>",
     "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
     '    </div>',
@@ -340,7 +340,7 @@ function qrRequestExec(cred) {
     "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
     "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
     `      <h3 style='margin-bottom:16px'>${cred.label} — Request QR</h3>`,
-    "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con quark-wallet</p>",
+    "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
     "      <div id='qr'></div>",
     "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
     '    </div>',
@@ -439,7 +439,7 @@ function walletPause(name, uriVar) {
       method: 'GET',
       url: '{{gatewayBaseUrl}}/v1/health',
       description:
-        '**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con quark-wallet.',
+        '**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet.',
     },
     event: [
       {
@@ -620,7 +620,7 @@ const collection = {
   info: {
     name: 'QuarkID 2.0 - Demo Multi-tenant GCBA · UADE · IOMA · RENAPER',
     _postman_id: 'e5f8a1b4-3c6d-7e9f-b5a2-0d6e9f8c4b73',
-    description: `Demo multi-organización vía **API Gateway** + **quark-wallet** (sin holder en Postman).
+    description: `Demo multi-organización vía **API Gateway** + **identity-wallet** (sin holder en Postman).
 
 **5 credenciales · 4 emisores:** GCBA (Ciudadano + Empleado), UADE, IOMA, RENAPER.
 
