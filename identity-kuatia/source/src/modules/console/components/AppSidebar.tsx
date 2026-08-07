@@ -1,9 +1,9 @@
-'use client'
+﻿'use client'
 
 /**
  * Navegación de consola con íconos + bloque de usuario (mockup).
  */
-import { BrandMark } from '@/design-system'
+import { BrandMark, IconDoc } from '@/design-system'
 import { useAuth } from '@/shared/auth/AuthProvider'
 import { cn } from '@/shared/lib/cn'
 import Link from 'next/link'
@@ -24,7 +24,7 @@ export function AppSidebar() {
   return (
     <aside
       className={cn(
-        'relative z-10 border-white/10 bg-[var(--kuatia-panel)]/60 backdrop-blur',
+        'relative z-10 border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/60 backdrop-blur',
         'flex flex-col border-b px-4 py-4 md:w-64 md:shrink-0 md:border-b-0 md:border-r md:py-6 lg:w-72',
       )}
     >
@@ -46,7 +46,7 @@ export function AppSidebar() {
                 'inline-flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-base transition md:w-full md:px-3.5 md:py-3',
                 active
                   ? 'bg-[var(--kuatia-accent)]/15 text-[var(--kuatia-accent)]'
-                  : 'text-[var(--kuatia-muted)] hover:bg-white/5 hover:text-[var(--kuatia-text)]',
+                  : 'text-[var(--kuatia-muted)] hover:bg-[var(--kuatia-hover)] hover:text-[var(--kuatia-text)]',
               )}
             >
               <Icon size={18} />
@@ -63,10 +63,23 @@ export function AppSidebar() {
         })}
       </nav>
 
+      <Link
+        href="/docs"
+        className={cn(
+          'mt-2 inline-flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-base transition',
+          'text-[var(--kuatia-muted)] hover:bg-[var(--kuatia-hover)] hover:text-[var(--kuatia-text)]',
+          'md:mt-auto md:w-full md:px-3.5 md:py-3',
+          pathname.startsWith('/docs') && 'bg-[var(--kuatia-accent)]/15 text-[var(--kuatia-accent)]',
+        )}
+      >
+        <IconDoc size={18} />
+        Docs
+      </Link>
+
       {account ? (
         <Link
           href="/app/cuenta"
-          className="mt-4 hidden items-center gap-3 rounded-xl border border-white/10 p-3 hover:bg-white/5 md:flex"
+          className="mt-3 hidden items-center gap-3 rounded-xl border border-[var(--kuatia-border)] p-3 hover:bg-[var(--kuatia-hover)] md:flex"
         >
           <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--kuatia-accent)] font-semibold text-[var(--kuatia-ink)]">
             {initials}

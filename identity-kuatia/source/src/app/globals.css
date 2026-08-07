@@ -1,21 +1,49 @@
 @import "tailwindcss";
 
-:root {
-  /* long-1 dark */
+/*
+ * Temas Kuatia — default dark (marca long-1).
+ * Toggle: data-theme="light" | "dark" en <html>.
+ */
+:root,
+[data-theme='dark'] {
   --kuatia-bg: #050a10;
   --kuatia-panel: #0b1520;
   --kuatia-text: #f3f7f8;
   --kuatia-muted: #8b9aab;
   --kuatia-accent: #00a89d;
   --kuatia-ink: #041016;
+  --kuatia-border: rgb(255 255 255 / 0.1);
+  --kuatia-border-subtle: rgb(255 255 255 / 0.05);
+  --kuatia-hover: rgb(255 255 255 / 0.06);
+  --kuatia-code-bg: rgb(0 0 0 / 0.4);
+  --kuatia-overlay: rgb(0 0 0 / 0.55);
+  --kuatia-glow: rgb(0 168 157 / 0.28);
+  --kuatia-atmosphere-mid: #071018;
   --background: var(--kuatia-bg);
   --foreground: var(--kuatia-text);
 
-  /* Escala tipográfica base (mobile-first → sube en md+) */
-  --text-body: 1rem; /* 16px */
-  --text-body-lg: 1.125rem; /* 18px */
-  --text-ui: 0.9375rem; /* 15px labels/meta */
-  --text-caption: 0.8125rem; /* 13px hints */
+  --text-body: 1rem;
+  --text-body-lg: 1.125rem;
+  --text-ui: 0.9375rem;
+  --text-caption: 0.8125rem;
+}
+
+[data-theme='light'] {
+  --kuatia-bg: #eef3f5;
+  --kuatia-panel: #ffffff;
+  --kuatia-text: #0c1520;
+  --kuatia-muted: #5c6d7e;
+  --kuatia-accent: #00968c;
+  --kuatia-ink: #041016;
+  --kuatia-border: rgb(12 21 32 / 0.12);
+  --kuatia-border-subtle: rgb(12 21 32 / 0.07);
+  --kuatia-hover: rgb(12 21 32 / 0.06);
+  --kuatia-code-bg: rgb(12 21 32 / 0.05);
+  --kuatia-overlay: rgb(12 21 32 / 0.35);
+  --kuatia-glow: rgb(0 150 140 / 0.18);
+  --kuatia-atmosphere-mid: #e4ecef;
+  --background: var(--kuatia-bg);
+  --foreground: var(--kuatia-text);
 }
 
 @theme inline {
@@ -26,12 +54,22 @@
 }
 
 @media (min-width: 768px) {
-  :root {
+  :root,
+  [data-theme='dark'],
+  [data-theme='light'] {
     --text-body: 1.0625rem;
     --text-body-lg: 1.25rem;
     --text-ui: 1rem;
     --text-caption: 0.875rem;
   }
+}
+
+html {
+  color-scheme: dark;
+}
+
+html[data-theme='light'] {
+  color-scheme: light;
 }
 
 body {

@@ -1,4 +1,4 @@
-import { cn } from '@/shared/lib/cn'
+﻿import { cn } from '@/shared/lib/cn'
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger'
@@ -9,8 +9,8 @@ const variants: Record<Variant, string> = {
     'bg-[var(--kuatia-accent)] text-[var(--kuatia-ink)] hover:brightness-110 disabled:opacity-50',
   secondary:
     'border border-[var(--kuatia-accent)]/70 text-[var(--kuatia-text)] hover:bg-[var(--kuatia-accent)]/10 disabled:opacity-50',
-  ghost: 'text-[var(--kuatia-muted)] hover:text-[var(--kuatia-text)] hover:bg-white/5',
-  danger: 'bg-red-500/15 text-red-300 border border-red-500/40 hover:bg-red-500/25',
+  ghost: 'text-[var(--kuatia-muted)] hover:text-[var(--kuatia-text)] hover:bg-[var(--kuatia-hover)]',
+  danger: 'bg-red-500/15 text-red-600 border border-red-500/40 hover:bg-red-500/25',
 }
 
 /**

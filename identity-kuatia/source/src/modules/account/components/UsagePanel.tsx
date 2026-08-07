@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Uso actual: card de transacciones + rate limit (mockup 05).
@@ -32,7 +32,7 @@ export function UsagePanel() {
         description="Cuota mensual y rate limit de tu cuenta."
         action={
           usage ? (
-            <div className="rounded-xl border border-white/10 px-3 py-2 text-sm text-[var(--kuatia-muted)]">
+            <div className="rounded-xl border border-[var(--kuatia-border)] px-3 py-2 text-sm text-[var(--kuatia-muted)]">
               Período <span className="text-[var(--kuatia-text)]">{usage.periodKey}</span>
             </div>
           ) : null

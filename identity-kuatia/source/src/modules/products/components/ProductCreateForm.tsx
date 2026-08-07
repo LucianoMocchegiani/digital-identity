@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Formulario de alta de producto (página o contenido de modal).
@@ -63,7 +63,7 @@ export function ProductCreateForm({
     return (
       <div className="space-y-4">
         <Alert tone="info">Guardá esta API key ahora: no se vuelve a mostrar.</Alert>
-        <code className="block break-all rounded-xl bg-black/40 p-3 text-base text-[var(--kuatia-accent)]">
+        <code className="block break-all rounded-xl bg-[var(--kuatia-code-bg)] p-3 text-base text-[var(--kuatia-accent)]">
           {secret}
         </code>
         <Button

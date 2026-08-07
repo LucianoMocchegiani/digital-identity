@@ -1,4 +1,4 @@
-import { cn } from '@/shared/lib/cn'
+﻿import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
 
 /**
@@ -15,7 +15,7 @@ export function Panel({
   return (
     <div
       className={cn(
-        'rounded-2xl border border-white/10 bg-[var(--kuatia-panel)]/80 p-5 backdrop-blur-sm',
+        'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/80 p-5 backdrop-blur-sm',
         className,
       )}
     >

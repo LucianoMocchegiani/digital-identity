@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
@@ -30,7 +30,7 @@ export function Modal({
       <button
         type="button"
         aria-label="Cerrar"
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+        className="absolute inset-0 bg-[var(--kuatia-overlay)] backdrop-blur-sm"
         onClick={onClose}
       />
       <div
@@ -41,7 +41,7 @@ export function Modal({
           className,
         )}
       >
-        <div className="flex items-start justify-between gap-4 border-b border-white/10 px-5 py-4 sm:px-6">
+        <div className="flex items-start justify-between gap-4 border-b border-[var(--kuatia-border)] px-5 py-4 sm:px-6">
           <div>
             <h2 className="font-display text-2xl font-semibold">{title}</h2>
             {description ? <p className="mt-1 text-base text-[var(--kuatia-muted)]">{description}</p> : null}

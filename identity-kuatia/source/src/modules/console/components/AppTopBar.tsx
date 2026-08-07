@@ -1,10 +1,10 @@
-'use client'
+﻿'use client'
 
-import { IconHelp } from '@/design-system'
+import { IconDoc, ThemeToggle } from '@/design-system'
 import { useAuth } from '@/shared/auth/AuthProvider'
 import Link from 'next/link'
 
-/** Barra superior de consola (ayuda + avatar). */
+/** Barra superior de consola (tema + docs + avatar). */
 export function AppTopBar() {
   const { account } = useAuth()
   const initials = (account?.name || 'U')
@@ -15,21 +15,19 @@ export function AppTopBar() {
     .toUpperCase()
 
   return (
-    <header className="mb-6 flex items-center justify-end gap-3 border-b border-white/5 pb-4">
-      <a
-        href="#estandares"
-        className="grid h-10 w-10 place-items-center rounded-full text-[var(--kuatia-muted)] hover:bg-white/5 hover:text-[var(--kuatia-text)]"
-        title="Ayuda"
-        onClick={(e) => {
-          e.preventDefault()
-          window.open('mailto:hola@kuatia.xyz', '_blank')
-        }}
+    <header className="mb-6 flex items-center justify-end gap-3 border-b border-[var(--kuatia-border-subtle)] pb-4">
+      <ThemeToggle />
+      <Link
+        href="/docs"
+        className="inline-flex h-10 items-center gap-2 rounded-full px-3 text-sm text-[var(--kuatia-muted)] hover:bg-[var(--kuatia-hover)] hover:text-[var(--kuatia-text)] sm:text-base"
+        title="Documentación"
       >
-        <IconHelp size={20} />
-      </a>
+        <IconDoc size={18} />
+        <span className="hidden sm:inline">Docs</span>
+      </Link>
       <Link
         href="/app/cuenta"
-        className="inline-flex items-center gap-2 rounded-full border border-white/10 py-1 pl-1 pr-3 hover:bg-white/5"
+        className="inline-flex items-center gap-2 rounded-full border border-[var(--kuatia-border)] py-1 pl-1 pr-3 hover:bg-[var(--kuatia-hover)]"
       >
         <span className="grid h-8 w-8 place-items-center rounded-full bg-[var(--kuatia-accent)] text-sm font-semibold text-[var(--kuatia-ink)]">
           {initials}

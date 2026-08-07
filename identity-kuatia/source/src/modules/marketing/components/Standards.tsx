@@ -1,4 +1,5 @@
 import { IconCredentials, IconShield, SectionEyebrow } from '@/design-system'
+import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 
 const items = [
@@ -28,7 +29,10 @@ export function Standards() {
         Estándares abiertos
       </h2>
       <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:text-lg lg:text-xl">
-        Basado en estándares abiertos para máxima interoperabilidad y control del usuario.
+        Basado en estándares abiertos para máxima interoperabilidad y control del usuario.{' '}
+        <Link href="/docs" className="text-[var(--kuatia-accent)] hover:underline">
+          Ver guía API →
+        </Link>
       </p>
       <div className="mt-10 grid gap-8 md:grid-cols-3 lg:gap-12">
         {items.map(({ title, body, Icon }) => (

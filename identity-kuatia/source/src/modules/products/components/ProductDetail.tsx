@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Detalle de producto: editar nombre, rotar/revocar key (mockup 07).
@@ -139,7 +139,7 @@ export function ProductDetail() {
           <div>
             <p className="text-base text-[var(--kuatia-muted)]">API key</p>
             <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center">
-              <code className="flex-1 rounded-xl border border-white/10 bg-black/30 px-3 py-3 font-mono text-sm">
+              <code className="flex-1 rounded-xl border border-[var(--kuatia-border)] bg-[var(--kuatia-code-bg)] px-3 py-3 font-mono text-sm">
                 {prefix ? `${prefix}••••••••` : 'Sin key activa'}
               </code>
               <div className="flex flex-wrap gap-2">
@@ -169,7 +169,7 @@ export function ProductDetail() {
               </Button>
             </div>
           </form>
-          <div className="border-t border-white/10 pt-4">
+          <div className="border-t border-[var(--kuatia-border)] pt-4">
             <Button variant="ghost" disabled={pending} onClick={() => void onDelete()}>
               Eliminar producto
             </Button>

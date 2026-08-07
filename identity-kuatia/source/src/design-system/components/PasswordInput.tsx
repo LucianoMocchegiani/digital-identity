@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { cn } from '@/shared/lib/cn'
 import { useState, type InputHTMLAttributes } from 'react'
@@ -16,7 +16,7 @@ export function PasswordInput({
       <input
         type={visible ? 'text' : 'password'}
         className={cn(
-          'h-12 w-full rounded-xl border border-white/10 bg-[var(--kuatia-panel)] px-4 pr-12 text-base text-[var(--kuatia-text)]',
+          'h-12 w-full rounded-xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)] px-4 pr-12 text-base text-[var(--kuatia-text)]',
           'placeholder:text-[var(--kuatia-muted)]',
           'focus:border-[var(--kuatia-accent)]/60 focus:outline-none focus:ring-2 focus:ring-[var(--kuatia-accent)]/25',
           'disabled:opacity-50',

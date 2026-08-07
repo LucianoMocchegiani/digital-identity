@@ -1,4 +1,4 @@
-import { Button, IconArrowRight, IconBolt, IconCode } from '@/design-system'
+﻿import { Button, IconArrowRight, IconBolt, IconCode } from '@/design-system'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 
@@ -6,7 +6,7 @@ import { MarketingShell } from './MarketingShell'
 export function FinalCta() {
   return (
     <MarketingShell as="section" className="py-16">
-      <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-[var(--kuatia-panel)]/70 px-6 py-8 md:flex-row md:items-center md:px-10 lg:px-14 lg:py-12">
+      <div className="relative overflow-hidden rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/70 px-6 py-8 md:flex-row md:items-center md:px-10 lg:px-14 lg:py-12">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 opacity-30"
@@ -36,12 +36,12 @@ export function FinalCta() {
                 <IconArrowRight size={18} />
               </Button>
             </Link>
-            <a href="#estandares">
+            <Link href="/docs">
               <Button size="lg" variant="secondary">
                 <IconCode size={18} />
                 Ver docs
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

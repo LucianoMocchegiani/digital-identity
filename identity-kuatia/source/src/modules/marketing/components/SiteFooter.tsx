@@ -1,4 +1,4 @@
-import { BrandMark } from '@/design-system'
+﻿import { BrandMark } from '@/design-system'
 import { MarketingShell } from './MarketingShell'
 
 const CONTACT_EMAIL = 'hola@kuatia.xyz'
@@ -7,7 +7,7 @@ const CONTACT_PHONE = '+595 21 000 000'
 /** Pie de sitio: productos, developer y contacto. */
 export function SiteFooter() {
   return (
-    <footer className="mt-8 border-t border-white/10">
+    <footer className="mt-8 border-t border-[var(--kuatia-border)]">
       <MarketingShell className="grid gap-10 py-12 md:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-1">
           <BrandMark size="sm" />
@@ -30,12 +30,12 @@ export function SiteFooter() {
           </p>
           <ul className="mt-3 space-y-2 text-base text-[var(--kuatia-text)]/80">
             <li>
-              <a href="#estandares" className="hover:text-[var(--kuatia-accent)]">
+              <a href="/docs" className="hover:text-[var(--kuatia-accent)]">
                 Docs
               </a>
             </li>
             <li>
-              <a href="#estandares" className="hover:text-[var(--kuatia-accent)]">
+              <a href="/docs/empezar" className="hover:text-[var(--kuatia-accent)]">
                 API
               </a>
             </li>
@@ -59,7 +59,7 @@ export function SiteFooter() {
           </ul>
         </div>
       </MarketingShell>
-      <div className="border-t border-white/5 py-4 text-center text-sm text-[var(--kuatia-muted)]">
+      <div className="border-t border-[var(--kuatia-border-subtle)] py-4 text-center text-sm text-[var(--kuatia-muted)]">
         © {new Date().getFullYear()} Kuatia
       </div>
     </footer>

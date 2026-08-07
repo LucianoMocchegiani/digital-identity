@@ -1,7 +1,7 @@
 import { cn } from '@/shared/lib/cn'
 import type { HTMLAttributes, ReactNode } from 'react'
 
-type ShellTag = 'div' | 'section' | 'header' | 'footer'
+type ShellTag = 'div' | 'section' | 'header' | 'footer' | 'main'
 
 type Props = {
   children: ReactNode

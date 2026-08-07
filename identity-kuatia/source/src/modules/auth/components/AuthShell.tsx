@@ -1,4 +1,4 @@
-import { Atmosphere } from '@/design-system'
+﻿import { Atmosphere } from '@/design-system'
 import { MarketingHeader } from '@/modules/marketing/components/MarketingHeader'
 import type { ReactNode } from 'react'
 
@@ -34,7 +34,7 @@ export function AuthShell({
               ) : null}
               <div className="mt-6 sm:mt-7">{children}</div>
               {footer ? (
-                <div className="mt-6 border-t border-white/10 pt-5 text-center text-base text-[var(--kuatia-muted)]">
+                <div className="mt-6 border-t border-[var(--kuatia-border)] pt-5 text-center text-base text-[var(--kuatia-muted)]">
                   {footer}
                 </div>
               ) : null}

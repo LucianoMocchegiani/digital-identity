@@ -1,7 +1,8 @@
 /**
- * Layout raíz de la app: fuentes, metadata SEO y `AuthProvider` global.
+ * Layout raíz de la app: fuentes, metadata SEO, tema y `AuthProvider`.
  */
 import { AuthProvider } from '@/shared/auth/AuthProvider'
+import { ThemeProvider } from '@/shared/theme/ThemeProvider'
 import type { Metadata } from 'next'
 import { DM_Sans, Syne } from 'next/font/google'
 import './globals.css'
@@ -23,12 +24,20 @@ export const metadata: Metadata = {
     'Emití y verificá documentos, entradas a eventos y membresías con OpenID4VC.',
 }
 
-/** HTML raíz con providers de sesión. */
+/** Evita flash de tema incorrecto antes de hidratar. */
+const themeBootScript = `(function(){try{var t=localStorage.getItem('kuatia-theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia('(prefers-color-scheme: light)').matches?'light':'dark';}document.documentElement.setAttribute('data-theme',t);}catch(e){document.documentElement.setAttribute('data-theme','dark');}})();`
+
+/** HTML raíz con providers de sesión y tema. */
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
+      </head>
       <body className={`${body.variable} ${display.variable} antialiased`}>
-        <AuthProvider>{children}</AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ThemeProvider>
       </body>
     </html>
   )

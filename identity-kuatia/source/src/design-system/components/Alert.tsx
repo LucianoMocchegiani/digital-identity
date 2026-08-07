@@ -15,9 +15,9 @@ export function Alert({
   className?: string
 }) {
   const tones = {
-    error: 'border-red-500/40 bg-red-500/10 text-red-200',
+    error: 'border-red-500/40 bg-red-500/10 text-red-700',
     info: 'border-[var(--kuatia-accent)]/40 bg-[var(--kuatia-accent)]/10 text-[var(--kuatia-text)]',
-    success: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200',
+    success: 'border-emerald-500/40 bg-emerald-500/10 text-emerald-800',
   }
 
   return (

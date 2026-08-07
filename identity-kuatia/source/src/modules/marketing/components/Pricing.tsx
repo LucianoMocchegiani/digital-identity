@@ -1,4 +1,4 @@
-import {
+﻿import {
   Badge,
   Button,
   CheckList,
@@ -81,7 +81,7 @@ export function Pricing() {
             className={
               plan.highlight
                 ? 'relative rounded-2xl border border-[var(--kuatia-accent)]/60 bg-[var(--kuatia-panel)] p-6 lg:p-8'
-                : 'rounded-2xl border border-white/10 bg-[var(--kuatia-panel)]/50 p-6 lg:p-8'
+                : 'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/50 p-6 lg:p-8'
             }
           >
             {plan.highlight ? (

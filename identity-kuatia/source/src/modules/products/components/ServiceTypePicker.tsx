@@ -1,4 +1,4 @@
-import { IconCredentials, IconShield } from '@/design-system'
+﻿import { IconCredentials, IconShield } from '@/design-system'
 import { cn } from '@/shared/lib/cn'
 import type { ResourceService } from '@/shared/types/billing'
 
@@ -38,7 +38,7 @@ export function ServiceTypePicker({
               'rounded-xl border p-4 text-left transition',
               active
                 ? 'border-[var(--kuatia-accent)] bg-[var(--kuatia-accent)]/10 shadow-[0_0_24px_rgba(0,168,157,0.15)]'
-                : 'border-white/10 hover:border-white/25',
+                : 'border-[var(--kuatia-border)] hover:border-[var(--kuatia-accent)]/40',
             )}
           >
             <Icon size={22} className="text-[var(--kuatia-accent)]" />

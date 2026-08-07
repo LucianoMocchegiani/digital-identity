@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 /**
  * Tabla de productos issuer/verifier (consola), fiel al mockup.
@@ -90,7 +90,7 @@ export function ProductList() {
       {products.length > 0 ? (
         <Panel className="overflow-x-auto p-0">
           <table className="w-full min-w-[720px] text-left text-base">
-            <thead className="border-b border-white/10 text-sm uppercase tracking-wide text-[var(--kuatia-muted)]">
+            <thead className="border-b border-[var(--kuatia-border)] text-sm uppercase tracking-wide text-[var(--kuatia-muted)]">
               <tr>
                 <th className="px-4 py-3 font-medium">Nombre</th>
                 <th className="px-4 py-3 font-medium">Tipo</th>
@@ -104,7 +104,7 @@ export function ProductList() {
               {products.map((p) => {
                 const keyPrefix = p.resource?.apiKeys?.[0]?.prefix
                 return (
-                  <tr key={p.id} className="border-b border-white/5 last:border-0">
+                  <tr key={p.id} className="border-b border-[var(--kuatia-border-subtle)] last:border-0">
                     <td className="px-4 py-4">
                       <p className="font-medium">{p.name}</p>
                       <p className="text-sm text-[var(--kuatia-muted)]">
@@ -121,7 +121,7 @@ export function ProductList() {
                           className={
                             p.status === 'active'
                               ? 'h-2 w-2 rounded-full bg-emerald-400'
-                              : 'h-2 w-2 rounded-full bg-white/30'
+                              : 'h-2 w-2 rounded-full bg-[var(--kuatia-muted)]/50'
                           }
                         />
                         {p.status === 'active' ? 'Activo' : p.status}
@@ -142,7 +142,7 @@ export function ProductList() {
                     <td className="px-4 py-4">
                       <Link
                         href={`/app/productos/${p.id}`}
-                        className="inline-flex rounded-lg p-2 text-[var(--kuatia-muted)] hover:bg-white/5 hover:text-[var(--kuatia-text)]"
+                        className="inline-flex rounded-lg p-2 text-[var(--kuatia-muted)] hover:bg-[var(--kuatia-hover)] hover:text-[var(--kuatia-text)]"
                         aria-label="Ver producto"
                       >
                         <IconMore size={18} />

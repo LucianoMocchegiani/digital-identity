@@ -44,4 +44,5 @@ source/src/
 - **modules**: cada feature exporta UI + llamadas; se pueden sumar sin romper el shell.
 - **credentials** (futuro): issuer/verifier desde la app; el nav del console ya reserva el hueco.
 
-Mockups de referencia: `docs/mockups/` (`kuatia-long-1-dark-*`, `kuatia-app-*`).
+Docs internas del monorepo: [`docs/kuatia/`](../docs/kuatia/) (backlog, mockups).  
+Docs para clientes: rutas `/docs` en la app.
