@@ -1,5 +1,5 @@
 /**
- * Onboarding vía self-serve:
+ * CLI de onboarding vía self-serve:
  *   POST /auth/register
  *   POST /products issuer + POST /products verifier
  *     (billing provisiona tenant + activa resource automáticamente)
@@ -11,8 +11,10 @@
  */
 import 'reflect-metadata'
 
+/** Args CLI parseados (`--key value` o flags booleanos). */
 type Args = Record<string, string | boolean>
 
+/** Parsea `process.argv` estilo `--name ACME --no-issuer`. */
 function parseArgs(argv: string[]): Args {
   const out: Args = {}
   for (let i = 0; i < argv.length; i++) {
@@ -30,6 +32,12 @@ function parseArgs(argv: string[]): Args {
   return out
 }
 
+/**
+ * Helper HTTP contra `/v1` del billing local.
+ * @param path - Ruta relativa (p. ej. `/auth/register`)
+ * @param init.admin - Envía `x-admin-key`
+ * @param init.token - Envía Bearer JWT
+ */
 async function billingFetch(
   path: string,
   init?: RequestInit & { admin?: boolean; token?: string },
@@ -55,6 +63,10 @@ async function billingFetch(
   return body
 }
 
+/**
+ * Registra cuenta, opcionalmente sube plan (admin) y crea productos issuer/verifier.
+ * Imprime las API keys en stdout (única oportunidad de verlas).
+ */
 async function main() {
   const args = parseArgs(process.argv.slice(2))
   const name = String(args.name ?? '')

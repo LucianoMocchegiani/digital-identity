@@ -5,6 +5,10 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm'
 
+/**
+ * Auditoría de webhooks / eventos de pago normalizados.
+ * Tabla: `payment_events` (append-only).
+ */
 @Entity('payment_events')
 export class PaymentEvent {
   @PrimaryGeneratedColumn('uuid')
@@ -13,6 +17,7 @@ export class PaymentEvent {
   @Column({ type: 'varchar', length: 32 })
   provider!: string
 
+  /** Tipo normalizado, p. ej. `payment.succeeded`. */
   @Column({ type: 'varchar', length: 64 })
   type!: string
 
@@ -22,6 +27,7 @@ export class PaymentEvent {
   @Column({ name: 'external_id', type: 'varchar', length: 255, nullable: true })
   externalId!: string | null
 
+  /** Payload crudo del proveedor (JSON). */
   @Column({ type: 'jsonb', nullable: true })
   payload!: Record<string, unknown> | null
 

@@ -9,8 +9,14 @@ import {
 } from 'typeorm'
 import { Account } from './account.entity'
 
+/** Estado de la suscripción frente al proveedor de pago. */
 export type SubscriptionStatus = 'active' | 'canceled' | 'past_due' | 'trialing'
 
+/**
+ * Historial / snapshot de suscripción vinculado a una cuenta.
+ * Se crea una fila nueva en cada cambio de plan relevante.
+ * Tabla: `subscriptions`.
+ */
 @Entity('subscriptions')
 export class Subscription {
   @PrimaryGeneratedColumn('uuid')
@@ -23,9 +29,11 @@ export class Subscription {
   @JoinColumn({ name: 'account_id' })
   account!: Account
 
+  /** Nombre del PaymentProvider (`manual`, etc.). */
   @Column({ type: 'varchar', length: 32 })
   provider!: string
 
+  /** Id externo en el PSP, si aplica. */
   @Column({ name: 'external_id', type: 'varchar', length: 255, nullable: true })
   externalId!: string | null
 

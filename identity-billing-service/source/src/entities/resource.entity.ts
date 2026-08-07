@@ -12,9 +12,19 @@ import {
 import { Product } from './product.entity'
 import { ApiKey } from './api-key.entity'
 
+/** Servicio de identidad al que apunta el resource. */
 export type ResourceService = 'issuer' | 'verifier'
+
+/**
+ * `pending` = creado en billing, esperando provision;
+ * `active` = tenant listo; `suspended` = bloqueado.
+ */
 export type ResourceStatus = 'active' | 'suspended' | 'pending'
 
+/**
+ * Vínculo 1:1 con un tenant remoto (issuerId/verifierId = walletId).
+ * Único por (`service`, `walletId`). Tabla: `resources`.
+ */
 @Entity('resources')
 @Unique(['service', 'walletId'])
 export class Resource {

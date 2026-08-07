@@ -16,16 +16,25 @@ import { BillingService } from '../billing/billing.service'
 import { CreateProductDto } from './dto/create-product.dto'
 import { PatchProductDto } from './dto/patch-product.dto'
 
+/**
+ * CRUD de productos del usuario autenticado.
+ * Auth: JWT Bearer. Crear producto provisiona tenant en issuer/verifier.
+ */
 @Controller('products')
 @UseGuards(JwtAuthGuard)
 export class ProductsController {
   constructor(private readonly billing: BillingService) {}
 
+  /** Lista productos activos de la cuenta. */
   @Get()
   list(@Req() req: { user: { accountId: string } }) {
     return this.billing.listProducts(req.user.accountId)
   }
 
+  /**
+   * Alta de producto (issuer o verifier) + API key.
+   * Side effect: provision remoto del tenant.
+   */
   @Post()
   async create(
     @Req() req: { user: { accountId: string } },
@@ -41,6 +50,7 @@ export class ProductsController {
     return this.billing.toProductCreateResponse(created)
   }
 
+  /** Detalle de un producto propio. */
   @Get(':productId')
   get(
     @Req() req: { user: { accountId: string } },
@@ -49,6 +59,7 @@ export class ProductsController {
     return this.billing.getProduct(req.user.accountId, productId)
   }
 
+  /** Actualiza nombre/descripción. */
   @Patch(':productId')
   patch(
     @Req() req: { user: { accountId: string } },
@@ -58,6 +69,10 @@ export class ProductsController {
     return this.billing.patchProduct(req.user.accountId, productId, body)
   }
 
+  /**
+   * Soft-delete: archiva producto y suspende resources.
+   * @returns 204 No Content
+   */
   @Delete(':productId')
   @HttpCode(204)
   async remove(
@@ -67,6 +82,7 @@ export class ProductsController {
     await this.billing.archiveProduct(req.user.accountId, productId)
   }
 
+  /** Resources (issuer/verifier) asociados al producto. */
   @Get(':productId/resources')
   resources(
     @Req() req: { user: { accountId: string } },

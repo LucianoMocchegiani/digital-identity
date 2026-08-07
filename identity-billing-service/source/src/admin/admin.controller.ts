@@ -17,16 +17,22 @@ import { AdminApiKeyGuard } from './admin.guard'
 import { SetQuotaDto } from './dto/set-quota.dto'
 import { SetStatusDto } from './dto/set-status.dto'
 
+/**
+ * API de operaciones administrativas sobre cuentas, productos y keys.
+ * Auth: admin key (`x-admin-key` o `x-api-key`) vía {@link AdminApiKeyGuard}.
+ */
 @Controller('admin')
 @UseGuards(AdminApiKeyGuard)
 export class AdminController {
   constructor(private readonly billing: BillingService) {}
 
+  /** Lista todas las cuentas (vista pública). */
   @Get('accounts')
   listAccounts() {
     return this.billing.listAccounts().then((rows) => rows.map((a) => this.billing.toAccountView(a)))
   }
 
+  /** Detalle de cuenta + uso del período actual. */
   @Get('accounts/:accountId')
   async getAccount(@Param('accountId', ParseUUIDPipe) accountId: string) {
     const account = await this.billing.getAccount(accountId)
@@ -34,6 +40,7 @@ export class AdminController {
     return { ...this.billing.toAccountView(account), usage }
   }
 
+  /** Cambia el plan comercial de la cuenta (puede archivar productos extra). */
   @Post('accounts/:accountId/plan')
   async setPlan(
     @Param('accountId', ParseUUIDPipe) accountId: string,
@@ -43,6 +50,7 @@ export class AdminController {
     return this.billing.toAccountView(account)
   }
 
+  /** Cambia status: active | suspended | past_due. */
   @Post('accounts/:accountId/status')
   async setStatus(
     @Param('accountId', ParseUUIDPipe) accountId: string,
@@ -52,6 +60,7 @@ export class AdminController {
     return this.billing.toAccountView(account)
   }
 
+  /** Override de cupos (maxProducts, RPM, cuota mensual) sin cambiar el plan id. */
   @Post('accounts/:accountId/quota')
   async setQuota(
     @Param('accountId', ParseUUIDPipe) accountId: string,
@@ -68,6 +77,7 @@ export class AdminController {
     return this.billing.toAccountView(account)
   }
 
+  /** Inicia checkout con el PaymentProvider configurado. */
   @Post('accounts/:accountId/checkout')
   checkout(
     @Param('accountId', ParseUUIDPipe) accountId: string,
@@ -76,7 +86,7 @@ export class AdminController {
     return this.billing.createCheckout(accountId, normalizePlanId(body.plan))
   }
 
-  /** Crea un producto = un issuer o un verifier + key. */
+  /** Crea un producto = un issuer o un verifier + key (provisiona tenant). */
   @Post('accounts/:accountId/products')
   async createProduct(
     @Param('accountId', ParseUUIDPipe) accountId: string,
@@ -92,11 +102,13 @@ export class AdminController {
     return this.billing.toProductCreateResponse(created)
   }
 
+  /** Menú / lista de productos activos de la cuenta. */
   @Get('accounts/:accountId/menu')
   menu(@Param('accountId', ParseUUIDPipe) accountId: string) {
     return this.billing.listProducts(accountId)
   }
 
+  /** Rota la API key de un resource (sin check de ownership de cuenta). */
   @Post('resources/:resourceId/keys/rotate')
   async rotateKey(
     @Param('resourceId', ParseUUIDPipe) resourceId: string,
@@ -109,6 +121,7 @@ export class AdminController {
     }
   }
 
+  /** Revoca una API key por id. */
   @Post('api-keys/:apiKeyId/revoke')
   async revokeKey(@Param('apiKeyId', ParseUUIDPipe) apiKeyId: string) {
     await this.billing.revokeApiKey(apiKeyId)

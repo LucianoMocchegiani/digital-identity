@@ -4,6 +4,10 @@ import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
 import { environmentConfig } from './config/environment.config'
 
+/**
+ * Arranca el microservicio identity-billing (NestJS).
+ * Prefijo global `/v1` excepto `GET /health`.
+ */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule)
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))

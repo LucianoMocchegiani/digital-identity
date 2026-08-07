@@ -9,6 +9,11 @@ import {
 } from 'typeorm'
 import { Resource } from './resource.entity'
 
+/**
+ * Credencial de acceso a un resource (issuer/verifier).
+ * Solo se persiste el hash; el valor en claro se muestra una sola vez.
+ * Tabla: `api_keys`.
+ */
 @Entity('api_keys')
 export class ApiKey {
   @PrimaryGeneratedColumn('uuid')
@@ -25,12 +30,14 @@ export class ApiKey {
   @Column({ type: 'varchar', length: 32 })
   prefix!: string
 
+  /** SHA-256 hex de la key en claro. */
   @Column({ name: 'key_hash', type: 'varchar', length: 128 })
   keyHash!: string
 
   @Column({ type: 'varchar', length: 80, nullable: true })
   name!: string | null
 
+  /** Si no es null, la key está revocada. */
   @Column({ name: 'revoked_at', type: 'timestamptz', nullable: true })
   revokedAt!: Date | null
 

@@ -14,6 +14,9 @@ import type {
 export class ManualPaymentProvider implements PaymentProvider {
   readonly name = 'manual'
 
+  /**
+   * Checkout stub: no hay URL; `externalId` = `manual_{accountId}_{plan}`.
+   */
   async createCheckout(input: {
     accountId: string
     plan: PlanId
@@ -24,6 +27,10 @@ export class ManualPaymentProvider implements PaymentProvider {
     }
   }
 
+  /**
+   * Parsea body JSON `{ type?, accountId?, externalId?, plan? }`.
+   * Default type: `payment.succeeded`.
+   */
   parseWebhook(
     _headers: Record<string, string | string[] | undefined>,
     body: unknown,

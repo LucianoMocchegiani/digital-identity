@@ -10,6 +10,10 @@ import {
 } from 'typeorm'
 import { Account } from './account.entity'
 
+/**
+ * Contador de transacciones facturables por cuenta y mes UTC.
+ * Único por (`accountId`, `periodKey`). Tabla: `usage_periods`.
+ */
 @Entity('usage_periods')
 @Unique(['accountId', 'periodKey'])
 export class UsagePeriod {
@@ -27,6 +31,7 @@ export class UsagePeriod {
   @Column({ name: 'period_key', type: 'varchar', length: 7 })
   periodKey!: string
 
+  /** Transacciones consumidas en el período. */
   @Column({ name: 'tx_count', type: 'int', default: 0 })
   txCount!: number
 

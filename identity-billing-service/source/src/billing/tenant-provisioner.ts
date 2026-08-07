@@ -4,11 +4,21 @@ import type { ResourceService } from '../entities/resource.entity'
 
 /**
  * Llama a issuer/verifier para crear el tenant Credo tras el alta del producto.
+ * Side effect: HTTP POST a `/v1/issuers` o `/v1/verifiers` con la API key nueva.
  */
 @Injectable()
 export class TenantProvisioner {
   private readonly logger = new Logger(TenantProvisioner.name)
 
+  /**
+   * Provisiona el tenant remoto. No-op si `PROVISION_ON_CREATE=false`.
+   * 409 (ya existe) se trata como éxito.
+   *
+   * @param input.service - issuer | verifier
+   * @param input.walletId - issuerId / verifierId
+   * @param input.apiKey - Key recién creada (header `x-api-key`)
+   * @throws {BadGatewayException} si falta URL, no hay contacto o el remoto falla
+   */
   async provision(input: {
     service: ResourceService
     walletId: string

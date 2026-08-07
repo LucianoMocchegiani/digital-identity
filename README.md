@@ -8,7 +8,8 @@ Copia limpia (sin historial Git de los repos originales) de librerías, servicio
 |------|-------------|
 | `packages/identity-core` | SDK SSI TypeScript (Credo-TS) |
 | `packages/identity-core-dart` | SDK SSI Dart/Flutter |
-| `identity-billing-service` | Cuentas, productos, API keys, planes (Free/Paid) — `:9000` |
+| `identity-billing-service` | Cuentas, productos, API keys, planes (Free/Pro/Business) — `:9000` |
+| `identity-kuatia` | Web Kuatia (landing + consola) — `:3000` → billing |
 | `identity-issuer-service` | Emisión (OID4VCI, DIDComm) — `:9001` |
 | `identity-verifier-service` | Verificación (OID4VP, DIDComm) — `:9002` |
 | `identity-holder-service` | Custodia (lab; fuera del compose) |
@@ -16,7 +17,7 @@ Copia limpia (sin historial Git de los repos originales) de librerías, servicio
 | `docs/` | Documentación del ecosistema |
 | `docs/deploy-contabo-phase1.md` | Deploy Contabo + onboarding |
 | `postman/` | Colecciones de identidad |
-| `docker-compose.yml` | Stack: postgres + billing + issuer + verifier |
+| `docker-compose.yml` | Stack: postgres + billing + issuer + verifier + kuatia |
 | `scripts/postgres-init.sh` | Crea las DBs del compose al primer arranque |
 
 ## Arranque
@@ -29,6 +30,7 @@ cp identity-verifier-service/source/.env.example identity-verifier-service/sourc
 docker compose up -d --build
 ```
 
+- Kuatia (web): http://localhost:3000  
 - Billing: http://localhost:9000  
 - Issuer: http://localhost:9001  
 - Verifier: http://localhost:9002  

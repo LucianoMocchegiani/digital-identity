@@ -10,8 +10,13 @@ import { Product } from './product.entity'
 import { Subscription } from './subscription.entity'
 import { UsagePeriod } from './usage-period.entity'
 
+/** Estado operativo de la cuenta de facturación. */
 export type AccountStatus = 'active' | 'suspended' | 'past_due'
 
+/**
+ * Cuenta de cliente (tenant de billing): plan, cupos y credenciales de login.
+ * Tabla: `accounts`.
+ */
 @Entity('accounts')
 export class Account {
   @PrimaryGeneratedColumn('uuid')
@@ -38,9 +43,11 @@ export class Account {
   @Column({ name: 'max_products', type: 'int', default: 2 })
   maxProducts!: number
 
+  /** Requests por minuto (rate limit en memoria del BillingService). */
   @Column({ name: 'rate_limit_rpm', type: 'int', default: 30 })
   rateLimitRpm!: number
 
+  /** Tope de transacciones facturables por mes UTC. */
   @Column({ name: 'monthly_tx_quota', type: 'int', default: 5000 })
   monthlyTxQuota!: number
 

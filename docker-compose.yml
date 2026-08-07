@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────
 # Identity stack — local + Contabo (phase 1)
 #
-# Activos:     postgres · billing · issuer · verifier
+# Activos:     postgres · billing · issuer · verifier · kuatia (web)
 # Comentados:  rabbitmq · pgadmin · holder  (descomentar cuando se usen)
 #
 # Usage:
@@ -10,7 +10,8 @@
 #   cp identity-verifier-service/source/.env.example identity-verifier-service/source/.env
 #   docker compose up -d --build
 #
-# Onboard (register + opcional provision):
+# Web Kuatia: http://localhost:3000  (proxy /api/billing → billing:9000)
+# Onboard CLI:
 #   cd identity-billing-service/source && npm run onboard -- --name "ACME" --email a@b.com --password secret123 --issuer acme --verifier acme
 # ─────────────────────────────────────────────────────────────
 
@@ -163,6 +164,27 @@ services:
         condition: service_started
       # rabbitmq:
       #   condition: service_healthy
+
+  # Web Kuatia (landing + consola). En Contabo: proxy TLS kuatia.xyz → :3000
+  identity-kuatia:
+    build:
+      context: .
+      dockerfile: identity-kuatia/source/Dockerfile
+      args:
+        BILLING_URL: http://identity-billing-service:9000
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Usado si se regenera config en runtime; el rewrite principal se bakea en build.
+      BILLING_URL: http://identity-billing-service:9000
+    ports:
+      - "3000:3000"
+    networks:
+      - identity
+    depends_on:
+      identity-billing-service:
+        condition: service_started
 
   # ─── opcional: descomentar para custodia / holder ───
   # identity-holder-service:

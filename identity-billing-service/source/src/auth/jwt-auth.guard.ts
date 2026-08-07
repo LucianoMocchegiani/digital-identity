@@ -7,15 +7,25 @@ import {
 import { JwtService } from '@nestjs/jwt'
 import { environmentConfig } from '../config/environment.config'
 
+/** Claims esperados en el Bearer JWT de billing. */
 export type JwtPayload = {
+  /** accountId */
   sub: string
   email: string | null
 }
 
+/**
+ * Guard JWT: exige `Authorization: Bearer <token>`.
+ * Adjunta `req.user = { accountId, email }` si es válido.
+ */
 @Injectable()
 export class JwtAuthGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
+  /**
+   * @returns true si el token es válido
+   * @throws {UnauthorizedException} ausente, inválido o expirado
+   */
   canActivate(context: ExecutionContext): boolean {
     const req = context.switchToHttp().getRequest()
     const header = req.headers.authorization

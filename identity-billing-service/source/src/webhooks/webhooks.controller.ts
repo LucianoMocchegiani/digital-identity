@@ -4,6 +4,7 @@ import { PAYMENT_PROVIDER, type PaymentProvider } from '../payment/payment-provi
 
 /**
  * Ingress de webhooks independiente del proveedor.
+ * Auth: sin JWT/admin; la verificación la hace cada PaymentProvider en `parseWebhook`.
  * Fase 1: POST /v1/webhooks/payments/manual con payload del ManualProvider.
  */
 @Controller('webhooks/payments')
@@ -13,6 +14,12 @@ export class WebhooksController {
     @Inject(PAYMENT_PROVIDER) private readonly paymentProvider: PaymentProvider,
   ) {}
 
+  /**
+   * Recibe webhook del `:provider` configurado y aplica el evento a billing.
+   * Side effect: persiste PaymentEvent y puede cambiar plan/status.
+   *
+   * @returns `{ ok: true, type }` o `{ ok: false }` si el provider no coincide
+   */
   @Post(':provider')
   async handle(
     @Param('provider') provider: string,

@@ -15,6 +15,9 @@ import { ManualPaymentProvider } from '../payment/manual.provider'
 import { environmentConfig } from '../config/environment.config'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 
+/**
+ * Módulo de dominio: BillingService, provision de tenants, JWT y PaymentProvider.
+ */
 @Module({
   imports: [
     TypeOrmModule.forFeature([

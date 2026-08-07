@@ -1,0 +1,20 @@
+/**
+ * Barrel del design system Kuatia: marca y primitivas de UI reutilizables.
+ */
+export { BrandMark } from './BrandMark'
+export { Alert } from './components/Alert'
+export { Atmosphere } from './components/Atmosphere'
+export { Badge } from './components/Badge'
+export { Button } from './components/Button'
+export { CheckList } from './components/CheckList'
+export { CredentialCard } from './components/CredentialCard'
+export { Field } from './components/Field'
+export { Input } from './components/Input'
+export { Label } from './components/Label'
+export { Modal } from './components/Modal'
+export { Panel } from './components/Panel'
+export { PasswordInput } from './components/PasswordInput'
+export { PhoneFrame } from './components/PhoneFrame'
+export { Progress } from './components/Progress'
+export { SectionEyebrow } from './components/SectionEyebrow'
+export * from './icons'

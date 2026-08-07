@@ -32,6 +32,7 @@ import type { NormalizedPaymentEvent, PaymentProvider } from '../payment/payment
 import { PAYMENT_PROVIDER } from '../payment/payment-provider'
 import { TenantProvisioner } from './tenant-provisioner'
 
+/** Resultado de validar una API key (contexto de cuenta/producto/recurso). */
 type ValidateApiKeyResult = {
   accountId: string
   accountStatus: string
@@ -50,6 +51,7 @@ type ValidateApiKeyResult = {
   apiKeyPrefix: string
 }
 
+/** Producto + resource + API key en claro (solo al crear/rotar). */
 type ProductCreateResult = {
   product: Product
   resource: Resource
@@ -57,8 +59,13 @@ type ProductCreateResult = {
   prefix: string
 }
 
+/** Ventana de rate limit en memoria (1 minuto). */
 type RateWindow = { windowStartMs: number; count: number }
 
+/**
+ * Servicio de dominio de billing: cuentas, productos, API keys, cuotas y pagos.
+ * Orquesta persistencia TypeORM y el provision de tenants en issuer/verifier.
+ */
 @Injectable()
 export class BillingService {
   /** Rate limit en memoria (fase 1, instancia única). */
@@ -76,23 +83,37 @@ export class BillingService {
     private readonly tenantProvisioner: TenantProvisioner,
   ) {}
 
+  /** Catálogo estático de planes comerciales. */
   listPlans() {
     return listPlans()
   }
 
+  /** Lista todas las cuentas (admin), más recientes primero. */
   async listAccounts(): Promise<Account[]> {
     return this.accounts.find({ order: { createdAt: 'DESC' } })
   }
 
+  /**
+   * Obtiene una cuenta por id.
+   * @throws {NotFoundException} si no existe
+   */
   async getAccount(accountId: string): Promise<Account> {
     return this.requireAccount(accountId)
   }
 
+  /**
+   * Vista pública de cuenta (sin `passwordHash`).
+   * @throws {NotFoundException} si no existe
+   */
   async getAccountPublic(accountId: string) {
     const account = await this.requireAccount(accountId)
     return this.toAccountView(account)
   }
 
+  /**
+   * Uso del período UTC actual (cuota mensual + límites).
+   * @throws {NotFoundException} si la cuenta no existe
+   */
   async getUsage(accountId: string) {
     const account = await this.requireAccount(accountId)
     const periodKey = currentPeriodKey()
@@ -109,7 +130,9 @@ export class BillingService {
 
   /**
    * Registro self-serve: solo account free (sin issuer/verifier).
-   * El usuario crea cada producto aparte vía POST /products.
+   * Side effects: crea Account + Subscription activa; el usuario crea productos vía POST /products.
+   *
+   * @throws {ConflictException} si el email ya existe
    */
   async register(input: {
     name: string
@@ -149,6 +172,11 @@ export class BillingService {
     return { account: this.toAccountView(account) }
   }
 
+  /**
+   * Autentica email/password y devuelve la entidad Account.
+   * @throws {UnauthorizedException} credenciales inválidas
+   * @throws {ForbiddenException} cuenta suspendida
+   */
   async login(input: { email: string; password: string }): Promise<Account> {
     const email = input.email.trim().toLowerCase()
     const account = await this.accounts.findOne({ where: { email } })
@@ -161,6 +189,10 @@ export class BillingService {
     return account
   }
 
+  /**
+   * Cambia el plan y copia cupos del catálogo.
+   * Side effects: puede archivar productos extra (`enforceProductQuota`) y crea Subscription.
+   */
   async setPlan(accountId: string, planInput: PlanId | 'paid'): Promise<Account> {
     const account = await this.requireAccount(accountId)
     const previous = normalizePlanId(account.plan)
@@ -187,6 +219,7 @@ export class BillingService {
     return account
   }
 
+  /** Actualiza el status de la cuenta (`active` | `suspended` | `past_due`). */
   async setAccountStatus(
     accountId: string,
     status: Account['status'],
@@ -196,6 +229,7 @@ export class BillingService {
     return this.accounts.save(account)
   }
 
+  /** Override parcial de cupos (admin); no cambia el id de plan. */
   async setQuota(
     accountId: string,
     input: {
@@ -211,7 +245,10 @@ export class BillingService {
     return this.accounts.save(account)
   }
 
-  /** ManualProvider / admin: activa plan pro. */
+  /**
+   * ManualProvider / admin: activa plan pro vía evento `payment.succeeded`.
+   * Side effects: plan pro, status active, nueva Subscription.
+   */
   async activatePaid(accountId: string): Promise<Account> {
     await this.requireAccount(accountId)
     await this.applyPaymentEvent({
@@ -226,7 +263,12 @@ export class BillingService {
 
   /**
    * Un producto = un issuer o un verifier + API key.
-   * Luego provisiona el tenant en issuer/verifier y marca el resource `active`.
+   * Side effects: persiste Product/Resource/ApiKey, provisiona tenant remoto y marca resource `active`.
+   * Si falla el provision, hace rollback borrando el producto.
+   *
+   * @throws {ForbiddenException} cuenta inactiva o cupo de productos agotado
+   * @throws {ConflictException} walletId ya usado en ese service
+   * @throws {BadGatewayException} fallo de provision remoto
    */
   async createProduct(input: {
     accountId: string
@@ -277,6 +319,7 @@ export class BillingService {
     }
   }
 
+  /** Lista productos activos de la cuenta (con resources y keys no revocadas). */
   async listProducts(accountId: string) {
     await this.requireAccount(accountId)
     const products = await this.products.find({
@@ -287,6 +330,10 @@ export class BillingService {
     return products.map((p) => this.toProductView(p))
   }
 
+  /**
+   * Detalle de un producto propio activo.
+   * @throws {NotFoundException} si no existe o no pertenece a la cuenta
+   */
   async getProduct(accountId: string, productId: string) {
     const product = await this.requireOwnedProduct(accountId, productId)
     const full = await this.products.findOne({
@@ -297,6 +344,7 @@ export class BillingService {
     return this.toProductView(full)
   }
 
+  /** Actualiza nombre/descripción de un producto propio. */
   async patchProduct(
     accountId: string,
     productId: string,
@@ -309,6 +357,10 @@ export class BillingService {
     return this.getProduct(accountId, productId)
   }
 
+  /**
+   * Archiva el producto y suspende sus resources (soft delete).
+   * Side effect: resources → `suspended`.
+   */
   async archiveProduct(accountId: string, productId: string): Promise<void> {
     const product = await this.requireOwnedProduct(accountId, productId)
     product.status = 'archived'
@@ -321,6 +373,7 @@ export class BillingService {
     }
   }
 
+  /** Lista resources (issuer/verifier) de un producto propio. */
   async listProductResources(accountId: string, productId: string) {
     const product = await this.requireOwnedProduct(accountId, productId)
     const resources = await this.resources.find({
@@ -331,6 +384,7 @@ export class BillingService {
     return resources.map((r) => this.toResourceView(r))
   }
 
+  /** Marca un resource como `active` tras provision exitoso. */
   private async markResourceActive(resourceId: string): Promise<Resource> {
     const resource = await this.resources.findOne({ where: { id: resourceId } })
     if (!resource) throw new NotFoundException('Recurso no encontrado')
@@ -338,6 +392,10 @@ export class BillingService {
     return this.resources.save(resource)
   }
 
+  /**
+   * Rota la API key de un resource perteneciente a la cuenta.
+   * @throws {NotFoundException} / {ForbiddenException} si no es dueño
+   */
   async rotateApiKeyForAccount(
     accountId: string,
     resourceId: string,
@@ -347,6 +405,10 @@ export class BillingService {
     return this.rotateApiKey(resourceId, keyName)
   }
 
+  /**
+   * Revoca keys activas del resource y emite una nueva (admin o interno).
+   * Side effect: keys previas → `revokedAt`; la key en claro solo se devuelve una vez.
+   */
   async rotateApiKey(
     resourceId: string,
     keyName?: string,
@@ -375,6 +437,10 @@ export class BillingService {
     return { apiKey: raw, prefix }
   }
 
+  /**
+   * Revoca una API key verificando ownership de la cuenta.
+   * @throws {ForbiddenException} si la key no pertenece a la cuenta
+   */
   async revokeApiKeyForAccount(accountId: string, apiKeyId: string): Promise<void> {
     const key = await this.apiKeys.findOne({
       where: { id: apiKeyId },
@@ -388,6 +454,7 @@ export class BillingService {
     await this.apiKeys.save(key)
   }
 
+  /** Revoca una API key por id (admin; sin check de ownership). */
   async revokeApiKey(apiKeyId: string): Promise<void> {
     const key = await this.apiKeys.findOne({ where: { id: apiKeyId } })
     if (!key) throw new NotFoundException('API key no encontrada')
@@ -395,6 +462,11 @@ export class BillingService {
     await this.apiKeys.save(key)
   }
 
+  /**
+   * Valida API key + service (+ walletId opcional) y actualiza `lastUsedAt`.
+   * @throws {UnauthorizedException} key inválida o ausente
+   * @throws {ForbiddenException} cuenta/producto/recurso no usable o mismatch
+   */
   private async validateApiKey(input: {
     apiKey: string
     service: ResourceService
@@ -463,6 +535,9 @@ export class BillingService {
   /**
    * Un solo round-trip para guards de issuer/verifier:
    * valida la API key y consume 1+ transacciones (rate limit + cuota).
+   *
+   * @throws {UnauthorizedException} / {ForbiddenException} auth
+   * @throws {HttpException} 429 rate limit / 402 cuota agotada
    */
   async validateAndMeter(input: {
     apiKey: string
@@ -488,7 +563,10 @@ export class BillingService {
     }
   }
 
-  /** Cuenta 1+ transacciones: rate limit + cuota mensual. */
+  /**
+   * Cuenta 1+ transacciones: rate limit en memoria + cuota mensual persistida.
+   * @throws {HttpException} 429 / 402
+   */
   private async meter(input: {
     accountId: string
     count?: number
@@ -544,6 +622,11 @@ export class BillingService {
     }
   }
 
+  /**
+   * Persiste un evento de pago y aplica side effects de plan/status.
+   * - `payment.succeeded` → plan (default pro) + active
+   * - `payment.failed` / `subscription.canceled` → suspended
+   */
   async applyPaymentEvent(event: NormalizedPaymentEvent): Promise<void> {
     await this.paymentEvents.save(
       this.paymentEvents.create({
@@ -567,6 +650,10 @@ export class BillingService {
     }
   }
 
+  /**
+   * Inicia checkout con el PaymentProvider configurado.
+   * @returns URL/externalId del proveedor (manual → url null)
+   */
   async createCheckout(accountId: string, plan: PlanId | 'paid') {
     await this.requireAccount(accountId)
     return this.paymentProvider.createCheckout({
@@ -575,6 +662,7 @@ export class BillingService {
     })
   }
 
+  /** Proyección segura de Account (sin passwordHash). */
   toAccountView(account: Account) {
     return {
       id: account.id,
@@ -590,6 +678,10 @@ export class BillingService {
     }
   }
 
+  /**
+   * Respuesta de alta de producto: incluye API key en claro + warning.
+   * La key no se vuelve a exponer después.
+   */
   toProductCreateResponse(created: ProductCreateResult) {
     const resource = created.resource
     return {
@@ -609,6 +701,7 @@ export class BillingService {
     }
   }
 
+  /** Vista de producto con su primer resource (modelo 1:1). */
   private toProductView(product: Product) {
     const resource = (product.resources ?? [])[0]
     return {
@@ -624,6 +717,7 @@ export class BillingService {
     }
   }
 
+  /** Vista de resource con API keys activas (sin hashes). */
   private toResourceView(resource: Resource) {
     return {
       id: resource.id,
@@ -642,6 +736,11 @@ export class BillingService {
     }
   }
 
+  /**
+   * Crea resource `pending` + primera API key.
+   * @throws {BadRequestException} walletId inválido
+   * @throws {ConflictException} (service, walletId) ya existe
+   */
   private async createResourceInternal(input: {
     productId: string
     account: Account
@@ -683,12 +782,14 @@ export class BillingService {
     return { resource, apiKey: raw, prefix }
   }
 
+  /** @throws {NotFoundException} */
   private async requireAccount(accountId: string): Promise<Account> {
     const account = await this.accounts.findOne({ where: { id: accountId } })
     if (!account) throw new NotFoundException('Cuenta no encontrada')
     return account
   }
 
+  /** Producto activo perteneciente a la cuenta. @throws {NotFoundException} */
   private async requireOwnedProduct(accountId: string, productId: string): Promise<Product> {
     const product = await this.products.findOne({
       where: { id: productId, accountId, status: 'active' },
@@ -697,6 +798,7 @@ export class BillingService {
     return product
   }
 
+  /** Resource perteneciente a la cuenta. @throws {NotFoundException} */
   private async requireOwnedResource(accountId: string, resourceId: string): Promise<Resource> {
     const resource = await this.resources.findOne({
       where: { id: resourceId },
@@ -708,6 +810,7 @@ export class BillingService {
     return resource
   }
 
+  /** @throws {ForbiddenException} si ya alcanzó `maxProducts` activos */
   private async assertProductQuota(account: Account): Promise<void> {
     const count = await this.products.count({
       where: { accountId: account.id, status: 'active' },
@@ -719,7 +822,7 @@ export class BillingService {
     }
   }
 
-  /** Deja los N productos más viejos activos; archiva el resto. */
+  /** Deja los N productos más viejos activos; archiva el resto (y suspende resources). */
   private async enforceProductQuota(accountId: string, maxProducts: number): Promise<void> {
     const products = await this.products.find({
       where: { accountId, status: 'active' },
@@ -744,6 +847,10 @@ export class BillingService {
     return usage?.txCount ?? 0
   }
 
+  /**
+   * Rate limit por cuenta en ventana de 60s (memoria de proceso).
+   * @throws {HttpException} 429
+   */
   private assertRateLimit(accountId: string, rpm: number, count: number): void {
     const now = Date.now()
     const windowMs = 60_000
@@ -766,6 +873,7 @@ export class BillingService {
   }
 }
 
+/** Clave de período mensual UTC (`YYYY-MM`). */
 function currentPeriodKey(date = new Date()): string {
   const y = date.getUTCFullYear()
   const m = String(date.getUTCMonth() + 1).padStart(2, '0')

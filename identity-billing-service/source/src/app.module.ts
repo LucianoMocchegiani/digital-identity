@@ -19,6 +19,9 @@ import { MeController } from './me/me.controller'
 import { ProductsController } from './products/products.controller'
 import { ResourcesController } from './resources/resources.controller'
 
+/**
+ * Módulo raíz: TypeORM (Postgres), config, BillingModule y todos los controllers HTTP.
+ */
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [environmentConfig] }),

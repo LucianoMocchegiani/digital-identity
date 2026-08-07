@@ -16,9 +16,11 @@ export class CreateProductDto {
   @MaxLength(2000)
   description?: string
 
+  /** Servicio de identidad a provisionar. */
   @IsIn(['issuer', 'verifier'])
   service!: 'issuer' | 'verifier'
 
+  /** Id del tenant remoto (issuerId / verifierId); único por service. */
   @IsString()
   @Matches(WALLET_ID_REGEX, { message: WALLET_ID_VALIDATION_MESSAGE })
   walletId!: string

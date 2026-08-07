@@ -1,10 +1,14 @@
+/** Nombre del proveedor de pago activo (`PAYMENT_PROVIDER`). */
 export type PaymentProviderName = 'manual' | 'mercadopago' | 'stripe'
 
+/** Configuración de entorno tipada del servicio de billing. */
 export type EnvironmentConfig = {
   port: number
   nodeEnv: string
   databaseUrl: string
+  /** Clave para rutas `/admin/*` (header `x-admin-key` / `x-api-key`). */
   adminApiKey: string
+  /** Token para rutas `/internal/*` (header `x-internal-token`). */
   billingInternalToken: string
   paymentProvider: PaymentProviderName
   jwtSecret: string
@@ -17,6 +21,10 @@ export type EnvironmentConfig = {
   provisionOnCreate: boolean
 }
 
+/**
+ * Lee variables de entorno con defaults de desarrollo.
+ * @returns Configuración lista para Nest / TypeORM / JWT.
+ */
 export const environmentConfig = (): EnvironmentConfig => {
   const paymentProvider = (process.env.PAYMENT_PROVIDER ?? 'manual') as PaymentProviderName
   return {
