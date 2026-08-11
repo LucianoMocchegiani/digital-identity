@@ -19,6 +19,7 @@ export const DOCS_NAV: DocsNavSection[] = [
       { href: '/docs/glosario', label: 'Glosario' },
       { href: '/docs/como-funciona', label: 'Cómo funciona' },
       { href: '/docs/recomendaciones', label: 'Recomendaciones' },
+      { href: '/docs/seguridad', label: 'Seguridad y confianza' },
     ],
   },
   {
@@ -26,6 +27,8 @@ export const DOCS_NAV: DocsNavSection[] = [
     items: [
       { href: '/docs/empezar', label: 'Primeros pasos' },
       { href: '/docs/autenticacion', label: 'Autenticación' },
+      { href: '/docs/versionado', label: 'Versionado' },
+      { href: '/docs/changelog', label: 'Changelog' },
     ],
   },
   {

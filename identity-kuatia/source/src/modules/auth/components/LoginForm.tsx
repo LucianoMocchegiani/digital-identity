@@ -34,6 +34,7 @@ export function LoginForm() {
   return (
     <AuthShell
       title="Ingresar"
+      subtitle="Accedé a la consola para gestionar productos e API keys."
       footer={
         <>
           ¿No tenés cuenta?{' '}

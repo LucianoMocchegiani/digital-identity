@@ -5,17 +5,18 @@ import {
   DocsP,
   DocsTitle,
 } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import { docsPageMeta } from '@/shared/seo/docs'
 
-export const metadata: Metadata = {
-  title: 'Health',
-}
+export const metadata = docsPageMeta('health')
 
 export default function DocsHealthPage() {
   return (
     <>
       <DocsTitle>Health</DocsTitle>
-      <DocsLead>Comprobá que el servicio está vivo antes de emitir o verificar.</DocsLead>
+      <DocsLead>
+        Comprobá que el servicio está vivo y listo antes de emitir o verificar. Rutas públicas (sin
+        API key).
+      </DocsLead>
 
       <DocsEndpoint method="GET" path="/v1/health" auth="Pública">
         <p>Liveness: el proceso HTTP responde.</p>
@@ -25,7 +26,10 @@ export default function DocsHealthPage() {
       </DocsEndpoint>
 
       <DocsEndpoint method="GET" path="/v1/health/ready" auth="Pública">
-        <p>Readiness: el agente SSI está inicializado. No emitas si esto falla.</p>
+        <p>
+          Readiness: el agente issuer/verifier terminó de inicializar. No emitas ni verifiques si
+          esto falla.
+        </p>
         <DocsCode>{`GET {ISSUER_URL}/v1/health/ready
 
 { "ready": true, "timestamp": "…" }`}</DocsCode>

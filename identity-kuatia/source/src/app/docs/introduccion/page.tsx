@@ -1,10 +1,8 @@
 import { DocsH2, DocsLead, DocsP, DocsTitle, DocsUl } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { docsPageMeta } from '@/shared/seo/docs'
 
-export const metadata: Metadata = {
-  title: 'Introducción',
-}
+export const metadata = docsPageMeta('introduccion')
 
 export default function DocsIntroPage() {
   return (
@@ -12,22 +10,28 @@ export default function DocsIntroPage() {
       <DocsTitle>Introducción</DocsTitle>
       <DocsLead>
         Kuatia es la plataforma para emitir y verificar credenciales digitales con estándares
-        abiertos. Documentos, entradas a eventos, membresías y acreditaciones — en la wallet del
-        usuario, firmadas por tu organización y comprobables en segundos.
+        abiertos. Documentos, entradas, membresías y acreditaciones: firmadas por tu organización,
+        guardadas en la wallet del usuario y comprobables en segundos.
       </DocsLead>
 
       <DocsH2>De qué se trata</DocsH2>
       <DocsP>
         En lugar de PDFs fáciles de falsificar, capturas de pantalla o bases de datos centralizadas
         que hay que consultar en cada control, trabajás con{' '}
-        <span className="text-[var(--kuatia-text)]">credenciales verificables</span>: datos firmados
-        criptográficamente que el usuario guarda en su teléfono y presenta cuando hace falta.
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          credenciales verificables
+        </Link>
+        : datos firmados criptográficamente que el usuario guarda en su teléfono y presenta cuando
+        hace falta.
       </DocsP>
       <DocsP>
-        El marco técnico se llama <span className="text-[var(--kuatia-text)]">OpenID4VC</span>{' '}
-        (OpenID for Verifiable Credentials): un conjunto de estándares abiertos para emitir y
-        presentar esas credenciales. Kuatia te da issuer y verifier listos para integrar por API —
-        sin que tengas que armar el protocolo desde cero.
+        El marco técnico se llama{' '}
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          OpenID4VC
+        </Link>{' '}
+        (OpenID for Verifiable Credentials): estándares abiertos para emitir y presentar esas
+        credenciales. Kuatia te da issuer y verifier listos para integrar por API — sin armar el
+        protocolo desde cero.
       </DocsP>
 
       <DocsH2>Quién la usa</DocsH2>
@@ -51,7 +55,7 @@ export default function DocsIntroPage() {
       </DocsUl>
       <DocsP>
         Gobiernos, bancos y ecosistemas europeos (p. ej. wallets alineadas a EUDI) impulsan el mismo
-        tipo de estándares. Kuatia te acerca a ese modelo con una API pensada para negocio.
+        tipo de estándares. Kuatia acerca ese modelo con una API pensada para negocio.
       </DocsP>
 
       <DocsH2>Por qué es antifraude por diseño</DocsH2>
@@ -72,8 +76,11 @@ export default function DocsIntroPage() {
           dependés de un PDF compartido por WhatsApp ni de un listado fácil de reenviar.
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">Mínimo de datos al verificar</span> — con
-          divulgación selectiva pedís solo lo necesario (“¿está vigente?”), no todo el documento.
+          <span className="text-[var(--kuatia-text)]">Mínimo de datos al verificar</span> — con{' '}
+          <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+            divulgación selectiva
+          </Link>{' '}
+          pedís solo lo necesario (“¿está vigente?”), no todo el documento.
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">Revocación</span> — cuando el caso lo requiere,
@@ -88,15 +95,21 @@ export default function DocsIntroPage() {
       <DocsH2>Tecnología de base (Credo y OpenWallet Foundation)</DocsH2>
       <DocsP>
         Kuatia no reinventó el protocolo desde cero. Los agentes issuer y verifier se construyen
-        sobre <span className="text-[var(--kuatia-text)]">Credo</span> (antes Hyperledger Aries /
-        Credo TS), el stack open source de identidad descentralizada impulsado en el ecosistema de
-        la <span className="text-[var(--kuatia-text)]">OpenWallet Foundation</span> (Linux
-        Foundation).
+        sobre{' '}
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          Credo
+        </Link>{' '}
+        (antes Hyperledger Aries / Credo TS), el stack open source de identidad descentralizada del
+        ecosistema de la{' '}
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          OpenWallet Foundation
+        </Link>{' '}
+        (Linux Foundation).
       </DocsP>
       <DocsP>
         Usamos esas librerías para OpenID4VC, firmas, wallets y metadata estándar. Kuatia aporta el
-        producto: multi-tenant, API keys, planes, branding y una experiencia pensada para integradores
-        que no viven del día a día de SSI.
+        producto: multi-tenant, API keys, planes, branding y una experiencia pensada para
+        integradores que no viven del día a día de SSI.
       </DocsP>
       <DocsP>
         Elegir estándares y librerías de la comunidad reduce riesgo de vendor lock-in y mejora la
@@ -131,10 +144,26 @@ export default function DocsIntroPage() {
           — privacidad y datos sensibles
         </li>
         <li>
+          <Link href="/docs/seguridad" className="text-[var(--kuatia-accent)] hover:underline">
+            Seguridad y confianza
+          </Link>{' '}
+          — API keys, tenants, cupos y qué guardamos
+        </li>
+        <li>
           <Link href="/docs/empezar" className="text-[var(--kuatia-accent)] hover:underline">
             Primeros pasos
           </Link>{' '}
           — API key y flujo de integración
+        </li>
+        <li>
+          <Link href="/docs/versionado" className="text-[var(--kuatia-accent)] hover:underline">
+            Versionado
+          </Link>{' '}
+          y{' '}
+          <Link href="/docs/changelog" className="text-[var(--kuatia-accent)] hover:underline">
+            Changelog
+          </Link>{' '}
+          — API v1 y historial de cambios
         </li>
       </DocsUl>
     </>

@@ -5,6 +5,7 @@ Documentación de producto / ingeniería del servicio web **identity-kuatia**.
 | Recurso | Ubicación |
 |---------|-----------|
 | Docs para clientes (sitio) | App Next: rutas `/docs/*` en `identity-kuatia/source` |
+| Changelog público | [../CHANGELOG.md](../CHANGELOG.md) · sitio `/docs/changelog` |
 | Backlog de mejoras | [backlog-mejoras.md](./backlog-mejoras.md) |
 | Mockups UI | [mockups/](./mockups/) |
 | Deploy Contabo | [../deploy-contabo-phase1.md](../deploy-contabo-phase1.md) |

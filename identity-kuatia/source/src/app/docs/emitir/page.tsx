@@ -4,19 +4,26 @@ import {
   DocsLead,
   DocsTitle,
 } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import { docsPageMeta } from '@/shared/seo/docs'
+import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'Emitir',
-}
+export const metadata = docsPageMeta('emitir')
 
 export default function DocsEmitirPage() {
   return (
     <>
       <DocsTitle>Emitir</DocsTitle>
       <DocsLead>
-        Creá una oferta OID4VCI pre-autorizada. Mostrá la URI como QR; la wallet completa el flujo.
-        Cada offer consume cuota del plan.
+        Creá una{' '}
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          oferta
+        </Link>{' '}
+        de emisión (
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          OID4VCI
+        </Link>
+        ) pre-autorizada. Mostrá la URI como QR o deep link; la wallet completa el flujo. Cada offer
+        consume cuota del plan.
       </DocsLead>
 
       <DocsEndpoint

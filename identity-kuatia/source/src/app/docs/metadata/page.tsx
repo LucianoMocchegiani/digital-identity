@@ -6,19 +6,22 @@ import {
   DocsTitle,
   DocsUl,
 } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import { docsPageMeta } from '@/shared/seo/docs'
+import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'Metadata',
-}
+export const metadata = docsPageMeta('metadata')
 
 export default function DocsMetadataPage() {
   return (
     <>
       <DocsTitle>Metadata</DocsTitle>
       <DocsLead>
-        El well-known del issuer es la fuente de verdad de qué podés emitir y cómo se ve la
-        credencial en la wallet.
+        El{' '}
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          well-known
+        </Link>{' '}
+        del issuer es la fuente de verdad de qué podés emitir y cómo se ve la credencial en la
+        wallet.
       </DocsLead>
 
       <DocsP>Incluye dos capas:</DocsP>

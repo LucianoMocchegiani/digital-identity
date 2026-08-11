@@ -4,7 +4,7 @@
  */
 
 /** Identificador de plan comercial. */
-export type PlanId = 'free' | 'pro' | 'business'
+export type PlanId = 'free' | 'pro' | 'pro_double' | 'business'
 
 /** Estado de cuenta; puede incluir valores futuros del backend. */
 export type AccountStatus = 'active' | 'suspended' | string

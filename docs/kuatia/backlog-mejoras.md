@@ -50,46 +50,52 @@ Auth hoy: email + password. APIs bajo `/v1`.
 
 ### D2. Revisar / mejorar textos (landing + docs)
 
-- [ ] Copy landing + `/docs/*`.
-- [ ] Claro para no-SSI; términos unificados; glosario enlazado.
-- [ ] Tono serio B2B (preciso > grandilocuente; mecanismos > adjetivos).
-- [ ] Antes de i18n.
+- [x] Copy landing + `/docs/*` (tono B2B, términos unificados).
+- [x] Claro para no-SSI; glosario enlazado desde landing y docs.
+- [x] Planes: “producto”, solicitudes/min y transacciones sin jerga rpm/tx.
+- [ ] Revisión editorial fina si cambia el producto (planes, precios).
 
 ### D3. SEO técnico
 
-- [ ] Metadata por ruta, OG, canónicas.
-- [ ] `sitemap.xml` + `robots.txt` (no indexar `/app/*`).
-- [ ] Core Web Vitals; Schema.org si aporta.
+- [x] Metadata por ruta, OG, canónicas (`metadataBase`, `NEXT_PUBLIC_SITE_URL`).
+- [x] `sitemap.xml` + `robots.txt` (disallow `/app/*`, `/api/*`; login/register `noindex`).
+- [x] OG image + favicon generados; JSON-LD Organization / WebSite.
+- [x] CWV básicos: `next/font` + `display: swap`, `viewport` / theme-color.
+- [x] `socialDescription` corta para OG (WhatsApp corta ~70–80 chars).
+- [ ] Mejorar preview en plataformas (WhatsApp, Telegram, LinkedIn, X, iMessage): crop/safe-zone OG, títulos, scrapers/cache, asset estático si hace falta.
 - [ ] hreflang cuando exista i18n.
+- [ ] OG asset estático / brand art si se quiere más control que `ImageResponse`.
 
 ### D4. Planes: calibrar + Pro Double
 
-**Hoy:** Free 2 / 30 RPM / 5k TX · Pro 5 / 600 / 100k · Business 20 / 3k / 1M.
+**Catálogo:** Free 2 / 30 RPM / 5k TX · Pro 5 / 600 / 100k · **Pro Double** 10 / 1.2k / 200k · **Business a medida** (baseline interno 20 / 3k / 1M; UI = contactar ventas).
 
-- [ ] Calibrar productos ↔ RPM ↔ TX.
-- [ ] **Pro Double** (×2 Pro).
-- [ ] Actualizar Pricing / `PlanPanel` / docs.
+- [x] Escala Free → Pro → Pro Double (×2 Pro) → Business.
+- [x] Billing: `pro_double` en `plans.ts` + DTO + onboard.
+- [x] Pricing / `PlanPanel` / types Kuatia / README billing.
 - [ ] Overrides custom → D17 + tramiterío T7.
+- [ ] Recalibrar números si el uso real lo pide (cuentas existentes no se actualizan solas).
 
 ### D5. Versionado API + documentación
 
-APIs ya en `/v1`. Docs del sitio aún sin versión ni changelog.
+APIs ya en `/v1`. Docs del sitio con versión y changelog.
 
 | Capa | Enfoque |
 |------|---------|
 | API | Prefijo `/v1`; política de breaking + deprecación |
-| Docs | Etiqueta “API v1” / versión de docs; banners si hay v2 |
-| Changelog | Feed único: API + docs + producto |
+| Docs | Badge “API v1”; páginas Versionado + Changelog |
+| Changelog | Feed único: API + docs + producto (`CHANGELOG.md` en la raíz + `/docs/changelog`) |
 
-- [ ] Página política de versionado en `/docs`.
-- [ ] Changelog público (repo + sitio).
-- [ ] No crear `/v2` vacío.
+- [x] Página política de versionado en `/docs/versionado`.
+- [x] Changelog público (repo + sitio).
+- [x] Badge API v1 en sidebar de docs.
+- [x] No crear `/v2` vacío.
 
 ### D6. Docs: Seguridad y confianza
 
-- [ ] Sección pública: auth (API key), multi-tenant, rate limits, qué no guardamos.
-- [ ] Citar Credo / OWF / OpenID4VC con precisión; sin fingir SOC2/eIDAS/ISO.
-- [ ] Enlazar desde intro / footer.
+- [x] Sección pública `/docs/seguridad`: auth (API key), multi-tenant, rate limits, qué guardamos / no.
+- [x] Citar Credo / OWF / OpenID4VC con precisión; sin fingir SOC2/eIDAS/ISO.
+- [x] Enlazar desde intro, footer y autenticación.
 
 ### D7. Rate limits endpoints públicos
 

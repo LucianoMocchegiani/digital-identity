@@ -24,9 +24,10 @@ Flujo:
 |------|-----------|------------|---------------|
 | `free` | 2 | 30 rpm | 5_000 |
 | `pro` | 5 | 600 rpm | 100_000 |
-| `business` | 20 | 3_000 rpm | 1_000_000 |
+| `pro_double` | 10 | 1_200 rpm | 200_000 |
+| `business` | *a medida* (default catálogo 20 / 3k / 1M; cupos reales vía admin/override) |
 
-Alias legacy: `paid` → `pro`.
+Alias legacy: `paid` → `pro`. **Pro Double** = ×2 Pro. **Business** = comercial a medida (no self-serve).
 
 ---
 

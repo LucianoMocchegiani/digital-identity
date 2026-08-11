@@ -1,17 +1,20 @@
 import { DocsCode, DocsEndpoint, DocsLead, DocsTitle } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import Link from 'next/link'
+import { docsPageMeta } from '@/shared/seo/docs'
 
-export const metadata: Metadata = {
-  title: 'DID Document',
-}
+export const metadata = docsPageMeta('did')
 
 export default function DocsDidPage() {
   return (
     <>
       <DocsTitle>DID Document</DocsTitle>
       <DocsLead>
-        Identidad pública (<code className="text-sm">did:web</code>) del producto. Útil para
-        depuración; las wallets también lo resuelven.
+        Identidad pública (
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          DID
+        </Link>
+        , <code className="text-sm">did:web</code>) del producto. Útil para depuración; las wallets
+        también lo resuelven.
       </DocsLead>
 
       <DocsEndpoint method="GET" path="/{walletId}/did.json" auth="Pública">

@@ -1,8 +1,7 @@
 ﻿import { BrandMark } from '@/design-system'
+import { mailto, siteConfig } from '@/shared/config/site'
+import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
-
-const CONTACT_EMAIL = 'hola@kuatia.xyz'
-const CONTACT_PHONE = '+595 21 000 000'
 
 /** Pie de sitio: productos, developer y contacto. */
 export function SiteFooter() {
@@ -12,7 +11,8 @@ export function SiteFooter() {
         <div className="lg:col-span-1">
           <BrandMark size="sm" />
           <p className="mt-3 max-w-xs text-base text-[var(--kuatia-muted)]">
-            Credenciales digitales para documentos, eventos y organizaciones.
+            Emisión y verificación de credenciales digitales para documentos, eventos y
+            organizaciones.
           </p>
         </div>
         <div>
@@ -20,8 +20,8 @@ export function SiteFooter() {
             Productos
           </p>
           <ul className="mt-3 space-y-2 text-base text-[var(--kuatia-text)]/80">
-            <li>Issuer</li>
-            <li>Verifier</li>
+            <li>Issuer (emisor)</li>
+            <li>Verifier (verificador)</li>
           </ul>
         </div>
         <div>
@@ -30,14 +30,29 @@ export function SiteFooter() {
           </p>
           <ul className="mt-3 space-y-2 text-base text-[var(--kuatia-text)]/80">
             <li>
-              <a href="/docs" className="hover:text-[var(--kuatia-accent)]">
-                Docs
-              </a>
+              <Link href="/docs" className="hover:text-[var(--kuatia-accent)]">
+                Documentación
+              </Link>
             </li>
             <li>
-              <a href="/docs/empezar" className="hover:text-[var(--kuatia-accent)]">
-                API
-              </a>
+              <Link href="/docs/empezar" className="hover:text-[var(--kuatia-accent)]">
+                Primeros pasos
+              </Link>
+            </li>
+            <li>
+              <Link href="/docs/glosario" className="hover:text-[var(--kuatia-accent)]">
+                Glosario
+              </Link>
+            </li>
+            <li>
+              <Link href="/docs/seguridad" className="hover:text-[var(--kuatia-accent)]">
+                Seguridad
+              </Link>
+            </li>
+            <li>
+              <Link href="/docs/changelog" className="hover:text-[var(--kuatia-accent)]">
+                Changelog
+              </Link>
             </li>
           </ul>
         </div>
@@ -47,13 +62,8 @@ export function SiteFooter() {
           </p>
           <ul className="mt-3 space-y-2 text-base text-[var(--kuatia-text)]/80">
             <li>
-              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-[var(--kuatia-accent)]">
-                {CONTACT_EMAIL}
-              </a>
-            </li>
-            <li>
-              <a href={`tel:${CONTACT_PHONE.replace(/\s/g, '')}`} className="hover:text-[var(--kuatia-accent)]">
-                {CONTACT_PHONE}
+              <a href={mailto()} className="hover:text-[var(--kuatia-accent)]">
+                {siteConfig.contactEmail}
               </a>
             </li>
           </ul>

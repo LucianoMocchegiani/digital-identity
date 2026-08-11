@@ -74,7 +74,12 @@ async function main() {
   const password = String(args.password ?? '')
   const planRaw = String(args.plan ?? 'free')
   const plan =
-    planRaw === 'pro' || planRaw === 'business' || planRaw === 'paid' ? planRaw : 'free'
+    planRaw === 'pro' ||
+    planRaw === 'pro_double' ||
+    planRaw === 'business' ||
+    planRaw === 'paid'
+      ? planRaw
+      : 'free'
   const issuerId = String(args.issuer ?? 'demo-issuer')
   const verifierId = String(args.verifier ?? 'demo-verifier')
   const createIssuer = args['no-issuer'] !== true
@@ -104,13 +109,13 @@ async function main() {
       admin: true,
     })
     console.log('cuenta activada como pro')
-  } else if (plan === 'business') {
+  } else if (plan === 'pro_double' || plan === 'business') {
     await billingFetch(`/admin/accounts/${accountId}/plan`, {
       method: 'POST',
-      body: JSON.stringify({ plan: 'business' }),
+      body: JSON.stringify({ plan }),
       admin: true,
     })
-    console.log('cuenta en plan business')
+    console.log(`cuenta en plan ${plan}`)
   }
 
   if (createIssuer) {

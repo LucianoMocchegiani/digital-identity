@@ -1,12 +1,14 @@
 ﻿import { DocsLead, DocsP, DocsTitle } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
 import Link from 'next/link'
+import { docsPageMeta } from '@/shared/seo/docs'
 
-export const metadata: Metadata = {
-  title: 'Glosario',
-}
+export const metadata = docsPageMeta('glosario')
 
 const TERMS: { term: string; def: string }[] = [
+  {
+    term: 'Producto (Kuatia)',
+    def: 'Unidad de facturación y provisionamiento en la consola: un issuer o un verifier. Cada producto tiene walletId, API key y cupos del plan.',
+  },
   {
     term: 'SSI',
     def: 'Self-Sovereign Identity (identidad soberana): modelo donde el usuario controla sus credenciales en su wallet, en lugar de que cada servicio guarde una copia central de su identidad.',
@@ -18,6 +20,10 @@ const TERMS: { term: string; def: string }[] = [
   {
     term: 'OpenID4VC',
     def: 'OpenID for Verifiable Credentials: familia de estándares abiertos para emitir y presentar credenciales usando patrones similares a OAuth/OpenID. Es el “idioma” que hablan issuer, wallet y verifier.',
+  },
+  {
+    term: 'Transacción (cuota)',
+    def: 'En los planes Kuatia, una operación que consume cupo mensual (típicamente crear una oferta de emisión o un pedido de verificación). No es una transferencia bancaria.',
   },
   {
     term: 'OID4VCI',

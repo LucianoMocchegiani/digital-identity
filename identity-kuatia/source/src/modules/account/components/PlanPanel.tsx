@@ -15,8 +15,31 @@ import { PageHeader } from '@/modules/console/components/PageHeader'
 import { billingApi } from '@/shared/api/billing'
 import { ApiError } from '@/shared/api/client'
 import { useAuth } from '@/shared/auth/AuthProvider'
+import { mailto } from '@/shared/config/site'
 import type { PlanInfo } from '@/shared/types/billing'
 import { useEffect, useState } from 'react'
+
+function planFeatures(plan: PlanInfo): string[] {
+  if (plan.id === 'business') {
+    return [
+      'Cupos a medida (productos, RPM, TX)',
+      'Onboarding asistido',
+      'Soporte dedicado',
+    ]
+  }
+  return [
+    `${plan.maxProducts} productos`,
+    `${plan.rateLimitRpm.toLocaleString('es-AR')} solicitudes / min`,
+    `${plan.monthlyTxQuota.toLocaleString('es-AR')} transacciones / mes`,
+  ]
+}
+
+/** Siguiente upgrade sugerido según el plan actual. */
+function suggestedUpgrade(planId: string | undefined): 'pro' | 'pro_double' | null {
+  if (planId === 'free') return 'pro'
+  if (planId === 'pro') return 'pro_double'
+  return null
+}
 
 export function PlanPanel() {
   const { account, refresh } = useAuth()
@@ -55,6 +78,8 @@ export function PlanPanel() {
   }
 
   const current = plans.find((p) => p.id === account?.plan)
+  const upgradeId = suggestedUpgrade(account?.plan)
+  const upgradePlan = upgradeId ? plans.find((p) => p.id === upgradeId) : undefined
 
   return (
     <div>
@@ -65,7 +90,7 @@ export function PlanPanel() {
             <>
               Tu plan actual:{' '}
               <Badge tone="accent" className="align-middle">
-                {account.plan}
+                {current?.label ?? account.plan}
               </Badge>
             </>
           ) : (
@@ -89,47 +114,59 @@ export function PlanPanel() {
               <Badge tone="accent">Plan actual</Badge>
             </div>
             <CheckList
-              items={[
-                `${current.maxProducts} productos`,
-                `${current.rateLimitRpm} rpm`,
-                `${current.monthlyTxQuota.toLocaleString('es-AR')} tx/mes`,
-              ]}
+              items={
+                account?.plan === 'business'
+                  ? [
+                      `${account.maxProducts} productos (acordado)`,
+                      `${account.rateLimitRpm.toLocaleString('es-AR')} solicitudes / min`,
+                      `${account.monthlyTxQuota.toLocaleString('es-AR')} transacciones / mes`,
+                    ]
+                  : planFeatures(current)
+              }
             />
           </div>
-          {account?.plan === 'free' ? (
+          {upgradePlan && upgradeId ? (
             <div className="rounded-2xl border border-[var(--kuatia-accent)]/40 bg-[var(--kuatia-accent)]/10 p-5 lg:max-w-xs">
               <p className="font-medium">Mejorá tu experiencia</p>
               <p className="mt-1 text-sm text-[var(--kuatia-muted)]">
-                Más productos, más rpm y más cuota mensual.
+                Pasá a {upgradePlan.label ?? upgradeId}: más productos, más solicitudes/min y más
+                cuota mensual.
               </p>
               <Button
                 className="mt-4 w-full"
                 size="lg"
-                disabled={pending === 'pro'}
-                onClick={() => void checkout('pro')}
+                disabled={pending === upgradeId}
+                onClick={() => void checkout(upgradeId)}
               >
-                {pending === 'pro' ? '…' : 'Mejorar a Pro'}
+                {pending === upgradeId ? '…' : `Mejorar a ${upgradePlan.label ?? upgradeId}`}
               </Button>
             </div>
           ) : null}
         </Panel>
       ) : null}
 
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {plans.map((plan) => {
           const isCurrent = account?.plan === plan.id
           return (
             <Panel key={plan.id} className={isCurrent ? 'border-[var(--kuatia-accent)]/50' : undefined}>
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h3 className="font-display text-2xl">{plan.label ?? plan.id}</h3>
                 {isCurrent ? <Badge tone="accent">Actual</Badge> : null}
               </div>
               <ul className="mt-4 space-y-2 text-base text-[var(--kuatia-muted)]">
-                <li>{plan.maxProducts} productos</li>
-                <li>{plan.rateLimitRpm} rpm</li>
-                <li>{plan.monthlyTxQuota.toLocaleString('es-AR')} tx/mes</li>
+                {planFeatures(plan).map((line) => (
+                  <li key={line}>{line}</li>
+                ))}
               </ul>
-              {!isCurrent && plan.id !== 'free' ? (
+              {!isCurrent && plan.id === 'business' ? (
+                <a href={mailto('Plan Business')} className="mt-5 block">
+                  <Button className="w-full" variant="secondary">
+                    Contactar ventas
+                  </Button>
+                </a>
+              ) : null}
+              {!isCurrent && plan.id !== 'free' && plan.id !== 'business' ? (
                 <Button
                   className="mt-5 w-full"
                   disabled={pending === plan.id}

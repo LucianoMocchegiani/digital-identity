@@ -13,7 +13,11 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY identity-kuatia/source/ ./
 ARG BILLING_URL=http://identity-billing-service:9000
+ARG NEXT_PUBLIC_SITE_URL=https://kuatia.xyz
+ARG NEXT_PUBLIC_CONTACT_EMAIL=hola@kuatia.xyz
 ENV BILLING_URL=$BILLING_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_CONTACT_EMAIL=$NEXT_PUBLIC_CONTACT_EMAIL
 ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 

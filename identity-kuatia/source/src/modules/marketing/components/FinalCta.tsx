@@ -25,7 +25,7 @@ export function FinalCta() {
                 Empezá a emitir hoy
               </h2>
               <p className="mt-3 max-w-xl text-base text-[var(--kuatia-muted)] sm:text-lg">
-                Creá tu cuenta free y provisioná tu primer issuer o verifier en minutos.
+                Creá una cuenta Free, provisioná un issuer o verifier y obtené tu API key.
               </p>
             </div>
           </div>

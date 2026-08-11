@@ -5,6 +5,7 @@ import {
   IconCalendar,
   PhoneFrame,
 } from '@/design-system'
+import { mailto } from '@/shared/config/site'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 
@@ -20,8 +21,12 @@ export function Hero() {
           Emití y verificá credenciales digitales
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:mt-6 sm:text-lg md:text-xl lg:text-2xl">
-          Documentos, entradas a eventos y membresías para empresas, instituciones y centros
-          deportivos — con <span className="text-[var(--kuatia-accent)]">OpenID4VC</span>.
+          Documentos, entradas y membresías firmadas por tu organización. El usuario las guarda en
+          su wallet; vos las validás en puerta o en tu app — con{' '}
+          <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+            OpenID4VC
+          </Link>
+          .
         </p>
         <div className="mt-10 flex flex-wrap gap-4">
           <Link href="/register">
@@ -30,7 +35,7 @@ export function Hero() {
               <IconArrowRight size={18} />
             </Button>
           </Link>
-          <a href="mailto:hola@kuatia.xyz?subject=Demo%20Kuatia">
+          <a href={mailto('Demo Kuatia')}>
             <Button size="lg" variant="secondary">
               <IconCalendar size={18} />
               Reservar demo

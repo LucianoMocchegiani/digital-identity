@@ -32,7 +32,7 @@ export class Account {
   @Column({ name: 'password_hash', type: 'varchar', length: 255, nullable: true })
   passwordHash!: string | null
 
-  /** free | pro | business (legacy: paid → pro vía resolvePlan). */
+  /** free | pro | pro_double | business (legacy: paid → pro vía resolvePlan). */
   @Column({ type: 'varchar', length: 32, default: 'free' })
   plan!: string
 

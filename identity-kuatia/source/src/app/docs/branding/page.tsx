@@ -5,11 +5,9 @@ import {
   DocsP,
   DocsTitle,
 } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import { docsPageMeta } from '@/shared/seo/docs'
 
-export const metadata: Metadata = {
-  title: 'Branding',
-}
+export const metadata = docsPageMeta('branding')
 
 export default function DocsBrandingPage() {
   return (

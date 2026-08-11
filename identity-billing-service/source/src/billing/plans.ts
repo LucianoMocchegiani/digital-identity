@@ -1,5 +1,5 @@
 /** Identificadores de plan comerciales. */
-export type PlanId = 'free' | 'pro' | 'business'
+export type PlanId = 'free' | 'pro' | 'pro_double' | 'business'
 
 /** Definición estática de cupos y límites de un plan. */
 export type PlanDefinition = {
@@ -28,6 +28,14 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
     rateLimitRpm: 600,
     monthlyTxQuota: 100_000,
   },
+  /** ×2 Pro: puente entre Pro y Business. */
+  pro_double: {
+    id: 'pro_double',
+    label: 'Pro Double',
+    maxProducts: 10,
+    rateLimitRpm: 1_200,
+    monthlyTxQuota: 200_000,
+  },
   business: {
     id: 'business',
     label: 'Business',
@@ -44,18 +52,23 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
  */
 export function resolvePlan(plan: string): PlanDefinition {
   if (plan === 'paid') return PLANS.pro
-  if (plan === 'free' || plan === 'pro' || plan === 'business') return PLANS[plan]
+  if (isPlanId(plan)) return PLANS[plan]
   return PLANS.free
 }
 
-/** Lista los planes en orden free → pro → business. */
+/** Lista los planes en orden free → pro → pro_double → business. */
 export function listPlans(): PlanDefinition[] {
-  return [PLANS.free, PLANS.pro, PLANS.business]
+  return [PLANS.free, PLANS.pro, PLANS.pro_double, PLANS.business]
 }
 
 /** Type guard: ¿es un {@link PlanId} válido? */
 export function isPlanId(value: string): value is PlanId {
-  return value === 'free' || value === 'pro' || value === 'business'
+  return (
+    value === 'free' ||
+    value === 'pro' ||
+    value === 'pro_double' ||
+    value === 'business'
+  )
 }
 
 /**

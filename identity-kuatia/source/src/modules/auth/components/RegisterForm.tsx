@@ -37,7 +37,9 @@ export function RegisterForm() {
       title="Crear cuenta"
       subtitle={
         <>
-          Empezás en plan <span className="font-semibold text-[var(--kuatia-accent)]">Free</span>.
+          Plan{' '}
+          <span className="font-semibold text-[var(--kuatia-accent)]">Free</span>: creá productos
+          issuer o verifier y obtené tu API key.
         </>
       }
       footer={

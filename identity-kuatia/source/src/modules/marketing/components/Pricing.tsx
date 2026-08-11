@@ -2,10 +2,12 @@
   Badge,
   Button,
   CheckList,
+  IconBolt,
   IconBuilding,
   IconProducts,
   IconRocket,
 } from '@/design-system'
+import { mailto } from '@/shared/config/site'
 import Link from 'next/link'
 import type { ComponentType, SVGProps } from 'react'
 import { MarketingShell } from './MarketingShell'
@@ -14,6 +16,7 @@ type IconComp = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>
 
 const plans: {
   id: string
+  name: string
   price: string
   features: string[]
   cta: string
@@ -24,8 +27,15 @@ const plans: {
 }[] = [
   {
     id: 'free',
-    price: '$0 /mes',
-    features: ['2 productos', '30 rpm', '5.000 tx/mes', 'API REST', 'Soporte por email'],
+    name: 'Free',
+    price: '$0 / mes',
+    features: [
+      '2 productos (issuer o verifier)',
+      '30 solicitudes / min',
+      '5.000 transacciones / mes',
+      'API REST',
+      'Soporte por email',
+    ],
     cta: 'Empezar gratis',
     href: '/register',
     Icon: IconProducts,
@@ -33,13 +43,14 @@ const plans: {
   },
   {
     id: 'pro',
-    price: 'Pro',
+    name: 'Pro',
+    price: 'Plan pago',
     features: [
       '5 productos',
-      '600 rpm',
-      '100.000 tx/mes',
+      '600 solicitudes / min',
+      '100.000 transacciones / mes',
       'API REST',
-      'Provision issuer/verifier',
+      'Provision issuer / verifier',
       'Soporte prioritario',
     ],
     cta: 'Elegir Pro',
@@ -49,17 +60,41 @@ const plans: {
     variant: 'primary',
   },
   {
+    id: 'pro_double',
+    name: 'Pro Double',
+    price: 'Plan pago',
+    features: [
+      '10 productos',
+      '1.200 solicitudes / min',
+      '200.000 transacciones / mes',
+      'API REST',
+      'Provision issuer / verifier',
+      'Soporte prioritario',
+    ],
+    cta: 'Elegir Pro Double',
+    href: '/register',
+    Icon: IconBolt,
+    variant: 'secondary',
+  },
+  {
     id: 'business',
+    name: 'Business',
     price: 'A medida',
-    features: ['20 productos', '3.000 rpm', '1.000.000 tx/mes', 'Cupos custom', 'Onboarding asistido'],
+    features: [
+      'Cupos de productos, RPM y TX a medida',
+      'Overrides según tu operación',
+      'Onboarding asistido',
+      'Soporte dedicado',
+      'API REST',
+    ],
     cta: 'Contactar ventas',
-    href: 'mailto:hola@kuatia.xyz?subject=Plan%20Business',
+    href: mailto('Plan Business'),
     Icon: IconBuilding,
     variant: 'secondary',
   },
 ]
 
-/** Planes Free / Pro / Business alineados al mockup. */
+/** Planes Free / Pro / Pro Double / Business. */
 export function Pricing() {
   return (
     <MarketingShell as="section" id="precios" className="py-20">
@@ -68,20 +103,20 @@ export function Pricing() {
           <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl xl:text-6xl">
             Planes
           </h2>
-          <p className="mt-3 text-base text-[var(--kuatia-muted)] sm:text-lg">
-            El plan que mejor se adapta a tu negocio. Todos incluyen API REST.
+          <p className="mt-3 max-w-xl text-base text-[var(--kuatia-muted)] sm:text-lg">
+            Un producto es un issuer o un verifier. Todos los planes incluyen API REST.
           </p>
         </div>
         <Badge tone="accent">Sin permanencia · Cancelá cuando quieras</Badge>
       </div>
-      <div className="mt-10 grid gap-5 md:grid-cols-3 lg:gap-8">
+      <div className="mt-10 grid gap-5 sm:grid-cols-2 xl:grid-cols-4 lg:gap-6">
         {plans.map((plan) => (
           <div
             key={plan.id}
             className={
               plan.highlight
-                ? 'relative rounded-2xl border border-[var(--kuatia-accent)]/60 bg-[var(--kuatia-panel)] p-6 lg:p-8'
-                : 'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/50 p-6 lg:p-8'
+                ? 'relative rounded-2xl border border-[var(--kuatia-accent)]/60 bg-[var(--kuatia-panel)] p-6 lg:p-7'
+                : 'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/50 p-6 lg:p-7'
             }
           >
             {plan.highlight ? (
@@ -92,8 +127,10 @@ export function Pricing() {
             <div className="text-[var(--kuatia-accent)]">
               <plan.Icon size={28} />
             </div>
-            <h3 className="mt-3 font-display text-3xl capitalize">{plan.id}</h3>
-            <p className="mt-1 text-xl font-semibold text-[var(--kuatia-accent)]">{plan.price}</p>
+            <h3 className="mt-3 font-display text-2xl xl:text-3xl">{plan.name}</h3>
+            <p className="mt-1 text-lg font-semibold text-[var(--kuatia-accent)] xl:text-xl">
+              {plan.price}
+            </p>
             <CheckList items={plan.features} />
             <Link href={plan.href} className="mt-6 block">
               <Button className="w-full" size="lg" variant={plan.variant}>

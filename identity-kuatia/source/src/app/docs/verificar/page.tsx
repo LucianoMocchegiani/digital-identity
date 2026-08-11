@@ -4,19 +4,22 @@ import {
   DocsLead,
   DocsTitle,
 } from '@/modules/docs/components/DocsPrimitives'
-import type { Metadata } from 'next'
+import { docsPageMeta } from '@/shared/seo/docs'
+import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'Verificar',
-}
+export const metadata = docsPageMeta('verificar')
 
 export default function DocsVerificarPage() {
   return (
     <>
       <DocsTitle>Verificar</DocsTitle>
       <DocsLead>
-        Pedí una presentación OID4VP y consultá el resultado. Usá dcqlQuery (SD-JWT) o
-        presentationDefinition (PEX), no ambos.
+        Pedí una presentación (
+        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+          OID4VP
+        </Link>
+        ) y consultá el resultado. Usá <code className="text-sm">dcqlQuery</code> (SD-JWT) o{' '}
+        <code className="text-sm">presentationDefinition</code> (PEX), no ambos.
       </DocsLead>
 
       <DocsEndpoint

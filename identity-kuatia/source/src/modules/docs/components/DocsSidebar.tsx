@@ -13,6 +13,18 @@ export function DocsSidebar() {
 
   const nav = (
     <nav className="space-y-8 text-base text-[var(--kuatia-muted)]">
+      <div className="flex flex-wrap items-center gap-2">
+        <span className="rounded-md border border-[var(--kuatia-accent)]/40 bg-[var(--kuatia-accent)]/10 px-2.5 py-1 font-mono text-xs font-semibold tracking-wide text-[var(--kuatia-accent)]">
+          API v1
+        </span>
+        <Link
+          href="/docs/versionado"
+          onClick={() => setOpen(false)}
+          className="text-sm text-[var(--kuatia-muted)] hover:text-[var(--kuatia-accent)] hover:underline"
+        >
+          Política
+        </Link>
+      </div>
       {DOCS_NAV.map((section) => (
         <div key={section.title}>
           <p className="mb-2 text-sm font-semibold uppercase tracking-[0.12em] text-[var(--kuatia-muted)]">

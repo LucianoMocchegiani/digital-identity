@@ -21,12 +21,12 @@ const cases: {
 }[] = [
   {
     title: 'Documentos',
-    subtitle: 'DNI / certificados',
+    subtitle: 'Constancias y certificados',
     Icon: IconDoc,
     bullets: [
-      'Atributos oficiales verificables',
-      'Presentación selectiva',
-      'Validez y revocación en tiempo real',
+      'Datos firmados por tu organización',
+      'El titular revela solo lo necesario',
+      'Revocación cuando el caso lo pide',
     ],
     card: {
       variant: 'document',
@@ -40,9 +40,9 @@ const cases: {
     subtitle: 'Entradas con QR',
     Icon: IconTicket,
     bullets: [
-      'Entrada segura verificable',
-      'QR dinámico antifraude',
-      'Control de acceso online/offline',
+      'Entrada firmada, no una captura',
+      'QR o deep link para la wallet',
+      'Control de acceso en puerta',
     ],
     card: {
       variant: 'ticket',
@@ -53,12 +53,12 @@ const cases: {
   },
   {
     title: 'Organizaciones',
-    subtitle: 'Empresas, instituciones y centros',
+    subtitle: 'Empresas, clubes e instituciones',
     Icon: IconUsers,
     bullets: [
-      'Identidad de miembro verificable',
+      'Membresía o carnet verificable',
       'Beneficios y accesos asociados',
-      'Estado y renovación en tiempo real',
+      'Estado vigente al momento del control',
     ],
     card: {
       variant: 'membership',
@@ -78,8 +78,8 @@ export function UseCases() {
         Un solo modelo de credencial
       </h2>
       <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:text-lg lg:text-xl">
-        El mismo stack OpenID4VC se adapta a documentos, entradas y membresías. Vos emitís; la wallet
-        guarda; el verifier valida en la puerta.
+        El mismo flujo OpenID4VC sirve para documentos, entradas y membresías. Tu backend emite o
+        pide una prueba; la wallet del usuario completa el protocolo; el verifier valida el resultado.
       </p>
       <div className="mt-12 grid gap-10 md:grid-cols-3 lg:gap-12">
         {cases.map((c) => (

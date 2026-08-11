@@ -172,12 +172,17 @@ services:
       dockerfile: identity-kuatia/source/Dockerfile
       args:
         BILLING_URL: http://identity-billing-service:9000
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://kuatia.xyz}
+        NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-hola@kuatia.xyz}
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 3000
       # Usado si se regenera config en runtime; el rewrite principal se bakea en build.
       BILLING_URL: http://identity-billing-service:9000
+      # Sitio público (bakeado en build + runtime)
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://kuatia.xyz}
+      NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-hola@kuatia.xyz}
     ports:
       - "3000:3000"
     networks:
