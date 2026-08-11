@@ -54,7 +54,7 @@ class ActivityScreen extends ConsumerWidget {
                       padding: const EdgeInsets.fromLTRB(4, 0, 4, 8),
                       child: Text(
                         _formatMonthHeader(month),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 12,
                           height: 16 / 12,
                           fontWeight: FontWeight.w600,
@@ -67,7 +67,7 @@ class ActivityScreen extends ConsumerWidget {
                         children: [
                           for (var j = 0; j < items.length; j++) ...[
                             if (j > 0)
-                              const Divider(
+                              Divider(
                                 height: 1,
                                 thickness: 1,
                                 indent: 16,

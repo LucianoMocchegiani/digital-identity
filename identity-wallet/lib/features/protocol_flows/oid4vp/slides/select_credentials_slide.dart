@@ -112,12 +112,12 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
             selected: _filter,
             onSelect: (filter) => setState(() => _filter = filter),
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _SearchField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           for (final entry in entries) ...[
             // Con un solo requisito el encabezado sobra (mockup).
             if (entries.length > 1 && entry.name != null)
@@ -125,7 +125,7 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
                 padding: const EdgeInsets.only(bottom: 8),
                 child: Text(
                   entry.name!,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 18 / 14,
                     fontWeight: FontWeight.w600,
@@ -139,7 +139,7 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
               onSelect: (credentialId) =>
                   widget.onSelect(entry.inputDescriptorId, credentialId),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: 8),
           ],
         ],
       ),
@@ -179,7 +179,7 @@ class _FilterTags extends StatelessWidget {
               isSelected: selected == _SelectFilter.todas,
               onTap: () => onSelect(_SelectFilter.todas),
             ),
-            const SizedBox(width: 2),
+            SizedBox(width: 2),
             _tag(
               iconAsset: 'public/images/icons/favoritos.png',
               label: 'Favoritas',
@@ -219,7 +219,7 @@ class _FilterTags extends StatelessWidget {
                 color: color,
                 colorBlendMode: BlendMode.srcIn,
               ),
-              const SizedBox(width: 4),
+              SizedBox(width: 4),
               Text(
                 label,
                 style: TextStyle(
@@ -263,18 +263,18 @@ class _SearchField extends StatelessWidget {
             color: const Color(0xFF181D27),
             colorBlendMode: BlendMode.srcIn,
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: controller,
               onChanged: onChanged,
               cursorColor: AppColors.accentBlue,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 height: 22 / 16,
                 color: AppColors.textNeutralPrimary,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 isCollapsed: true,
                 border: InputBorder.none,
                 hintText: 'Buscar...',
@@ -315,7 +315,7 @@ class _CredentialOptionList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (credentials.isEmpty) {
-      return const Padding(
+      return Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
         child: Text(
           'No se encontraron credenciales.',
@@ -342,7 +342,7 @@ class _CredentialOptionList extends StatelessWidget {
               if (id != null) onSelect(id);
             },
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: 8),
         ],
       ],
     );
@@ -383,7 +383,7 @@ class _CredentialOptionRow extends StatelessWidget {
           child: Row(
             children: [
               CredentialLogo(logoUrl: credential.logoUrl, size: 36),
-              const SizedBox(width: 12),
+              SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -392,19 +392,19 @@ class _CredentialOptionRow extends StatelessWidget {
                       credential.title,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         height: 18 / 14,
                         fontWeight: FontWeight.w600,
                         color: AppColors.textNeutralPrimary,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       credential.issuer,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
                         fontWeight: FontWeight.w400,
@@ -414,7 +414,7 @@ class _CredentialOptionRow extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               _RadioIndicator(isSelected: isSelected),
             ],
           ),
@@ -444,7 +444,7 @@ class _RadioIndicator extends StatelessWidget {
         ),
       ),
       child: isSelected
-          ? const Center(
+          ? Center(
               child: Icon(Icons.circle, size: 8, color: Colors.white),
             )
           : null,

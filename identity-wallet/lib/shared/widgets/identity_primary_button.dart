@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
 
-/// Botón primario de la plataforma: a todo el ancho, morado de marca, radio 16
-/// y label de 14px semibold.
+/// Botón primario: ancho completo, teal Kuatia, radio 16, label ink.
 ///
 /// Cuando [enabled] es `false` se atenúa (opacidad 0.4) y deja de responder al
 /// toque; se usa para CTAs que requieren completar un paso previo (ej. aceptar
@@ -58,22 +57,22 @@ class IdentityPrimaryButton extends StatelessWidget {
               boxShadow: const [kShadowXs],
             ),
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
                       strokeWidth: 2,
-                      color: AppColors.backgroundNeutralSecondary,
+                      color: AppColors.inkOnAccent,
                     ),
                   )
                 : Text(
                     label,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 14,
                       height: 18 / 14,
                       fontWeight: FontWeight.w600,
-                      color: AppColors.backgroundNeutralSecondary,
+                      color: AppColors.inkOnAccent,
                     ),
                   ),
           ),

@@ -32,22 +32,22 @@ class IdentityEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 56, color: AppColors.textNeutralMuted),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 height: 22 / 16,
                 fontWeight: FontWeight.w600,
                 color: AppColors.textNeutralPrimary,
               ),
             ),
-            const SizedBox(height: 4),
+            SizedBox(height: 4),
             Text(
               description,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 18 / 14,
                 fontWeight: FontWeight.w400,

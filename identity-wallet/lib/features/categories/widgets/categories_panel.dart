@@ -77,12 +77,9 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
             // Forma con lengüeta central elevada (handle) y curvas cóncavas.
             return Container(
               clipBehavior: Clip.antiAlias,
-              decoration: const ShapeDecoration(
-                color: Colors.white,
-                // Borde gris fino solo en el contorno superior (silueta `‾‾\__/‾‾`):
-                // separa el panel del fondo casi blanco del home, sin línea inferior
-                // sobre el navbar ni la sombra que antes parecía un "marco".
-                shape: _CategoriesPanelShape(
+              decoration: ShapeDecoration(
+                color: context.kuatia.panel,
+                shape: const _CategoriesPanelShape(
                   outerRadius: 16,
                   tabWidth: 150,
                   tabHeight: 18,
@@ -93,36 +90,31 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
               ),
               child: ListView(
                 controller: scrollController,
-                // Padding top deja el handle por debajo del notch central.
                 padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
                 children: [
-                  // Handle de arrastre (en la hendidura central).
                   Center(
                     child: Container(
                       width: 34,
                       height: 6,
                       decoration: BoxDecoration(
-                        color: const Color.fromRGBO(0, 0, 0, 0.07),
+                        color: context.kuatia.border,
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  // Encabezado: título + botón "Crear nueva".
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
+                      Text(
                         'Categorías',
-                        // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
                         style: TextStyle(
                           fontSize: 16,
                           height: 22 / 16,
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textNeutralPrimary,
+                          color: context.kuatia.text,
                         ),
                       ),
-                      // "Crear nueva" solo visible con el panel expandido.
                       if (_expanded)
                         IdentityOutlineButton(
                           label: 'Crear nueva',
@@ -132,7 +124,6 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
                     ],
                   ),
                   const SizedBox(height: 12),
-                  // Lista de categorías.
                   for (final category in widget.categories)
                     Padding(
                       padding: const EdgeInsets.only(bottom: 12),

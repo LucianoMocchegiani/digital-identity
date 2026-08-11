@@ -44,7 +44,7 @@ class CredentialDetailDrawer extends StatelessWidget {
           height: height,
           width: double.infinity,
           clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.backgroundNeutralSecondary,
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
           ),
@@ -100,7 +100,7 @@ class CredentialDetailDrawer extends StatelessWidget {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: AppColors.borderNeutral)),
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),

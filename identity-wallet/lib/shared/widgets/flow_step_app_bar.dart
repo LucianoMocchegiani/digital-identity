@@ -19,10 +19,10 @@ abstract final class FlowStepAppBar {
       elevation: 0,
       foregroundColor: AppColors.textNeutralPrimary,
       leading: leading ??
-          const BackButton(color: AppColors.textNeutralPrimary),
+          BackButton(color: AppColors.textNeutralPrimary),
       title: Text(
         title,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 16,
           height: 22 / 16,
           fontWeight: FontWeight.w600,

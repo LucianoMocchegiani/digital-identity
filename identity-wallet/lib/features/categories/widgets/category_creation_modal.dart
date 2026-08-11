@@ -13,14 +13,14 @@ import 'category_created_modal.dart';
 
 const Color _labelColor = Color(0xFF181D27);
 
-const TextStyle _labelStyle = TextStyle(
+final TextStyle _labelStyle = TextStyle(
   fontSize: 14,
   height: 18 / 14,
   fontWeight: FontWeight.w500,
   color: _labelColor,
 );
 
-const TextStyle _placeholderStyle = TextStyle(
+final TextStyle _placeholderStyle = TextStyle(
   fontSize: 14,
   height: 18 / 14,
   fontWeight: FontWeight.w400,
@@ -290,7 +290,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: Color(0xFFF1F1F1)),
+            side: BorderSide(color: Color(0xFFF1F1F1)),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -322,7 +322,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
             child: Text(
               widget.title,
               // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 16,
                 height: 22 / 16,
                 fontWeight: FontWeight.w500,
@@ -349,8 +349,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
   /// Cuerpo del modal con los campos del formulario.
   Widget _buildContent() {
     return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: AppColors.panel,
         border: Border(top: BorderSide(color: AppColors.borderNeutral)),
       ),
       padding: const EdgeInsets.all(16),
@@ -359,13 +359,13 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         mainAxisSize: MainAxisSize.min,
         children: [
           _buildNameInput(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildIconSelector(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildColorSelector(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           _buildCredentialsSelect(),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           // Pie: "Crear" (creación) o "Eliminar" + "Guardar" (edición).
           if (widget.isEditing) _buildEditButtons() else _buildCreateButton(),
         ],
@@ -378,8 +378,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Nombre de la categoria:', style: _labelStyle),
-        const SizedBox(height: 4),
+        Text('Nombre de la categoria:', style: _labelStyle),
+        SizedBox(height: 4),
         Container(
           // Alto mínimo en lugar de fijo: el campo crece con la fuente del sistema.
           constraints: const BoxConstraints(minHeight: 34),
@@ -388,13 +388,13 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           alignment: Alignment.centerLeft,
           child: TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               isCollapsed: true,
               border: InputBorder.none,
               hintText: 'Ej: Servicios',
               hintStyle: _placeholderStyle,
             ),
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 18 / 14,
               color: AppColors.textNeutralPrimary,
@@ -410,8 +410,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Icono representativo:', style: _labelStyle),
-        const SizedBox(height: 4),
+        Text('Icono representativo:', style: _labelStyle),
+        SizedBox(height: 4),
         SizedBox(
           height: 40,
           child: Stack(
@@ -419,7 +419,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
               ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: kCategoryIconAssets.length,
-                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                separatorBuilder: (_, __) => SizedBox(width: 8),
                 itemBuilder: (_, i) => _iconButton(i, kCategoryIconAssets[i]),
               ),
               // Degradé que insinúa más íconos hacia la derecha.
@@ -430,7 +430,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
                 child: IgnorePointer(
                   child: Container(
                     width: 49.5,
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [Color(0x00FFFFFF), Color(0xFFFFFFFF)],
                       ),
@@ -441,7 +441,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
         // Barra de navegación (indicador de scroll).
         Container(
           height: 6,
@@ -480,7 +480,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           border: Border.all(color: AppColors.borderNeutral),
         ),
         child: selected
-            ? const Icon(Icons.check_rounded, size: 12, color: Colors.white)
+            ? Icon(Icons.check_rounded, size: 12, color: AppColors.panel)
             : null,
       ),
     );
@@ -497,7 +497,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         height: 40,
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: selected ? AppColors.accentBlueSurface : Colors.white,
+          color: selected ? AppColors.accentBlueSurface : AppColors.panel,
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: selected ? AppColors.accentBlue : AppColors.borderNeutral,
@@ -523,8 +523,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Color:', style: _labelStyle),
-        const SizedBox(height: 4),
+        Text('Color:', style: _labelStyle),
+        SizedBox(height: 4),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
@@ -556,7 +556,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text('Credenciales:', style: _labelStyle),
+            Text('Credenciales:', style: _labelStyle),
             Image.asset(
               'public/images/icons/Question Circle.png',
               width: 16,
@@ -564,7 +564,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
             ),
           ],
         ),
-        const SizedBox(height: 6),
+        SizedBox(height: 6),
         CompositedTransformTarget(
           link: _credentialsLink,
           child: GestureDetector(
@@ -579,20 +579,20 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
                   Expanded(
                     child: selected.isEmpty
                         // Placeholder cuando no hay credenciales elegidas.
-                        ? const Text('Elegir las credenciales',
+                        ? Text('Elegir las credenciales',
                             style: _placeholderStyle)
                         // Tags: primera credencial (removible) + "+N" restantes.
                         : Row(
                             children: [
                               Flexible(child: _credentialTag(selected.first)),
                               if (selected.length > 1) ...[
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 _countBadge(selected.length - 1),
                               ],
                             ],
                           ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   AnimatedRotation(
                     turns: _credentialsOpen ? 0.5 : 0,
                     duration: const Duration(milliseconds: 150),
@@ -664,7 +664,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
             radius: 6,
             borderColor: AppColors.borderNeutral,
           ),
-          const SizedBox(width: 6),
+          SizedBox(width: 6),
           Flexible(
             child: Text(
               credential.title,
@@ -673,7 +673,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
               style: _badgeTextStyle,
             ),
           ),
-          const SizedBox(width: 4),
+          SizedBox(width: 4),
           GestureDetector(
             onTap: () => _toggleCredential(record.id),
             behavior: HitTestBehavior.opaque,
@@ -705,7 +705,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
     return Container(
       constraints: const BoxConstraints(maxHeight: 220),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.panel,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: AppColors.borderNeutral),
         boxShadow: _shadowXs,
@@ -715,12 +715,12 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         shrinkWrap: true,
         padding: EdgeInsets.zero,
         children: [
-          const Padding(
+          Padding(
             padding: EdgeInsets.fromLTRB(12, 10, 12, 6),
             child: Text('Credenciales disponibles', style: _placeholderStyle),
           ),
           if (credentials.isEmpty)
-            const Padding(
+            Padding(
               padding: EdgeInsets.fromLTRB(12, 4, 12, 12),
               child: Text(
                 'No tenés credenciales todavía.',
@@ -751,13 +751,13 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
               radius: 8,
               borderColor: AppColors.borderNeutral,
             ),
-            const SizedBox(width: 10),
+            SizedBox(width: 10),
             Expanded(
               child: Text(
                 credential.title,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 18 / 14,
                   fontWeight: FontWeight.w500,
@@ -766,7 +766,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
               ),
             ),
             if (selected)
-              const Icon(Icons.check, size: 18, color: Color(0xFF2E90FA)),
+              Icon(Icons.check, size: 18, color: Color(0xFF2E90FA)),
           ],
         ),
       ),
@@ -788,7 +788,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           borderRadius: BorderRadius.circular(16),
           boxShadow: _shadowXs,
         ),
-        child: const Text(
+        child: Text(
           'Crear',
           textAlign: TextAlign.center,
           style: TextStyle(
@@ -813,7 +813,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
             onTap: _saving ? null : _onDelete,
           ),
         ),
-        const SizedBox(width: 12),
+        SizedBox(width: 12),
         // Guardar (primario).
         Expanded(
           child: GestureDetector(
@@ -829,7 +829,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: _shadowXs,
               ),
-              child: const Text(
+              child: Text(
                 'Guardar',
                 textAlign: TextAlign.center,
                 style: TextStyle(
@@ -863,7 +863,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
 
   /// Texto de los badges/tags (Text xs/Medium).
   // TODO: aplicar 'Nunito Sans' al definir la tipografía global.
-  static const TextStyle _badgeTextStyle = TextStyle(
+  static TextStyle get _badgeTextStyle => TextStyle(
     fontSize: 12,
     height: 16 / 12,
     fontWeight: FontWeight.w500,

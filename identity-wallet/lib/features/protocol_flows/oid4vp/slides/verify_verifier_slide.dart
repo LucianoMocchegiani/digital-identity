@@ -93,11 +93,11 @@ class VerifierSheetContent extends StatelessWidget {
           logoUrl: logoUrl,
           placeholder: _verifierIcon(),
         ),
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         Text(
           name,
           textAlign: TextAlign.center,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 16,
             height: 22 / 16,
             fontWeight: FontWeight.w600,
@@ -105,11 +105,11 @@ class VerifierSheetContent extends StatelessWidget {
           ),
         ),
         if (domain != null) ...[
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             domain!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w400,
@@ -117,10 +117,10 @@ class VerifierSheetContent extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 16),
+        SizedBox(height: 16),
         _TrustBadge(isVerified: isVerified),
         if (purpose != null) ...[
-          const SizedBox(height: 16),
+          SizedBox(height: 16),
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(12),
@@ -132,7 +132,7 @@ class VerifierSheetContent extends StatelessWidget {
             child: Text(
               purpose!,
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
                 fontWeight: FontWeight.w400,
@@ -141,7 +141,7 @@ class VerifierSheetContent extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: 8),
+        SizedBox(height: 8),
       ],
     );
   }
@@ -149,11 +149,11 @@ class VerifierSheetContent extends StatelessWidget {
   Widget _verifierIcon() => Container(
         width: 80,
         height: 80,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: AppColors.backgroundNeutralSecondary,
           shape: BoxShape.circle,
         ),
-        child: const Icon(
+        child: Icon(
           Icons.verified_user_outlined,
           size: 40,
           color: AppColors.textNeutralSecondary,
@@ -180,8 +180,8 @@ class _TrustBadge extends StatelessWidget {
             width: 16,
             height: 16,
           ),
-          const SizedBox(width: 4),
-          const Text(
+          SizedBox(width: 4),
+          Text(
             'Verificador de confianza',
             style: TextStyle(
               fontSize: 14,
@@ -200,7 +200,7 @@ class _TrustBadge extends StatelessWidget {
         color: AppColors.warningSurface,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.info_outline, size: 16, color: AppColors.warningText),

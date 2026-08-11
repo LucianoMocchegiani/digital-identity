@@ -25,6 +25,7 @@ Sitio público: https://kuatia.xyz/docs/changelog
 
 - Planes: Free · Pro · **Pro Double** (×2 Pro) · Business (a medida).
 - Login consola: email/contraseña + **OAuth Google/GitHub** (si hay client id/secret en billing).
+- Wallet Flutter: tema Kuatia (charcoal + teal), light/dark e ícono de marca.
 - Tema claro/oscuro, SEO técnico (sitemap, robots, OG), config de sitio vía env.
 
 ---

@@ -71,7 +71,7 @@ class _TermsConditionsSheet extends StatelessWidget {
     return FractionallySizedBox(
       heightFactor: 0.84,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
           border: Border(
             top: BorderSide(color: AppColors.borderNeutral),
@@ -91,7 +91,7 @@ class _TermsConditionsSheet extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Encabezado.
-                    const Text(
+                    Text(
                       'Términos y condiciones',
                       style: TextStyle(
                         fontSize: 16,
@@ -100,8 +100,8 @@ class _TermsConditionsSheet extends StatelessWidget {
                         color: AppColors.textNeutralPrimary,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    SizedBox(height: 4),
+                    Text(
                       'Revisá la información legal, privacidad y condiciones de '
                       'uso de la plataforma Identity.',
                       style: TextStyle(
@@ -111,7 +111,7 @@ class _TermsConditionsSheet extends StatelessWidget {
                         color: AppColors.textNeutralSecondary,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     // Caja con el texto legal desplazable.
                     Expanded(
                       child: Container(
@@ -165,7 +165,7 @@ class _LegalText extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const bodyStyle = TextStyle(
+    final bodyStyle = TextStyle(
       fontSize: 14,
       height: 18 / 14,
       fontWeight: FontWeight.w400,
@@ -175,7 +175,7 @@ class _LegalText extends StatelessWidget {
     final children = <Widget>[];
     for (var i = 0; i < _termsBlocks.length; i++) {
       final block = _termsBlocks[i];
-      if (i > 0) children.add(const SizedBox(height: 12));
+      if (i > 0) children.add(SizedBox(height: 12));
 
       switch (block.type) {
         case _BlockType.paragraph:
@@ -186,7 +186,7 @@ class _LegalText extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('•  ', style: bodyStyle),
+                Text('•  ', style: bodyStyle),
                 Expanded(child: Text(block.text, style: bodyStyle)),
               ],
             ),

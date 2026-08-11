@@ -49,6 +49,14 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.14.3
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: public/images/logo/kuatia-app-icon.png
+  adaptive_icon_background: "#041016"
+  adaptive_icon_foreground: public/images/logo/kuatia-app-icon.png
 
 flutter:
   uses-material-design: true

@@ -67,8 +67,9 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
   Widget build(BuildContext context) {
     final credential = widget.credential;
     final hasDetails = _hasExpandableContent;
-    final bg = credential.resolvedBackground;
-    final fg = credential.resolvedForeground;
+    final brightness = Theme.of(context).brightness;
+    final bg = credential.resolvedBackground(brightness);
+    final fg = credential.resolvedForeground(brightness);
     final showPanel =
         _showDetails && hasDetails && widget.showExpandToggle;
 

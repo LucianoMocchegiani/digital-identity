@@ -1,31 +1,25 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
+import '../theme/kuatia_colors.dart';
 
-/// Superficie blanca del design system: radio 12, borde neutro y sombra `xs`.
-///
-/// Es el contenedor base de los bloques de contenido (grupos del menú, filas de
-/// ajustes, panel de detalles de una credencial). Con [padding] en `null` el
-/// hijo llega hasta el borde, útil cuando adentro hay filas con divisores.
+/// Superficie de panel Kuatia: radio 12, borde y sombra `xs`.
 class IdentityCard extends StatelessWidget {
   const IdentityCard({super.key, required this.child, this.padding});
 
-  /// Contenido de la tarjeta.
   final Widget child;
-
-  /// Relleno interno; en `null` no agrega ninguno.
   final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Container(
       clipBehavior: Clip.antiAlias,
       padding: padding,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colors.panel,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.borderNeutral),
+        border: Border.all(color: colors.border),
         boxShadow: const [kShadowXs],
       ),
       child: child,

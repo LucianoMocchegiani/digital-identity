@@ -137,9 +137,9 @@ Redirect URIs (vía `billing.kuatia.xyz`):
 
 App Flutter **ya funcional**. Solo alinear diseño a web (hoy brand púrpura en `AppColors`).
 
-- [ ] Tokens charcoal + teal `#00a89d`; ThemeData; cards OID4VCI display.
-- [ ] Light/dark alineado a web; splash/icono Kuatia.
-- [ ] No rehacer protocolos.
+- [x] Tokens charcoal + teal `#00a89d`; ThemeData; cards OID4VCI display (fallback charcoal).
+- [x] Light/dark alineado a web (`KuatiaColors` + toggle en Ajustes); splash/icono Kuatia.
+- [x] No rehacer protocolos.
 
 ### D11. i18n (es / en / pt)
 

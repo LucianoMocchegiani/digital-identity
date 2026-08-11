@@ -62,7 +62,7 @@ class IdentityErrorModal extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.borderNeutral),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.highlight_off_rounded,
                       size: 24,
                       color: AppColors.errorDot,
@@ -73,7 +73,7 @@ class IdentityErrorModal extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 72),
+                    SizedBox(height: 72),
                     Container(
                       color: Colors.white,
                       width: double.infinity,
@@ -84,24 +84,24 @@ class IdentityErrorModal extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
                               color: AppColors.textNeutralPrimary,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           Text(
                             description,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               height: 18 / 14,
                               fontWeight: FontWeight.w400,
                               color: AppColors.textNeutralSecondary,
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           _closeButton(context),
                         ],
                       ),
@@ -145,7 +145,7 @@ class IdentityErrorModal extends StatelessWidget {
           border: Border.all(color: AppColors.borderNeutral),
           boxShadow: const [kShadowXs],
         ),
-        child: const Text(
+        child: Text(
           'Cerrar',
           textAlign: TextAlign.center,
           style: TextStyle(

@@ -55,6 +55,7 @@ class OnboardingSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 40),
       child: Column(
@@ -79,22 +80,22 @@ class OnboardingSlide extends StatelessWidget {
           Text(
             title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               height: 26 / 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.textNeutralPrimary,
+              color: colors.text,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             description,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 18 / 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.textNeutralSecondary,
+              color: colors.muted,
             ),
           ),
 
@@ -147,10 +148,9 @@ class _ProgressDots extends StatelessWidget {
   }
 }
 
-/// Botón a todo el ancho del slide (componente `Boton-Base`, radio 16).
+/// Botón a todo el ancho del slide.
 ///
-/// Con [primary] usa el morado de marca y texto claro; sin él, fondo blanco con
-/// borde neutro y sombra suave.
+/// Con [primary] usa teal Kuatia + ink; sin él, panel + texto del tema.
 class _SlideButton extends StatelessWidget {
   const _SlideButton({
     required this.label,
@@ -164,25 +164,24 @@ class _SlideButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     final radius = BorderRadius.circular(16);
+    final bg = primary ? colors.accent : colors.panel;
+    final fg = primary ? colors.ink : colors.text;
 
     return Material(
-      color: primary ? AppColors.brandPrimary : Colors.white,
+      color: bg,
       borderRadius: radius,
       child: InkWell(
         onTap: onTap,
         borderRadius: radius,
         child: Container(
-          // Alto mínimo en lugar de fijo: crece con la fuente del sistema en
-          // vez de desbordar (textScaleFactor alto / pantallas de baja densidad).
           constraints: const BoxConstraints(minHeight: 46),
           alignment: Alignment.center,
           padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           decoration: BoxDecoration(
             borderRadius: radius,
-            border: primary
-                ? null
-                : Border.all(color: AppColors.borderNeutral),
+            border: primary ? null : Border.all(color: colors.border),
             boxShadow: const [kShadowXs],
           ),
           child: Text(
@@ -192,9 +191,7 @@ class _SlideButton extends StatelessWidget {
               fontSize: 14,
               height: 18 / 14,
               fontWeight: FontWeight.w600,
-              color: primary
-                  ? AppColors.backgroundNeutralSecondary
-                  : AppColors.textNeutralPrimary,
+              color: fg,
             ),
           ),
         ),

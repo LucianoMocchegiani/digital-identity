@@ -2,18 +2,15 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/identity_shared.dart';
 
-/// Estado vacío de la vista de credenciales (componente `Empty state`).
-///
-/// Centra la ilustración del wallet, un título y descripción atenuados, y un
-/// botón para añadir una credencial. [onAddCredential] se dispara al tocarlo.
+/// Estado vacío de la vista de credenciales.
 class EmptyCredentialsView extends StatelessWidget {
   const EmptyCredentialsView({super.key, this.onAddCredential});
 
-  /// Callback al tocar el botón "Añadir credencial".
   final VoidCallback? onAddCredential;
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Center(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
@@ -27,19 +24,17 @@ class EmptyCredentialsView extends StatelessWidget {
               fit: BoxFit.contain,
             ),
             const SizedBox(height: 12),
-            // Bloque de texto principal (título + descripción), gap 4px.
-            const Text(
+            Text(
               'Tu wallet está vacía',
-              // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
               style: TextStyle(
                 fontSize: 14,
                 height: 18 / 14,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textNeutralMuted,
+                color: colors.text,
               ),
             ),
             const SizedBox(height: 4),
-            const SizedBox(
+            SizedBox(
               width: 222,
               child: Text(
                 'Tus credenciales digitales aparecerán aquí una vez que las '
@@ -49,7 +44,7 @@ class EmptyCredentialsView extends StatelessWidget {
                   fontSize: 12,
                   height: 16 / 12,
                   fontWeight: FontWeight.w400,
-                  color: AppColors.textNeutralMuted,
+                  color: colors.muted,
                 ),
               ),
             ),

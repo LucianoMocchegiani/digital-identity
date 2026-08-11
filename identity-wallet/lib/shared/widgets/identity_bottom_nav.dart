@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
+import '../theme/kuatia_colors.dart';
 
 /// Índices de las pestañas del navbar inferior.
 enum IdentityNavTab {
@@ -13,11 +14,11 @@ enum IdentityNavTab {
 
 /// Navbar inferior fijo de la app (componente `Nav`).
 ///
-/// Barra blanca de 60px con borde superior, dos pestañas ([IdentityNavTab]) a los
-/// lados y un botón QR morado central que sobresale 8px hacia arriba. La
-/// pestaña indicada por [currentTab] muestra su ícono en la variante azul
+/// Barra de panel Kuatia con borde superior, dos pestañas ([IdentityNavTab]) a los
+/// lados y un botón QR teal central que sobresale 8px hacia arriba. La
+/// pestaña indicada por [currentTab] muestra su ícono en la variante activa
 /// (seleccionada), con texto en negrita y opacidad completa; la otra usa la
-/// variante blanca y queda atenuada.
+/// variante inactiva y queda atenuada.
 ///
 /// [onCredentials] y [onConfiguration] responden al toque de cada pestaña, y
 /// [onScan] al del botón QR central.
@@ -54,6 +55,7 @@ class IdentityBottomNav extends StatelessWidget {
   Widget build(BuildContext context) {
     // Espacio inferior seguro (barra de gestos / home indicator).
     final bottomInset = MediaQuery.of(context).viewPadding.bottom;
+    final colors = context.kuatia;
 
     return SizedBox(
       height: _qrOverflow + _barHeight + bottomInset,
@@ -61,15 +63,14 @@ class IdentityBottomNav extends StatelessWidget {
       child: Stack(
         clipBehavior: Clip.none,
         children: [
-          // Barra anclada al fondo con padding seguro inferior.
-          // Sin borde superior: el diseño (Figma) no lleva línea sobre el navbar.
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
             child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
+              decoration: BoxDecoration(
+                color: colors.panel,
+                border: Border(top: BorderSide(color: colors.borderSubtle)),
               ),
               padding: EdgeInsets.only(bottom: bottomInset),
               child: SizedBox(
@@ -139,40 +140,41 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
+    final iconColor = selected ? colors.accent : colors.muted;
+    final labelColor = selected ? colors.text : colors.muted;
+
     return InkWell(
       onTap: onTap,
-      child: Opacity(
-        // Estado inactivo levemente atenuado (0.9) para mejor contraste.
-        opacity: selected ? 1 : 0.9,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Image.asset(
-              selected ? selectedIcon : unselectedIcon,
-              width: 24,
-              height: 24,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Image.asset(
+            selected ? selectedIcon : unselectedIcon,
+            width: 24,
+            height: 24,
+            color: iconColor,
+            colorBlendMode: BlendMode.srcIn,
+          ),
+          const SizedBox(height: 2),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 10,
+              height: 16 / 10,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+              color: labelColor,
             ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              textAlign: TextAlign.center,
-              // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
-              style: TextStyle(
-                fontSize: 10,
-                height: 16 / 10,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                color: AppColors.textNeutralPrimary,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 }
 
-/// Botón central (componente `QR-Container`): círculo morado de 50px con borde,
-/// sombra suave y el ícono QR en blanco, o una cruz cuando [showClose] es true.
+/// Botón central (componente `QR-Container`): círculo teal de 50px con borde,
+/// sombra suave y el ícono QR, o una cruz cuando [showClose] es true.
 class _QrButton extends StatelessWidget {
   const _QrButton({this.onTap, this.showClose = false});
 
@@ -196,12 +198,12 @@ class _QrButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.brandPrimary,
               shape: BoxShape.circle,
-              border: Border.all(color: AppColors.borderNeutral),
-              boxShadow: const [
+              border: Border.all(color: context.kuatia.border),
+              boxShadow: [
                 BoxShadow(
-                  color: Color.fromRGBO(191, 144, 255, 0.2),
-                  offset: Offset(0, 5),
-                  blurRadius: 5,
+                  color: AppColors.brandPrimary.withValues(alpha: 0.28),
+                  offset: const Offset(0, 5),
+                  blurRadius: 8,
                 ),
               ],
             ),
@@ -213,10 +215,9 @@ class _QrButton extends StatelessWidget {
                 key: const ValueKey('navCenterIcon'),
                 width: 24,
                 height: 24,
-                // La cruz se tiñe de blanco para contrastar sobre el morado
-                // (el PNG viene oscuro); el QR ya viene en blanco.
-                color: showClose ? Colors.white : null,
-                colorBlendMode: showClose ? BlendMode.srcIn : BlendMode.srcOver,
+                // Tint ink sobre teal (PNG oscuro o blanco).
+                color: AppColors.inkOnAccent,
+                colorBlendMode: BlendMode.srcIn,
               ),
             ),
           ),

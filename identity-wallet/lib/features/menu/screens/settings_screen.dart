@@ -7,32 +7,22 @@ import 'package:identity_wallet/shared/identity_shared.dart';
 const _kBiometricsKey = 'biometrics_enabled';
 const _storage = FlutterSecureStorage();
 
-/// Lee si el desbloqueo biométrico está habilitado (clave en [FlutterSecureStorage]).
-///
-/// Valor persistido como string `'true'` / `'false'`. Se invalida tras cada cambio
-/// desde [SettingsScreen].
-
 final _biometricsEnabledProvider = FutureProvider<bool>((ref) async {
   final value = await _storage.read(key: _kBiometricsKey);
   return value == 'true';
 });
 
-/// Ajustes de la app bajo `/home/menu/settings`.
-///
-/// Por ahora solo expone el interruptor de **desbloqueo biométrico**: persiste la
-/// preferencia en almacenamiento seguro y, al activar, comprueba disponibilidad con
-/// [LocalAuthentication.canCheckBiometrics]. La lectura inicial va por
-/// [_biometricsEnabledProvider].
-
+/// Ajustes: biometría + tema claro/oscuro.
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final biometricsAsync = ref.watch(_biometricsEnabledProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final colors = context.kuatia;
 
-    return Scaffold(
-      backgroundColor: AppColors.backgroundNeutralSecondary,
+    return KuatiaScaffold(
       appBar: IdentityPageAppBar.build(title: 'Ajustes'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
@@ -51,17 +41,76 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
+          const SizedBox(height: 12),
+          IdentityCard(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Apariencia',
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 22 / 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.text,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Elegí claro u oscuro',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 16 / 12,
+                    color: colors.muted,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                SegmentedButton<ThemeMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: ThemeMode.light,
+                      label: Text('Claro'),
+                      icon: Icon(Icons.light_mode_outlined, size: 18),
+                    ),
+                    ButtonSegment(
+                      value: ThemeMode.dark,
+                      label: Text('Oscuro'),
+                      icon: Icon(Icons.dark_mode_outlined, size: 18),
+                    ),
+                  ],
+                  selected: {
+                    themeMode == ThemeMode.light
+                        ? ThemeMode.light
+                        : ThemeMode.dark,
+                  },
+                  onSelectionChanged: (next) {
+                    ref.read(themeModeProvider.notifier).setMode(next.first);
+                  },
+                  style: ButtonStyle(
+                    visualDensity: VisualDensity.compact,
+                    foregroundColor: WidgetStatePropertyAll(colors.text),
+                    backgroundColor: WidgetStateProperty.resolveWith((states) {
+                      if (states.contains(WidgetState.selected)) {
+                        return colors.accentSurface;
+                      }
+                      return colors.hover;
+                    }),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// Activa o desactiva la preferencia biométrica y refresca el provider.
-  ///
-  /// Si [enable] es true y el dispositivo no puede usar biométricos, muestra
-  /// [SnackBar] y no guarda el cambio.
-
-  Future<void> _toggleBiometrics(BuildContext context, WidgetRef ref, bool enable) async {
+  Future<void> _toggleBiometrics(
+    BuildContext context,
+    WidgetRef ref,
+    bool enable,
+  ) async {
     if (enable) {
       final auth = LocalAuthentication();
       final available = await auth.canCheckBiometrics;
@@ -77,10 +126,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-/// Fila del interruptor biométrico: huella, título, descripción y switch.
-///
-/// Con [loading] reemplaza el switch por un indicador mientras se lee la
-/// preferencia persistida.
 class _BiometricsRow extends StatelessWidget {
   const _BiometricsRow({
     required this.enabled,
@@ -94,17 +139,14 @@ class _BiometricsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
-          const Icon(
-            Icons.fingerprint,
-            size: 22,
-            color: AppColors.textNeutralSecondary,
-          ),
+          Icon(Icons.fingerprint, size: 22, color: colors.muted),
           const SizedBox(width: 12),
-          const Expanded(
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -114,17 +156,17 @@ class _BiometricsRow extends StatelessWidget {
                     fontSize: 16,
                     height: 22 / 16,
                     fontWeight: FontWeight.w600,
-                    color: AppColors.textNeutralPrimary,
+                    color: colors.text,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Usar huella o Face ID para desbloquear',
                   style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
                     fontWeight: FontWeight.w400,
-                    color: AppColors.textNeutralSecondary,
+                    color: colors.muted,
                   ),
                 ),
               ],
@@ -132,18 +174,16 @@ class _BiometricsRow extends StatelessWidget {
           ),
           const SizedBox(width: 12),
           if (loading)
-            const SizedBox(
+            SizedBox(
               width: 20,
               height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: colors.accent,
+              ),
             )
           else
-            Switch(
-              value: enabled,
-              onChanged: onChanged,
-              activeThumbColor: Colors.white,
-              activeTrackColor: AppColors.brandPrimary,
-            ),
+            Switch(value: enabled, onChanged: onChanged),
         ],
       ),
     );

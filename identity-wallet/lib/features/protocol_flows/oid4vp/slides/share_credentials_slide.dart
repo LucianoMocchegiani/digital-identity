@@ -136,7 +136,7 @@ class ShareSheetContent extends StatelessWidget {
               ),
             ),
             if (entry.claims.isEmpty)
-              const Padding(
+              Padding(
                 padding: EdgeInsets.only(bottom: 16),
                 child: Text(
                   'Se compartirá la credencial completa.',
@@ -149,7 +149,7 @@ class ShareSheetContent extends StatelessWidget {
                 ),
               ),
           ],
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
         ],
       ],
     );
@@ -173,12 +173,12 @@ class _MissingCredentialRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(Icons.error_outline, size: 16, color: AppColors.errorText),
-          const SizedBox(width: 8),
+          Icon(Icons.error_outline, size: 16, color: AppColors.errorText),
+          SizedBox(width: 8),
           Expanded(
             child: Text(
               name,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 height: 16 / 12,
                 fontWeight: FontWeight.w500,

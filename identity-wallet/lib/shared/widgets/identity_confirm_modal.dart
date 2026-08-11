@@ -107,7 +107,7 @@ class IdentityConfirmModal extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
@@ -117,7 +117,7 @@ class IdentityConfirmModal extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             description,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
                               height: 18 / 14,
                               fontWeight: FontWeight.w400,

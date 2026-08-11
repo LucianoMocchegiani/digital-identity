@@ -67,6 +67,10 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
           },
           {
             kind: 'added',
+            text: 'Wallet Flutter con tema Kuatia (charcoal + teal) y modo claro/oscuro.',
+          },
+          {
+            kind: 'added',
             text: 'Tema claro/oscuro, SEO técnico (sitemap, robots, OG) y config de sitio vía env.',
           },
         ],

@@ -89,7 +89,7 @@ class _NotificationBadge extends StatelessWidget {
           label,
           textAlign: TextAlign.center,
           // TODO: aplicar la familia 'Nunito Sans' al definir la tipografía global.
-          style: const TextStyle(
+          style: TextStyle(
             color: Colors.white,
             fontSize: 12,
             fontWeight: FontWeight.w500,

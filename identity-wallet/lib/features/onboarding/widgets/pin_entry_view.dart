@@ -168,26 +168,26 @@ class _PinEntryViewState extends State<PinEntryView> {
               totalSteps: widget.totalSteps,
               onBack: widget.onBack!,
             ),
-            const SizedBox(height: 32),
+            SizedBox(height: 32),
           ] else
-            const Spacer(),
+            Spacer(),
 
           // Título + descripción.
           Text(
             widget.title,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 18,
               height: 26 / 18,
               fontWeight: FontWeight.w600,
               color: AppColors.textNeutralPrimary,
             ),
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           Text(
             widget.description,
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               height: 18 / 14,
               fontWeight: FontWeight.w400,
@@ -196,11 +196,11 @@ class _PinEntryViewState extends State<PinEntryView> {
           ),
 
           if (widget.showWarning) ...[
-            const SizedBox(height: 12),
+            SizedBox(height: 12),
             const _WarningBadge(),
           ],
 
-          const SizedBox(height: 24),
+          SizedBox(height: 24),
           // En error, todos los puntos se muestran rellenos en rojo.
           _PinDots(
             filled: hasError ? widget.pinLength : _pin.length,
@@ -218,10 +218,10 @@ class _PinEntryViewState extends State<PinEntryView> {
                 : const SizedBox.shrink(),
           ),
 
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           _Keypad(onDigit: _onDigit, onBackspace: _onBackspace),
 
-          const Spacer(),
+          Spacer(),
           if (!widget.autoSubmit)
             IdentityPrimaryButton(
               label: widget.submitLabel,
@@ -254,8 +254,8 @@ class _WarningBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(_iconAsset, width: 12, height: 12),
-            const SizedBox(width: 4),
-            const Flexible(
+            SizedBox(width: 4),
+            Flexible(
               child: Text(
                 'Recordá tu PIN. No podrá recuperarse.',
                 style: TextStyle(
@@ -332,11 +332,11 @@ class _ErrorBadge extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Image.asset(_iconAsset, width: 12, height: 12),
-            const SizedBox(width: 4),
+            SizedBox(width: 4),
             Flexible(
               child: Text(
                 message,
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 18 / 14,
                   fontWeight: FontWeight.w500,
@@ -373,7 +373,7 @@ class _Keypad extends StatelessWidget {
       child: Column(
         children: [
           for (var r = 0; r < rows.length; r++) ...[
-            if (r > 0) const SizedBox(height: 20),
+            if (r > 0) SizedBox(height: 20),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -387,12 +387,12 @@ class _Keypad extends StatelessWidget {
   }
 
   Widget _buildKey(String key) {
-    if (key.isEmpty) return const SizedBox(width: 72, height: 72);
+    if (key.isEmpty) return SizedBox(width: 72, height: 72);
     if (key == 'back') {
       return _KeypadButton(
         onTap: onBackspace,
         filled: false,
-        child: const Icon(
+        child: Icon(
           Icons.backspace_outlined,
           size: 28,
           color: AppColors.textNeutralMuted,
@@ -404,7 +404,7 @@ class _Keypad extends StatelessWidget {
       filled: true,
       child: Text(
         key,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 32,
           height: 30 / 32,
           fontWeight: FontWeight.w500,

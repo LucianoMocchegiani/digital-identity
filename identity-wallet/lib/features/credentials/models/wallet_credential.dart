@@ -55,13 +55,17 @@ class WalletCredential {
   /// Si la credencial está verificada (muestra la insignia).
   final bool verified;
 
-  /// Color de fondo efectivo para widgets: [backgroundColor] o neutro de la app.
-  Color get resolvedBackground =>
-      backgroundColor ?? CredentialDisplayStyle.neutralBackground;
+  /// Color de fondo efectivo: metadata del emisor o neutro del tema.
+  Color resolvedBackground([Brightness brightness = Brightness.dark]) {
+    if (backgroundColor != null) return backgroundColor!;
+    return CredentialDisplayStyle.neutralFor(brightness).$1;
+  }
 
-  /// Color de texto efectivo: [textColor] o neutro de la app.
-  Color get resolvedForeground =>
-      textColor ?? CredentialDisplayStyle.neutralForeground;
+  /// Color de texto efectivo: metadata del emisor o neutro del tema.
+  Color resolvedForeground([Brightness brightness = Brightness.dark]) {
+    if (textColor != null) return textColor!;
+    return CredentialDisplayStyle.neutralFor(brightness).$2;
+  }
 
   /// Copia con los campos indicados reemplazados (útil en tests y previews).
   WalletCredential copyWith({

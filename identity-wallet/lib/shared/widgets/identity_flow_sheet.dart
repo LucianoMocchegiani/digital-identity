@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
+import '../theme/kuatia_colors.dart';
 
 /// Aloja un sheet anclado abajo sobre un velo oscuro (patrón de flujos).
 class FlowSheetScaffold extends StatelessWidget {
@@ -150,7 +151,7 @@ class _IdentityFlowSheetState extends State<IdentityFlowSheet>
     return SlideTransition(
       position: _slide,
       child: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
         ),
@@ -174,7 +175,7 @@ class _IdentityFlowSheetState extends State<IdentityFlowSheet>
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -237,7 +238,7 @@ class _ActionBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: Colors.white,
         border: Border(top: BorderSide(color: AppColors.borderNeutral)),
       ),
@@ -250,7 +251,7 @@ class _ActionBar extends StatelessWidget {
               filled: false,
             ),
           ),
-          const SizedBox(width: 12),
+          SizedBox(width: 12),
           Expanded(
             child: _SheetButton(
               label: primaryLabel,
@@ -335,6 +336,7 @@ class SheetFieldRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
@@ -342,22 +344,22 @@ class SheetFieldRow extends StatelessWidget {
         children: [
           Text(
             label,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w400,
-              color: AppColors.textNeutralSecondary,
+              color: colors.muted,
             ),
           ),
           if (value.isNotEmpty) ...[
             const SizedBox(height: 4),
             Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 18 / 14,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textNeutralPrimary,
+                color: colors.text,
               ),
             ),
           ],
@@ -385,8 +387,8 @@ class _VerifiedBadge extends StatelessWidget {
           width: 16,
           height: 16,
         ),
-        const SizedBox(width: 4),
-        const Text(
+        SizedBox(width: 4),
+        Text(
           'Verificado',
           style: TextStyle(
             fontSize: 14,

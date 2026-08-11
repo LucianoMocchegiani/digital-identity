@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:identity_wallet/shared/identity_shared.dart';
 
 import '../widgets/onboarding_slide.dart';
 
@@ -39,7 +40,7 @@ class _WelcomeSlidesScreenState extends State<WelcomeSlidesScreen> {
   static const _slides = <_SlideData>[
     _SlideData(
       illustrationAsset: 'public/images/login/Ilustración-1.png',
-      title: 'Bienvenido',
+      title: 'Bienvenido a Kuatia',
       description:
           'Tu identidad digital en un solo lugar. Accedé a tus credenciales, '
           'documentos y accesos desde una experiencia simple y segura.',
@@ -80,7 +81,9 @@ class _WelcomeSlidesScreenState extends State<WelcomeSlidesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return PageView.builder(
+    return ColoredBox(
+      color: context.kuatia.bg,
+      child: PageView.builder(
       controller: _controller,
       itemCount: _slides.length,
       itemBuilder: (context, index) {
@@ -98,6 +101,7 @@ class _WelcomeSlidesScreenState extends State<WelcomeSlidesScreen> {
           onSkip: isLast ? null : widget.onContinue,
         );
       },
+    ),
     );
   }
 }

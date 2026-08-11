@@ -24,6 +24,7 @@ class CredentialGenerationScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 40, 16, 40),
       child: Column(
@@ -31,20 +32,18 @@ class CredentialGenerationScreen extends StatelessWidget {
         children: [
           const OnboardingStepHeader(currentStep: 2, totalSteps: 2),
           const SizedBox(height: 32),
-
-          // Título + descripción.
-          const Text(
+          Text(
             'Genera tu primera credencial',
             textAlign: TextAlign.center,
             style: TextStyle(
               fontSize: 18,
               height: 26 / 18,
               fontWeight: FontWeight.w600,
-              color: AppColors.textNeutralPrimary,
+              color: colors.text,
             ),
           ),
           const SizedBox(height: 4),
-          const Text(
+          Text(
             'Podés generar tu primera credencial ahora o hacerlo más adelante '
             'desde tu perfil.',
             textAlign: TextAlign.center,
@@ -52,30 +51,26 @@ class CredentialGenerationScreen extends StatelessWidget {
               fontSize: 14,
               height: 18 / 14,
               fontWeight: FontWeight.w400,
-              color: AppColors.textNeutralSecondary,
+              color: colors.muted,
             ),
           ),
           const SizedBox(height: 24),
-
-          // Ilustración (QR + credencial) sobre el círculo celeste.
-          const Expanded(child: Center(child: _CredentialIllustration())),
+          Expanded(child: Center(child: _CredentialIllustration())),
           const SizedBox(height: 24),
-
-          // Acciones.
           _ActionButton(
             label: 'Omitir',
-            background: Colors.white,
-            foreground: AppColors.textNeutralPrimary,
-            border: AppColors.borderNeutral,
+            background: colors.panel,
+            foreground: colors.text,
+            border: colors.border,
             onTap: onSkip,
           ),
           const SizedBox(height: 12),
           _ActionButton(
             label: 'Añadir credencial',
-            background: AppColors.brandPrimary,
-            foreground: AppColors.backgroundNeutralSecondary,
+            background: colors.accent,
+            foreground: colors.ink,
             iconAsset: 'public/images/login/QR-Code.png',
-            iconColor: AppColors.backgroundNeutralSecondary,
+            iconColor: colors.ink,
             onTap: onAddCredential,
           ),
         ],
@@ -105,7 +100,7 @@ class _CredentialIllustration extends StatelessWidget {
             Container(
               width: 245,
               height: 245,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: Color(0xFFF0F9FF),
                 shape: BoxShape.circle,
               ),
@@ -181,7 +176,7 @@ class _ActionButton extends StatelessWidget {
                   color: iconColor,
                   colorBlendMode: iconColor != null ? BlendMode.srcIn : null,
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
               ],
               Text(
                 label,

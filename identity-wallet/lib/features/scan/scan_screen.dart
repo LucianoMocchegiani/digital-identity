@@ -320,7 +320,7 @@ class _ScanHint extends StatelessWidget {
       children: [
         Image.asset(_qrAsset, width: 32, height: 32),
         const SizedBox(height: 12),
-        const SizedBox(
+        SizedBox(
           width: 231,
           child: Text(
             'Escanear el QR para proceder a la descarga.',

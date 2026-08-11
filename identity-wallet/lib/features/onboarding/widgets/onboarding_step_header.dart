@@ -146,7 +146,7 @@ class _StepCircle extends StatelessWidget {
         ),
         child: Text(
           '$step',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 12,
             height: 16 / 12,
             fontWeight: FontWeight.w500,

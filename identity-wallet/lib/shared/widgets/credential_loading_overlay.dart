@@ -5,20 +5,20 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'concentric_rings.dart';
 
-/// Color de marca del punto activo del spinner.
-const _spinnerActive = Color(0xFF7F56D9);
+/// Color de marca del punto activo del spinner (teal Kuatia).
+const _spinnerActive = Color(0xFF00A89D);
 
 /// Color de los puntos inactivos del spinner.
 const _spinnerIdle = Color(0xFFD9D9D9);
 
 /// Devuelve el color del punto [dotIndex] cuando el activo es [activeIndex].
 ///
-/// El punto activo se pinta en morado de marca; el resto en gris. Función pura
+/// El punto activo se pinta en teal de marca; el resto en gris. Función pura
 /// para poder testear la rotación del color sin instanciar widgets.
 Color spinnerDotColor(int dotIndex, int activeIndex) =>
     dotIndex == activeIndex ? _spinnerActive : _spinnerIdle;
 
-/// Spinner de 8 puntos radiales: el punto morado avanza en sentido horario.
+/// Spinner de 8 puntos radiales: el punto teal avanza en sentido horario.
 ///
 /// Los puntos se dibujan en código (no se usa el PNG) para poder animar cuál
 /// está activo. Respeta reduce-motion: con animaciones deshabilitadas queda
@@ -179,7 +179,7 @@ class CredentialLoadingOverlay extends StatelessWidget {
                       children: [
                         Text(
                           title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             height: 22 / 16,
                             fontWeight: FontWeight.w500,
@@ -189,7 +189,7 @@ class CredentialLoadingOverlay extends StatelessWidget {
                         const SizedBox(height: 4),
                         Text(
                           description,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 14,
                             height: 18 / 14,
                             fontWeight: FontWeight.w400,

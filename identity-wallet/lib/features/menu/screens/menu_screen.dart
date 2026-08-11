@@ -2,28 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:identity_wallet/shared/identity_shared.dart';
 
-/// Pantalla de la pestaña **Configuración** del navbar inferior (`/home/menu`).
-///
-/// Agrupa las opciones en tarjetas del design system: actividad y conexiones,
-/// preferencias (ajustes, acerca de) y la acción destructiva de reiniciar la
-/// wallet. Mantiene el [IdentityTopBar] y el [IdentityBottomNav] fijos; [MenuScreen]
-/// no contiene lógica de estado: solo navegación.
-///
-/// El acceso a credenciales no vive acá: la pestaña "Credenciales" del navbar
-/// ya es la puerta al home.
+/// Pestaña Configuración del navbar.
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundNeutralSecondary,
+    return KuatiaScaffold(
       appBar: IdentityTopBar(
         onNotificationsPressed: () => context.push('/home/inbox'),
       ),
       bottomNavigationBar: IdentityBottomNav(
         currentTab: IdentityNavTab.configuration,
-        // `go` (no `push`) alterna la pestaña sin apilar y conservando el navbar.
         onCredentials: () => context.go('/home'),
         onScan: () => context.push('/home/scan'),
       ),
@@ -76,7 +66,6 @@ class MenuScreen extends StatelessWidget {
   }
 }
 
-/// Tarjeta que agrupa filas del menú, con divisor entre ellas.
 class _MenuGroup extends StatelessWidget {
   const _MenuGroup({required this.children});
 
@@ -84,16 +73,17 @@ class _MenuGroup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return IdentityCard(
       child: Column(
         children: [
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0)
-              const Divider(
+              Divider(
                 height: 1,
                 thickness: 1,
                 indent: 16,
-                color: AppColors.borderNeutral,
+                color: colors.border,
               ),
             children[i],
           ],
@@ -103,9 +93,6 @@ class _MenuGroup extends StatelessWidget {
   }
 }
 
-/// Fila del menú: ícono, etiqueta y chevron de navegación.
-///
-/// [danger] tiñe ícono y texto con los tokens destructivos (reiniciar wallet).
 class _MenuTile extends StatelessWidget {
   const _MenuTile({
     required this.icon,
@@ -121,17 +108,15 @@ class _MenuTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor =
-        danger ? AppColors.dangerIcon : AppColors.textNeutralSecondary;
-    final labelColor =
-        danger ? AppColors.dangerText : AppColors.textNeutralPrimary;
+    final colors = context.kuatia;
+    final iconColor = danger ? colors.dangerIcon : colors.muted;
+    final labelColor = danger ? colors.dangerText : colors.text;
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
         child: Padding(
-          // Sin alto fijo: la fila crece con la fuente del sistema.
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           child: Row(
             children: [
@@ -149,11 +134,7 @@ class _MenuTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              const Icon(
-                Icons.chevron_right,
-                size: 24,
-                color: AppColors.textNeutralSecondary,
-              ),
+              Icon(Icons.chevron_right, size: 24, color: colors.muted),
             ],
           ),
         ),

@@ -55,7 +55,7 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Título y descripción.
-          const Text(
+          Text(
             'Configurá tu wallet',
             textAlign: TextAlign.center,
             style: TextStyle(
@@ -65,8 +65,8 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
               color: AppColors.textNeutralPrimary,
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
+          SizedBox(height: 4),
+          Text(
             'Antes de comenzar, necesitás completar algunos pasos para '
             'configurar y proteger tu cuenta.',
             textAlign: TextAlign.center,
@@ -77,7 +77,7 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
               color: AppColors.textNeutralSecondary,
             ),
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
 
           // Pasos de configuración.
           const _StepRow(
@@ -88,7 +88,7 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
                 'Creá un PIN de acceso de 6 dígitos para acceder de forma '
                 'segura a la wallet.',
           ),
-          const SizedBox(height: 32),
+          SizedBox(height: 32),
           const _StepRow(
             iconAsset: 'public/images/login/QR-Code.png',
             stepLabel: 'Paso 2',
@@ -99,7 +99,7 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
           ),
 
           // Empuja la botonera al borde inferior.
-          const Spacer(),
+          Spacer(),
 
           // Checkbox de aceptación + botón "Continuar".
           _AcceptTermsRow(
@@ -107,7 +107,7 @@ class _SetupIntroScreenState extends State<SetupIntroScreen> {
             onToggle: _toggleAccepted,
             termsRecognizer: _termsRecognizer,
           ),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
           IdentityPrimaryButton(
             label: 'Continuar',
             enabled: _accepted,
@@ -162,27 +162,27 @@ class _StepRow extends StatelessWidget {
             ),
             child: Image.asset(iconAsset, width: 24, height: 24),
           ),
-          const SizedBox(width: 16),
+          SizedBox(width: 16),
           // Textos del paso.
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _StepLabel(stepLabel: stepLabel, optionalLabel: optionalLabel),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 16,
                     height: 22 / 16,
                     fontWeight: FontWeight.w600,
                     color: AppColors.textNeutralPrimary,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 4),
                 Text(
                   description,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 18 / 14,
                     fontWeight: FontWeight.w400,
@@ -207,7 +207,7 @@ class _StepLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const stepStyle = TextStyle(
+    final stepStyle = TextStyle(
       fontSize: 12,
       height: 16 / 12,
       fontWeight: FontWeight.w700,
@@ -218,12 +218,12 @@ class _StepLabel extends StatelessWidget {
       children: [
         Text(stepLabel, style: stepStyle),
         if (optionalLabel != null) ...[
-          const SizedBox(width: 8),
-          const Text('·', style: stepStyle),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
+          Text('·', style: stepStyle),
+          SizedBox(width: 8),
           Text(
             optionalLabel!,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w400,
@@ -257,11 +257,11 @@ class _AcceptTermsRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _Checkbox(checked: accepted, onTap: onToggle),
-          const SizedBox(width: 8),
+          SizedBox(width: 8),
           Expanded(
             child: Text.rich(
               TextSpan(
-                style: const TextStyle(
+                style: TextStyle(
                   fontSize: 14,
                   height: 18 / 14,
                   fontWeight: FontWeight.w400,
@@ -271,7 +271,7 @@ class _AcceptTermsRow extends StatelessWidget {
                   const TextSpan(text: 'Acepto los '),
                   TextSpan(
                     text: 'Términos y Condiciones',
-                    style: const TextStyle(color: AppColors.linkBlue),
+                    style: TextStyle(color: AppColors.linkBlue),
                     recognizer: termsRecognizer,
                   ),
                 ],
@@ -304,7 +304,7 @@ class _Checkbox extends StatelessWidget {
         height: 16,
         padding: const EdgeInsets.all(3),
         decoration: BoxDecoration(
-          color: checked ? AppColors.checkboxCheckedFill : Colors.white,
+          color: checked ? AppColors.checkboxCheckedFill : AppColors.panel,
           border: Border.all(
             color: checked ? AppColors.progressActive : AppColors.borderNeutral,
           ),

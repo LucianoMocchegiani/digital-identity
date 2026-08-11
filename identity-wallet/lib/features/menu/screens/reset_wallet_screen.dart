@@ -61,18 +61,18 @@ class _ResetWalletScreenState extends ConsumerState<ResetWalletScreen> {
                         width: 64,
                         height: 64,
                         alignment: Alignment.center,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: AppColors.warningSurface,
                           shape: BoxShape.circle,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.warning_amber_rounded,
                           size: 32,
                           color: AppColors.warningText,
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      const Text(
+                      SizedBox(height: 20),
+                      Text(
                         'Esto eliminará permanentemente todos tus datos del wallet.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -82,8 +82,8 @@ class _ResetWalletScreenState extends ConsumerState<ResetWalletScreen> {
                           color: AppColors.textNeutralPrimary,
                         ),
                       ),
-                      const SizedBox(height: 8),
-                      const Text(
+                      SizedBox(height: 8),
+                      Text(
                         'No podrás recuperar tus credenciales después de reiniciar.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
@@ -98,7 +98,7 @@ class _ResetWalletScreenState extends ConsumerState<ResetWalletScreen> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: 16),
             IdentityDangerButton(
               label: 'Reiniciar wallet',
               isLoading: _resetting,

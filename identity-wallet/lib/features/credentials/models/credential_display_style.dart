@@ -30,19 +30,26 @@ class CredentialDisplayStyle {
   /// URI HTTP(S) de la imagen de fondo (`display.background_image.uri`).
   final String? backgroundImageUrl;
 
-  /// Fondo neutro por defecto de [CredentialCard] y [CredentialDetailDrawer].
-  static const neutralBackground = Color(0xFFEDEFF2);
+  /// Fondo neutro dark (panel Kuatia).
+  static const neutralBackgroundDark = Color(0xFF0B1520);
 
-  /// Texto neutro por defecto cuando no hay `text_color` del emisor.
-  static const neutralForeground = Color(0xFF252B37);
+  /// Fondo neutro light.
+  static const neutralBackgroundLight = Color(0xFFFFFFFF);
 
-  /// Resuelve el color de fondo aplicando [fallback] y luego [neutralBackground].
-  Color resolveBackground(Color? fallback) =>
-      backgroundColor ?? fallback ?? neutralBackground;
+  /// Texto sobre fallback dark.
+  static const neutralForegroundDark = Color(0xFFF3F7F8);
 
-  /// Resuelve el color de texto aplicando [fallback] y luego [neutralForeground].
-  Color resolveForeground(Color? fallback) =>
-      textColor ?? fallback ?? neutralForeground;
+  /// Texto sobre fallback light.
+  static const neutralForegroundLight = Color(0xFF0C1520);
+
+  /// Fallback de tarjeta según brightness del tema.
+  static (Color bg, Color fg) neutralFor(Brightness brightness) {
+    final dark = brightness == Brightness.dark;
+    return (
+      dark ? neutralBackgroundDark : neutralBackgroundLight,
+      dark ? neutralForegroundDark : neutralForegroundLight,
+    );
+  }
 
   /// Convierte un valor hex del metadata OID4VCI a [Color].
   ///

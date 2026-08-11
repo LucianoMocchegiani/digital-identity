@@ -58,7 +58,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final filterState = ref.watch(credentialsFilterStateProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.backgroundNeutralSecondary,
+      backgroundColor: context.kuatia.bg,
       appBar: IdentityTopBar(
         onNotificationsPressed: () => context.push('/home/inbox'),
       ),
@@ -68,79 +68,83 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onScan: () => setState(() => _actionsOpen = !_actionsOpen),
         onConfiguration: () => context.go('/home/menu'),
       ),
-      body: credentialsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (_, __) => const SizedBox.shrink(),
-        data: (allCredentials) {
-          return Stack(
-            children: [
-              _buildCredentialList(
-                context,
-                allCredentials: allCredentials,
-                filteredCredentials: filteredCredentials,
-                filterState: filterState,
-              ),
-              CategoriesPanel(
-                categories: categories,
-                onCredentialTap: (credential) => _openDetail(
-                  context,
-                  credential: credential,
-                  allCredentials: allCredentials,
-                ),
-                onExpandedChanged: (expanded) =>
-                    setState(() => _panelExpanded = expanded),
-              ),
-              Positioned(
-                top: 16,
-                left: 0,
-                right: 0,
-                child: IgnorePointer(
-                  ignoring: _panelExpanded,
-                  child: AnimatedOpacity(
-                    opacity: _panelExpanded ? 0 : 1,
-                    duration: const Duration(milliseconds: 150),
-                    child: CredentialsFilterBar(
-                      initial: filterState.filter,
-                      onSelect: (filter) {
-                        ref.read(credentialsFilterStateProvider.notifier).state =
-                            filterState.copyWith(filter: filter);
-                      },
-                      onSearchChanged: (query) {
-                        ref.read(credentialsFilterStateProvider.notifier).state =
-                            filterState.copyWith(searchQuery: query);
-                      },
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          const Positioned.fill(child: KuatiaAtmosphere()),
+          credentialsAsync.when(
+            loading: () => const Center(child: CircularProgressIndicator()),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (allCredentials) {
+              return Stack(
+                children: [
+                  _buildCredentialList(
+                    context,
+                    allCredentials: allCredentials,
+                    filteredCredentials: filteredCredentials,
+                    filterState: filterState,
+                  ),
+                  CategoriesPanel(
+                    categories: categories,
+                    onCredentialTap: (credential) => _openDetail(
+                      context,
+                      credential: credential,
+                      allCredentials: allCredentials,
+                    ),
+                    onExpandedChanged: (expanded) =>
+                        setState(() => _panelExpanded = expanded),
+                  ),
+                  Positioned(
+                    top: 16,
+                    left: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      ignoring: _panelExpanded,
+                      child: AnimatedOpacity(
+                        opacity: _panelExpanded ? 0 : 1,
+                        duration: const Duration(milliseconds: 150),
+                        child: CredentialsFilterBar(
+                          initial: filterState.filter,
+                          onSelect: (filter) {
+                            ref
+                                .read(credentialsFilterStateProvider.notifier)
+                                .state = filterState.copyWith(filter: filter);
+                          },
+                          onSearchChanged: (query) {
+                            ref
+                                .read(credentialsFilterStateProvider.notifier)
+                                .state = filterState.copyWith(searchQuery: query);
+                          },
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-
-              // Barra flotante de acciones (Añadir / Presentar) + velo de cierre.
-              if (_actionsOpen) ...[
-                Positioned.fill(
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
-                    onTap: () => setState(() => _actionsOpen = false),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: HomeActionsBar(
-                    onAdd: () {
-                      setState(() => _actionsOpen = false);
-                      context.push('/home/scan');
-                    },
-                    onPresent: () {
-                      // Abre la cámara: el escaneo del QR del verificador (OID4VP)
-                      // dispara el flujo de presentación en Oid4VpNotificationScreen.
-                      setState(() => _actionsOpen = false);
-                      context.push('/home/scan');
-                    },
-                  ),
-                ),
-              ],
-            ],
-          );
-        },
+                  if (_actionsOpen) ...[
+                    Positioned.fill(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: () => setState(() => _actionsOpen = false),
+                      ),
+                    ),
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: HomeActionsBar(
+                        onAdd: () {
+                          setState(() => _actionsOpen = false);
+                          context.push('/home/scan');
+                        },
+                        onPresent: () {
+                          setState(() => _actionsOpen = false);
+                          context.push('/home/scan');
+                        },
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -165,7 +169,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           child: Text(
             _emptyFilterMessage(filterState),
             textAlign: TextAlign.center,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 14,
               color: AppColors.textNeutralSecondary,
             ),

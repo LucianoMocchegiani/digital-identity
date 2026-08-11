@@ -31,7 +31,7 @@ class ActivityDetailDrawer extends StatelessWidget {
             maxHeight: MediaQuery.of(context).size.height * 0.9,
           ),
           clipBehavior: Clip.antiAlias,
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             color: AppColors.backgroundNeutralSecondary,
             borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
           ),
@@ -150,10 +150,10 @@ class _StatusHeader extends StatelessWidget {
           decoration: BoxDecoration(color: surface, shape: BoxShape.circle),
           child: Icon(icon, color: accent, size: 36),
         ),
-        const SizedBox(height: 12),
+        SizedBox(height: 12),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 20,
             height: 26 / 20,
             fontWeight: FontWeight.w600,

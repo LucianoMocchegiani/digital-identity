@@ -48,7 +48,7 @@ class IdentityDangerButton extends StatelessWidget {
             alignment: Alignment.center,
             padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
             child: isLoading
-                ? const SizedBox(
+                ? SizedBox(
                     width: 20,
                     height: 20,
                     child: CircularProgressIndicator(
@@ -72,7 +72,7 @@ class IdentityDangerButton extends StatelessWidget {
                       ],
                       Text(
                         label,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 14,
                           height: 18 / 14,
                           fontWeight: FontWeight.w600,

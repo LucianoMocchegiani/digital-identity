@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:identity_wallet/shared/identity_shared.dart';
 
 import '../../core/providers/onboarding_progress_notifier.dart';
 import '../../core/providers/wallet_notifier.dart';
@@ -155,12 +156,14 @@ class _OnboardingFlowState extends ConsumerState<OnboardingFlow> {
   @override
   Widget build(BuildContext context) {
     if (!_ready || _controller == null) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        backgroundColor: AppColors.backgroundNeutralSecondary,
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
+      backgroundColor: AppColors.backgroundNeutralSecondary,
       body: SafeArea(
         child: PageView(
           controller: _controller,

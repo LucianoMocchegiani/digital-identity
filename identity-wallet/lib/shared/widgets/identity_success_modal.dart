@@ -68,7 +68,7 @@ class IdentitySuccessModal extends StatelessWidget {
                       shape: BoxShape.circle,
                       border: Border.all(color: AppColors.borderNeutral),
                     ),
-                    child: const Icon(
+                    child: Icon(
                       Icons.check_circle_outline_rounded,
                       size: 24,
                       color: Color(0xFF12B76A),
@@ -80,7 +80,7 @@ class IdentitySuccessModal extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Banda de cabecera (deja ver el check + anillos superiores).
-                    const SizedBox(height: 72),
+                    SizedBox(height: 72),
                     // Texto + botón sobre fondo blanco (cubre las elipses inferiores).
                     Container(
                       color: Colors.white,
@@ -92,20 +92,20 @@ class IdentitySuccessModal extends StatelessWidget {
                         children: [
                           Text(
                             title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
                               color: AppColors.textNeutralPrimary,
                             ),
                           ),
-                          const SizedBox(height: 4),
+                          SizedBox(height: 4),
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxHeight: 120),
                             child: SingleChildScrollView(
                               child: Text(
                                 description,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 14,
                                   height: 18 / 14,
                                   fontWeight: FontWeight.w400,
@@ -114,7 +114,7 @@ class IdentitySuccessModal extends StatelessWidget {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 12),
+                          SizedBox(height: 12),
                           _continueButton(context),
                         ],
                       ),
@@ -161,7 +161,7 @@ class IdentitySuccessModal extends StatelessWidget {
           border: Border.all(color: AppColors.borderNeutral),
           boxShadow: const [kShadowXs],
         ),
-        child: const Text(
+        child: Text(
           'Continuar',
           textAlign: TextAlign.center,
           style: TextStyle(

@@ -2,24 +2,12 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/identity_shared.dart';
 
-/// Filtros disponibles en la barra flotante de credenciales.
 enum CredentialsFilter {
-  /// Todas las credenciales.
   credenciales,
-
-  /// Solo las credenciales marcadas como favoritas.
   favoritas,
 }
 
-/// Barra flotante de credenciales (componente `Tag-group`).
-///
-/// Tiene dos modos:
-/// - **Tabs**: pill segmentado ("Credenciales" / "Favoritas") + botón de lupa.
-/// - **Búsqueda**: al tocar la lupa se expande a un campo "Buscar...."; la X
-///   vuelve al modo tabs.
-///
-/// Gestiona su estado internamente y notifica el filtro con [onSelect] y el
-/// texto buscado con [onSearchChanged].
+/// Barra flotante de filtros (tabs + búsqueda).
 class CredentialsFilterBar extends StatefulWidget {
   const CredentialsFilterBar({
     super.key,
@@ -28,13 +16,8 @@ class CredentialsFilterBar extends StatefulWidget {
     this.onSearchChanged,
   });
 
-  /// Filtro seleccionado inicialmente.
   final CredentialsFilter initial;
-
-  /// Callback al cambiar de filtro.
   final ValueChanged<CredentialsFilter>? onSelect;
-
-  /// Callback al cambiar el texto de búsqueda.
   final ValueChanged<String>? onSearchChanged;
 
   @override
@@ -45,15 +28,6 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
   late CredentialsFilter _selected = widget.initial;
   final _searchController = TextEditingController();
   bool _searching = false;
-
-  // Sombra suave compartida (drop-shadow del diseño).
-  static const _shadow = [
-    BoxShadow(
-      color: Color.fromRGBO(0, 0, 0, 0.05),
-      offset: Offset(0, 2),
-      blurRadius: 4,
-    ),
-  ];
 
   @override
   void dispose() {
@@ -80,17 +54,13 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 200),
-        child: _searching ? _buildSearch() : _buildTabs(),
+        child: _searching ? _buildSearch(context) : _buildTabs(context),
       ),
     );
   }
 
-  /// Modo tabs: pill segmentado + botón de lupa.
-  ///
-  /// El pill se envuelve en [Flexible] y los tags pueden truncar su texto para
-  /// que, en pantallas angostas o con fuente del sistema grande, el contenido
-  /// se ajuste al ancho disponible en vez de desbordar la fila.
-  Widget _buildTabs() {
+  Widget _buildTabs(BuildContext context) {
+    final colors = context.kuatia;
     return Row(
       key: const ValueKey('tabs'),
       mainAxisAlignment: MainAxisAlignment.center,
@@ -101,10 +71,9 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
             height: 38,
             padding: const EdgeInsets.all(2),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.panel,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.borderNeutral),
-              boxShadow: _shadow,
+              border: Border.all(color: colors.border),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
@@ -132,6 +101,7 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
         ),
         const SizedBox(width: 10),
         _circleButton(
+          context,
           iconAsset: 'public/images/icons/lupa.png',
           onTap: () => setState(() => _searching = true),
         ),
@@ -139,23 +109,21 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
     );
   }
 
-  /// Modo búsqueda: campo "Buscar...." expandido + botón X.
-  Widget _buildSearch() {
+  Widget _buildSearch(BuildContext context) {
+    final colors = context.kuatia;
     return Row(
       key: const ValueKey('search'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Ancho fijo (no se estira): conserva el tamaño compacto de la barra.
         SizedBox(
           width: 198,
           child: Container(
             height: 38,
             padding: const EdgeInsets.symmetric(horizontal: 10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: colors.panel,
               borderRadius: BorderRadius.circular(99),
-              border: Border.all(color: AppColors.borderNeutral),
-              boxShadow: _shadow,
+              border: Border.all(color: colors.border),
             ),
             child: Row(
               children: [
@@ -163,7 +131,7 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
                   'public/images/icons/lupa.png',
                   width: 18,
                   height: 18,
-                  color: const Color(0xFF181D27),
+                  color: colors.muted,
                   colorBlendMode: BlendMode.srcIn,
                 ),
                 const SizedBox(width: 10),
@@ -172,14 +140,13 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
                     controller: _searchController,
                     autofocus: true,
                     onChanged: widget.onSearchChanged,
-                    cursorColor: AppColors.accentBlue,
-                    // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
-                    style: const TextStyle(
+                    cursorColor: colors.accent,
+                    style: TextStyle(
                       fontSize: 16,
                       height: 22 / 16,
-                      color: AppColors.textNeutralPrimary,
+                      color: colors.text,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       isCollapsed: true,
                       border: InputBorder.none,
                       hintText: 'Buscar....',
@@ -187,7 +154,7 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
                         fontSize: 16,
                         height: 22 / 16,
                         fontWeight: FontWeight.w400,
-                        color: AppColors.textNeutralSecondary,
+                        color: colors.muted,
                       ),
                     ),
                   ),
@@ -198,6 +165,7 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
         ),
         const SizedBox(width: 10),
         _circleButton(
+          context,
           iconAsset: 'public/images/icons/Cross.png',
           onTap: _exitSearch,
         ),
@@ -205,19 +173,21 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
     );
   }
 
-  /// Botón circular blanco (34px) con un ícono negro centrado.
-  Widget _circleButton({required String iconAsset, VoidCallback? onTap}) {
+  Widget _circleButton(
+    BuildContext context, {
+    required String iconAsset,
+    VoidCallback? onTap,
+  }) {
+    final colors = context.kuatia;
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: Colors.white,
+      decoration: BoxDecoration(
+        color: colors.panel,
         shape: BoxShape.circle,
-        boxShadow: _shadow,
+        border: Border.all(color: colors.border),
       ),
       child: Material(
         color: Colors.transparent,
-        shape: const CircleBorder(
-          side: BorderSide(color: AppColors.borderNeutral),
-        ),
+        shape: const CircleBorder(),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -229,7 +199,7 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
                 iconAsset,
                 width: 18,
                 height: 18,
-                color: const Color(0xFF181D27),
+                color: colors.text,
                 colorBlendMode: BlendMode.srcIn,
               ),
             ),
@@ -240,7 +210,6 @@ class _CredentialsFilterBarState extends State<CredentialsFilterBar> {
   }
 }
 
-/// Tab individual del pill segmentado (componente `Tag`).
 class _Tag extends StatelessWidget {
   const _Tag({
     required this.iconAsset,
@@ -256,13 +225,13 @@ class _Tag extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Azul de acento al seleccionar; negro en estado normal.
-    final color =
-        selected ? AppColors.accentBlue : AppColors.textNeutralPrimary;
+    final colors = context.kuatia;
+    final fg = selected ? colors.accent : colors.muted;
+    final bg = selected ? colors.accentSurface : Colors.transparent;
     final radius = BorderRadius.circular(16);
 
     return Material(
-      color: selected ? AppColors.accentBlueSurface : const Color(0xFFFDFDFD),
+      color: bg,
       borderRadius: radius,
       child: InkWell(
         onTap: onTap,
@@ -276,23 +245,20 @@ class _Tag extends StatelessWidget {
                 iconAsset,
                 width: 16,
                 height: 16,
-                color: color,
+                color: fg,
                 colorBlendMode: BlendMode.srcIn,
               ),
               const SizedBox(width: 4),
-              // Flexible + ellipsis: el label cede ancho y trunca antes de
-              // desbordar la barra en pantallas angostas o con fuente grande.
               Flexible(
                 child: Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
                   style: TextStyle(
                     fontSize: 14,
                     height: 18 / 14,
                     fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-                    color: color,
+                    color: fg,
                   ),
                 ),
               ),

@@ -4,8 +4,8 @@ import 'package:identity_wallet/shared/widgets/credential_loading_overlay.dart';
 
 void main() {
   group('spinnerDotColor', () {
-    test('el punto activo es morado', () {
-      expect(spinnerDotColor(3, 3), const Color(0xFF7F56D9));
+    test('el punto activo es teal Kuatia', () {
+      expect(spinnerDotColor(3, 3), const Color(0xFF00A89D));
     });
 
     test('un punto no activo es gris', () {
@@ -16,7 +16,10 @@ void main() {
       for (var active = 0; active < 8; active++) {
         for (var dot = 0; dot < 8; dot++) {
           final c = spinnerDotColor(dot, active);
-          expect(c == const Color(0xFF7F56D9) || c == const Color(0xFFD9D9D9), isTrue);
+          expect(
+            c == const Color(0xFF00A89D) || c == const Color(0xFFD9D9D9),
+            isTrue,
+          );
         }
       }
     });

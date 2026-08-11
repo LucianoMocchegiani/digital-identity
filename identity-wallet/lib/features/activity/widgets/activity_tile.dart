@@ -56,7 +56,7 @@ class ActivityTile extends StatelessWidget {
                       isIssuance
                           ? 'Credencial recibida'
                           : 'Credencial presentada',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         height: 18 / 14,
                         fontWeight: FontWeight.w600,
@@ -68,7 +68,7 @@ class ActivityTile extends StatelessWidget {
                       entityLabel,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         height: 16 / 12,
                         fontWeight: FontWeight.w400,
@@ -84,10 +84,10 @@ class ActivityTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Icon(_statusIcon(activity.status), size: 16, color: accent),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4),
                   Text(
                     _formatTime(activity.date),
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       height: 16 / 12,
                       fontWeight: FontWeight.w400,

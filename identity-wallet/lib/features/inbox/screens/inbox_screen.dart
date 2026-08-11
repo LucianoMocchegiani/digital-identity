@@ -46,7 +46,7 @@ class InboxScreen extends ConsumerWidget {
                   children: [
                     for (var i = 0; i < connections.length; i++) ...[
                       if (i > 0)
-                        const Divider(
+                        Divider(
                           height: 1,
                           thickness: 1,
                           indent: 16,
@@ -84,11 +84,11 @@ class _ConnectionTile extends StatelessWidget {
             width: 40,
             height: 40,
             alignment: Alignment.center,
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               color: AppColors.accentBlueSurface,
               shape: BoxShape.circle,
             ),
-            child: const Icon(
+            child: Icon(
               Icons.person_outline,
               size: 20,
               color: AppColors.brandPrimary,
@@ -103,7 +103,7 @@ class _ConnectionTile extends StatelessWidget {
                   name,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 14,
                     height: 18 / 14,
                     fontWeight: FontWeight.w600,
@@ -115,7 +115,7 @@ class _ConnectionTile extends StatelessWidget {
                   connection.goalCode ?? stateLabel,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
                     height: 16 / 12,
                     fontWeight: FontWeight.w400,
