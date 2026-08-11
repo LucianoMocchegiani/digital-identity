@@ -67,6 +67,10 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
           },
           {
             kind: 'added',
+            text: 'Consola Credenciales: emitir (offer + QR) y verificar (request + QR + poll de sesión).',
+          },
+          {
+            kind: 'added',
             text: 'Wallet Flutter con tema Kuatia (charcoal + teal) y modo claro/oscuro.',
           },
           {

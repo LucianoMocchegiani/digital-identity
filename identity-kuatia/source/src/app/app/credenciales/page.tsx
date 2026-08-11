@@ -1,8 +1,8 @@
 /**
- * Ruta `/app/credenciales` — placeholder OpenID4VC (fase 2: emitir/verificar en web).
+ * Ruta `/app/credenciales` — emitir (OID4VCI) y verificar (OID4VP) desde la consola.
  */
-import { CredentialsPlaceholder } from '@/modules/credentials'
+import { CredentialsPage } from '@/modules/credentials'
 
 export default function CredencialesPage() {
-  return <CredentialsPlaceholder />
+  return <CredentialsPage />
 }

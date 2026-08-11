@@ -27,7 +27,7 @@ Auth hoy: email + password. APIs bajo `/v1`.
 | D9 | Login GitHub + Gmail | Media | OAuth → billing |
 | D10 | Wallet: estilos Kuatia (`identity-wallet`) | Media | App lista; solo theme/UI |
 | D11 | i18n (es / en / pt) | Media | Después de textos ES |
-| D12 | Sección Credenciales (UI) | Media | QR / offer / request / poll |
+| D12 | Sección Credenciales (UI) | Media | offer / request / QR / poll + diseño display por producto |
 | D13 | MCP docs / API | Media–alta | Tools seguros |
 | D14 | Herramienta de cifrado | Media–alta | Spike → lib/API → UI |
 | D15 | Pasarela de pagos (integración) | Alta | Stripe/MP + webhooks + portal |
@@ -148,7 +148,11 @@ App Flutter **ya funcional**. Solo alinear diseño a web (hoy brand púrpura en 
 
 ### D12. Credenciales (UI consola)
 
-- [ ] `/app/credenciales`: offer/request, QR, poll sesión.
+- [x] `/app/credenciales`: offer/request, QR, poll sesión.
+- [x] Proxy same-origin `/api/issuer` + `/api/verifier`; API key en sessionStorage.
+- [ ] Poll de emisión issuer (endpoint no expuesto aún).
+- [ ] Auto-fetch configurationIds desde well-known.
+- [ ] **Diseño de credencial + emisor (por producto):** UI en consola para metadata OID4VCI `display` (nombre, logo/ícono, colores de fondo/texto, imagen de card). Cada producto/wallet publica su propia metadata → la wallet renderiza branding distinto por emisor. Preview en consola alineada a `CredentialCard` de la app.
 
 ### D13. MCP docs / API
 

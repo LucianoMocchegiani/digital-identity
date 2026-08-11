@@ -166,7 +166,7 @@ class _FilterTags extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(2),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.panel,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.borderNeutral),
         ),
@@ -202,7 +202,7 @@ class _FilterTags extends StatelessWidget {
         isSelected ? AppColors.accentBlue : AppColors.textNeutralPrimary;
     final radius = BorderRadius.circular(16);
     return Material(
-      color: isSelected ? AppColors.accentBlueSurface : const Color(0xFFFDFDFD),
+      color: isSelected ? AppColors.accentBlueSurface : AppColors.panel,
       borderRadius: radius,
       child: InkWell(
         onTap: onTap,
@@ -250,7 +250,7 @@ class _SearchField extends StatelessWidget {
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.panel,
         borderRadius: BorderRadius.circular(99),
         border: Border.all(color: AppColors.borderNeutral),
       ),
@@ -260,7 +260,7 @@ class _SearchField extends StatelessWidget {
             'public/images/icons/lupa.png',
             width: 18,
             height: 18,
-            color: const Color(0xFF181D27),
+            color: AppColors.textNeutralSecondary,
             colorBlendMode: BlendMode.srcIn,
           ),
           SizedBox(width: 10),
@@ -366,7 +366,7 @@ class _CredentialOptionRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final radius = BorderRadius.circular(12);
     return Material(
-      color: Colors.white,
+      color: AppColors.panel,
       borderRadius: radius,
       child: InkWell(
         onTap: onTap,
@@ -445,7 +445,7 @@ class _RadioIndicator extends StatelessWidget {
       ),
       child: isSelected
           ? Center(
-              child: Icon(Icons.circle, size: 8, color: Colors.white),
+              child: Icon(Icons.circle, size: 8, color: AppColors.inkOnAccent),
             )
           : null,
     );

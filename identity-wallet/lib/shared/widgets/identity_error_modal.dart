@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
+import '../theme/kuatia_colors.dart';
 import 'concentric_rings.dart';
 
 /// Modal de error (paridad visual con [IdentitySuccessModal]).
-///
-/// Muestra el ícono de error (cruz roja sobre anillos concéntricos), un [title],
-/// una [description] y el botón "Cerrar". Tanto "Cerrar" como el botón cerrar
-/// descartan el modal; [show] resuelve cuando se cierra.
 class IdentityErrorModal extends StatelessWidget {
   const IdentityErrorModal({
     super.key,
@@ -16,13 +12,9 @@ class IdentityErrorModal extends StatelessWidget {
     required this.description,
   });
 
-  /// Título del modal (ej. "No se pudo verificar").
   final String title;
-
-  /// Texto descriptivo bajo el título.
   final String description;
 
-  /// Muestra el modal sobre un fondo oscuro; resuelve al cerrarse.
   static Future<void> show(
     BuildContext context, {
     required String title,
@@ -37,11 +29,12 @@ class IdentityErrorModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Material(
-          color: Colors.white,
+          color: colors.panel,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -50,7 +43,7 @@ class IdentityErrorModal extends StatelessWidget {
             width: 297,
             child: Stack(
               children: [
-                ...concentricRings(),
+                ...concentricRings(color: colors.border),
                 Positioned(
                   left: 16,
                   top: 16,
@@ -58,14 +51,14 @@ class IdentityErrorModal extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: AppColors.errorSurface,
+                      color: colors.errorSurface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.borderNeutral),
+                      border: Border.all(color: colors.border),
                     ),
                     child: Icon(
                       Icons.highlight_off_rounded,
                       size: 24,
-                      color: AppColors.errorDot,
+                      color: colors.errorDot,
                     ),
                   ),
                 ),
@@ -73,9 +66,9 @@ class IdentityErrorModal extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(height: 72),
+                    const SizedBox(height: 72),
                     Container(
-                      color: Colors.white,
+                      color: colors.panel,
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: Column(
@@ -88,21 +81,21 @@ class IdentityErrorModal extends StatelessWidget {
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textNeutralPrimary,
+                              color: colors.text,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             description,
                             style: TextStyle(
                               fontSize: 14,
                               height: 18 / 14,
                               fontWeight: FontWeight.w400,
-                              color: AppColors.textNeutralSecondary,
+                              color: colors.muted,
                             ),
                           ),
-                          SizedBox(height: 12),
-                          _closeButton(context),
+                          const SizedBox(height: 12),
+                          _closeButton(context, colors),
                         ],
                       ),
                     ),
@@ -118,7 +111,7 @@ class IdentityErrorModal extends StatelessWidget {
                       'public/images/icons/Close-Circle.png',
                       width: 24,
                       height: 24,
-                      color: AppColors.textNeutralSecondary,
+                      color: colors.muted,
                       colorBlendMode: BlendMode.srcIn,
                     ),
                   ),
@@ -131,7 +124,7 @@ class IdentityErrorModal extends StatelessWidget {
     );
   }
 
-  Widget _closeButton(BuildContext context) {
+  Widget _closeButton(BuildContext context, KuatiaColors colors) {
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       behavior: HitTestBehavior.opaque,
@@ -140,9 +133,9 @@ class IdentityErrorModal extends StatelessWidget {
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colors.panel,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderNeutral),
+          border: Border.all(color: colors.border),
           boxShadow: const [kShadowXs],
         ),
         child: Text(
@@ -152,7 +145,7 @@ class IdentityErrorModal extends StatelessWidget {
             fontSize: 14,
             height: 18 / 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textNeutralPrimary,
+            color: colors.text,
           ),
         ),
       ),

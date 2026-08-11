@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
+import '../theme/kuatia_colors.dart';
 import 'concentric_rings.dart';
 import 'identity_danger_button.dart';
 import 'identity_outline_button.dart';
 
 /// Modal de confirmación destructiva (paridad visual con [IdentityErrorModal]).
-///
-/// Muestra el tacho sobre anillos concéntricos, un [title], una [description] y
-/// dos acciones: cancelar y confirmar. Lo comparten el borrado de credencial y
-/// el de categoría; [show] resuelve `true` solo si el usuario confirma.
 class IdentityConfirmModal extends StatelessWidget {
   const IdentityConfirmModal({
     super.key,
@@ -19,22 +15,11 @@ class IdentityConfirmModal extends StatelessWidget {
     this.cancelLabel = 'Cancelar',
   });
 
-  /// Título del modal (ej. "Eliminar credencial").
   final String title;
-
-  /// Texto descriptivo bajo el título.
   final String description;
-
-  /// Etiqueta de la acción destructiva.
   final String confirmLabel;
-
-  /// Etiqueta de la acción que descarta el modal.
   final String cancelLabel;
 
-  /// Muestra el modal sobre un fondo oscuro; resuelve `true` si se confirma.
-  ///
-  /// Cerrar con la cruz, tocar cancelar o descartar el modal resuelven `false`,
-  /// de modo que quien llama puede tratar cualquier salida como "no borrar".
   static Future<bool> show(
     BuildContext context, {
     required String title,
@@ -57,11 +42,12 @@ class IdentityConfirmModal extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Material(
-          color: Colors.white,
+          color: colors.panel,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -70,7 +56,7 @@ class IdentityConfirmModal extends StatelessWidget {
             width: 297,
             child: Stack(
               children: [
-                ...concentricRings(),
+                ...concentricRings(color: colors.border),
                 Positioned(
                   left: 16,
                   top: 16,
@@ -79,15 +65,15 @@ class IdentityConfirmModal extends StatelessWidget {
                     height: 48,
                     alignment: Alignment.center,
                     decoration: BoxDecoration(
-                      color: AppColors.dangerSurface,
+                      color: colors.dangerSurface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.borderNeutral),
+                      border: Border.all(color: colors.border),
                     ),
                     child: Image.asset(
                       'public/images/icons/Trash-Bin-Trash.png',
                       width: 24,
                       height: 24,
-                      color: AppColors.dangerIcon,
+                      color: colors.dangerIcon,
                       colorBlendMode: BlendMode.srcIn,
                     ),
                   ),
@@ -98,7 +84,7 @@ class IdentityConfirmModal extends StatelessWidget {
                   children: [
                     const SizedBox(height: 72),
                     Container(
-                      color: Colors.white,
+                      color: colors.panel,
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: Column(
@@ -111,7 +97,7 @@ class IdentityConfirmModal extends StatelessWidget {
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textNeutralPrimary,
+                              color: colors.text,
                             ),
                           ),
                           const SizedBox(height: 4),
@@ -121,7 +107,7 @@ class IdentityConfirmModal extends StatelessWidget {
                               fontSize: 14,
                               height: 18 / 14,
                               fontWeight: FontWeight.w400,
-                              color: AppColors.textNeutralSecondary,
+                              color: colors.muted,
                             ),
                           ),
                           const SizedBox(height: 16),
@@ -139,7 +125,8 @@ class IdentityConfirmModal extends StatelessWidget {
                               Expanded(
                                 child: IdentityDangerButton(
                                   label: confirmLabel,
-                                  onTap: () => Navigator.of(context).pop(true),
+                                  onTap: () =>
+                                      Navigator.of(context).pop(true),
                                 ),
                               ),
                             ],
@@ -159,7 +146,7 @@ class IdentityConfirmModal extends StatelessWidget {
                       'public/images/icons/Close-Circle.png',
                       width: 24,
                       height: 24,
-                      color: AppColors.textNeutralSecondary,
+                      color: colors.muted,
                       colorBlendMode: BlendMode.srcIn,
                     ),
                   ),

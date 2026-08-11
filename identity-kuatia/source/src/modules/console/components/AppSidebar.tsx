@@ -1,10 +1,9 @@
 ﻿'use client'
 
 /**
- * Navegación de consola con íconos + bloque de usuario (mockup).
+ * Navegación de consola con íconos (docs y perfil viven en AppTopBar).
  */
-import { BrandMark, IconDoc } from '@/design-system'
-import { useAuth } from '@/shared/auth/AuthProvider'
+import { BrandMark } from '@/design-system'
 import { cn } from '@/shared/lib/cn'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -13,13 +12,6 @@ import { consoleNav } from '../nav'
 /** Navegación de `/app/*` (responsive). */
 export function AppSidebar() {
   const pathname = usePathname()
-  const { account } = useAuth()
-  const initials = (account?.name || 'U')
-    .split(/\s+/)
-    .map((p) => p[0])
-    .join('')
-    .slice(0, 2)
-    .toUpperCase()
 
   return (
     <aside
@@ -62,36 +54,6 @@ export function AppSidebar() {
           )
         })}
       </nav>
-
-      <Link
-        href="/docs"
-        className={cn(
-          'mt-2 inline-flex items-center gap-2.5 whitespace-nowrap rounded-xl px-3 py-2.5 text-base transition',
-          'text-[var(--kuatia-muted)] hover:bg-[var(--kuatia-hover)] hover:text-[var(--kuatia-text)]',
-          'md:mt-auto md:w-full md:px-3.5 md:py-3',
-          pathname.startsWith('/docs') && 'bg-[var(--kuatia-accent)]/15 text-[var(--kuatia-accent)]',
-        )}
-      >
-        <IconDoc size={18} />
-        Docs
-      </Link>
-
-      {account ? (
-        <Link
-          href="/app/cuenta"
-          className="mt-3 hidden items-center gap-3 rounded-xl border border-[var(--kuatia-border)] p-3 hover:bg-[var(--kuatia-hover)] md:flex"
-        >
-          <span className="grid h-10 w-10 place-items-center rounded-full bg-[var(--kuatia-accent)] font-semibold text-[var(--kuatia-ink)]">
-            {initials}
-          </span>
-          <span className="min-w-0">
-            <span className="block truncate text-sm font-medium">{account.name}</span>
-            <span className="block truncate text-sm text-[var(--kuatia-muted)]">
-              Plan {account.plan}
-            </span>
-          </span>
-        </Link>
-      ) : null}
     </aside>
   )
 }

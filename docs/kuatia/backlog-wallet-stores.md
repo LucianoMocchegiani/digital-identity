@@ -151,6 +151,7 @@ Checklist mínimo antes del primer submit:
 - [ ] Feature flags / remote config si hace falta.
 - [ ] Métricas de adopción store; respuesta a reviews.
 - [ ] Roadmap producto wallet (backup social, multi-device, etc.) **fuera** del MVP store.
+- [ ] Mejorar diseño de **categorías** (panel home, chips, creación/edición; alinear a tema Kuatia light/dark).
 
 ---
 

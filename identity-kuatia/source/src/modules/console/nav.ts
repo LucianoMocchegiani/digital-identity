@@ -32,7 +32,6 @@ export const consoleNav: ConsoleNavItem[] = [
     label: 'Credenciales',
     module: 'credentials',
     Icon: IconCredentials,
-    soon: true,
   },
   { href: '/app/cuenta', label: 'Cuenta', module: 'account', Icon: IconAccount },
 ]

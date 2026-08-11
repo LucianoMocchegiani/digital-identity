@@ -1,17 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
+import '../theme/kuatia_colors.dart';
 import 'concentric_rings.dart';
 
-/// Modal de confirmación de éxito (componente `Modal-creación-exitosa`).
-///
-/// Muestra el ícono de éxito (check verde sobre anillos concéntricos), un
-/// [title], una [description] y el botón "Continuar". Tanto "Continuar" como el
-/// botón cerrar descartan el modal; [show] resuelve cuando se cierra.
-///
-/// Es genérico: lo reutilizan distintos flujos (ej. categoría creada, PIN
-/// creado) variando solo los textos.
+/// Modal de confirmación de éxito.
 class IdentitySuccessModal extends StatelessWidget {
   const IdentitySuccessModal({
     super.key,
@@ -19,13 +12,9 @@ class IdentitySuccessModal extends StatelessWidget {
     required this.description,
   });
 
-  /// Título del modal (ej. "PIN creado correctamente").
   final String title;
-
-  /// Texto descriptivo bajo el título.
   final String description;
 
-  /// Muestra el modal sobre un fondo oscuro; resuelve al cerrarse.
   static Future<void> show(
     BuildContext context, {
     required String title,
@@ -33,18 +22,19 @@ class IdentitySuccessModal extends StatelessWidget {
   }) {
     return showDialog(
       context: context,
-      barrierColor: const Color(0x99000000), // rgba(0,0,0,0.6)
+      barrierColor: const Color(0x99000000),
       builder: (_) => IdentitySuccessModal(title: title, description: description),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Material(
-          color: Colors.white,
+          color: colors.panel,
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -53,10 +43,7 @@ class IdentitySuccessModal extends StatelessWidget {
             width: 297,
             child: Stack(
               children: [
-                // Anillos concéntricos: se recortan contra el borde del modal,
-                // pero el disco verde queda siempre intacto.
-                ...concentricRings(),
-                // Disco verde con el check (48px, centro en (40,40)).
+                ...concentricRings(color: colors.border),
                 Positioned(
                   left: 16,
                   top: 16,
@@ -64,14 +51,14 @@ class IdentitySuccessModal extends StatelessWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFECFDF3),
+                      color: colors.successSurface,
                       shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.borderNeutral),
+                      border: Border.all(color: colors.border),
                     ),
                     child: Icon(
                       Icons.check_circle_outline_rounded,
                       size: 24,
-                      color: Color(0xFF12B76A),
+                      color: colors.successIcon,
                     ),
                   ),
                 ),
@@ -79,11 +66,9 @@ class IdentitySuccessModal extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Banda de cabecera (deja ver el check + anillos superiores).
-                    SizedBox(height: 72),
-                    // Texto + botón sobre fondo blanco (cubre las elipses inferiores).
+                    const SizedBox(height: 72),
                     Container(
-                      color: Colors.white,
+                      color: colors.panel,
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
                       child: Column(
@@ -96,10 +81,10 @@ class IdentitySuccessModal extends StatelessWidget {
                               fontSize: 16,
                               height: 22 / 16,
                               fontWeight: FontWeight.w500,
-                              color: AppColors.textNeutralPrimary,
+                              color: colors.text,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           ConstrainedBox(
                             constraints: const BoxConstraints(maxHeight: 120),
                             child: SingleChildScrollView(
@@ -109,19 +94,18 @@ class IdentitySuccessModal extends StatelessWidget {
                                   fontSize: 14,
                                   height: 18 / 14,
                                   fontWeight: FontWeight.w400,
-                                  color: AppColors.textNeutralSecondary,
+                                  color: colors.muted,
                                 ),
                               ),
                             ),
                           ),
-                          SizedBox(height: 12),
-                          _continueButton(context),
+                          const SizedBox(height: 12),
+                          _continueButton(context, colors),
                         ],
                       ),
                     ),
                   ],
                 ),
-                // Botón cerrar (esquina superior derecha).
                 Positioned(
                   right: 16,
                   top: 16,
@@ -132,7 +116,7 @@ class IdentitySuccessModal extends StatelessWidget {
                       'public/images/icons/Close-Circle.png',
                       width: 24,
                       height: 24,
-                      color: AppColors.textNeutralSecondary,
+                      color: colors.muted,
                       colorBlendMode: BlendMode.srcIn,
                     ),
                   ),
@@ -145,20 +129,18 @@ class IdentitySuccessModal extends StatelessWidget {
     );
   }
 
-  /// Botón "Continuar".
-  Widget _continueButton(BuildContext context) {
+  Widget _continueButton(BuildContext context, KuatiaColors colors) {
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
       behavior: HitTestBehavior.opaque,
       child: Container(
-        // Alto mínimo en lugar de fijo: crece con la fuente del sistema.
         constraints: const BoxConstraints(minHeight: 34),
         alignment: Alignment.center,
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colors.panel,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AppColors.borderNeutral),
+          border: Border.all(color: colors.border),
           boxShadow: const [kShadowXs],
         ),
         child: Text(
@@ -168,7 +150,7 @@ class IdentitySuccessModal extends StatelessWidget {
             fontSize: 14,
             height: 18 / 14,
             fontWeight: FontWeight.w600,
-            color: AppColors.textNeutralPrimary,
+            color: colors.text,
           ),
         ),
       ),

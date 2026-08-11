@@ -74,31 +74,37 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
         _showDetails && hasDetails && widget.showExpandToggle;
 
     final card = Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: CredentialBackground(
-              backgroundColor: bg,
-              backgroundImageUrl: credential.backgroundImageUrl,
-              borderRadius: BorderRadius.circular(16),
-              showSheen: true,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: kCredentialCelesteShadow(brightness),
+      ),
+      child: Container(
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: CredentialBackground(
+                backgroundColor: bg,
+                backgroundImageUrl: credential.backgroundImageUrl,
+                borderRadius: BorderRadius.circular(16),
+                showSheen: true,
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildHead(credential, hasDetails, fg),
-                const SizedBox(height: 14),
-                _buildData(credential, fg),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHead(credential, hasDetails, fg),
+                  const SizedBox(height: 14),
+                  _buildData(credential, fg),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
 
@@ -159,7 +165,7 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
           bottom: 0,
           child: DecoratedBox(
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: AppColors.panel,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: AppColors.borderNeutral),
               boxShadow: const [kShadowXs],

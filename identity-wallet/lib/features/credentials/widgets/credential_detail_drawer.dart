@@ -94,16 +94,17 @@ class CredentialDetailDrawer extends StatelessWidget {
     ];
   }
 
-  /// Barra inferior fija (`Botones`): fondo blanco, borde superior y radio 12px,
+  /// Barra inferior fija (`Botones`): panel del tema, borde superior y radio 12px,
   /// que contiene el botón "Eliminar".
   Widget _buildDeleteBar(BuildContext context) {
+    final colors = context.kuatia;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.borderNeutral)),
-        borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+        color: colors.panel,
+        border: Border(top: BorderSide(color: colors.border)),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
       ),
       child: IdentityDangerButton(
         label: 'Eliminar',

@@ -1,8 +1,5 @@
 /**
- * Módulo fase 2: emitir / verificar credenciales OpenID4VC desde la web
- * (usando productos issuer/verifier de la cuenta).
- *
- * Hoy solo expone un placeholder; el shell ya reserva `/app/credenciales`.
- * Cuando se implemente, quitar `soon` en `consoleNav` y conectar OID4VCI/OID4VP.
+ * Módulo Credenciales: emitir / verificar OpenID4VC desde la consola
+ * (productos issuer/verifier + API key en sessionStorage).
  */
-export { CredentialsPlaceholder } from './components/CredentialsPlaceholder'
+export { CredentialsPage } from './components/CredentialsPage'

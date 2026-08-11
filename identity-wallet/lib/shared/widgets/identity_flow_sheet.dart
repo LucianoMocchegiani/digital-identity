@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/app_shadows.dart';
 import '../theme/kuatia_colors.dart';
 
@@ -147,13 +146,14 @@ class _IdentityFlowSheetState extends State<IdentityFlowSheet>
   @override
   Widget build(BuildContext context) {
     final total = widget.children.length;
+    final colors = context.kuatia;
 
     return SlideTransition(
       position: _slide,
       child: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+          color: colors.panel,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
         ),
         clipBehavior: Clip.antiAlias,
         child: SafeArea(
@@ -170,12 +170,12 @@ class _IdentityFlowSheetState extends State<IdentityFlowSheet>
                     widget.title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                           fontWeight: FontWeight.w600,
-                          color: AppColors.textNeutralPrimary,
+                          color: colors.text,
                         ),
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Flexible(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
@@ -208,12 +208,13 @@ class _SheetHandle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Container(
       margin: const EdgeInsets.only(top: 12),
       width: 34,
       height: 6,
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.07),
+        color: colors.text.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(12),
       ),
     );
@@ -236,11 +237,12 @@ class _ActionBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: AppColors.borderNeutral)),
+        color: colors.panel,
+        border: Border(top: BorderSide(color: colors.border)),
       ),
       child: Row(
         children: [
@@ -251,7 +253,7 @@ class _ActionBar extends StatelessWidget {
               filled: false,
             ),
           ),
-          SizedBox(width: 12),
+          const SizedBox(width: 12),
           Expanded(
             child: _SheetButton(
               label: primaryLabel,
@@ -281,6 +283,7 @@ class _SheetButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     final disabled = onTap == null;
     return GestureDetector(
       onTap: onTap,
@@ -291,10 +294,10 @@ class _SheetButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
         decoration: BoxDecoration(
           color: disabled
-              ? AppColors.borderNeutral
-              : (filled ? AppColors.brandPrimary : Colors.white),
+              ? colors.border
+              : (filled ? colors.accent : colors.panel),
           borderRadius: BorderRadius.circular(16),
-          border: filled ? null : Border.all(color: AppColors.borderNeutral),
+          border: filled ? null : Border.all(color: colors.border),
           boxShadow: const [kShadowXs],
         ),
         child: Text(
@@ -305,8 +308,8 @@ class _SheetButton extends StatelessWidget {
             height: 18 / 14,
             fontWeight: FontWeight.w600,
             color: disabled
-                ? AppColors.textNeutralMuted
-                : (filled ? AppColors.textOnDark : AppColors.textNeutralPrimary),
+                ? colors.muted
+                : (filled ? colors.ink : colors.text),
           ),
         ),
       ),
@@ -394,7 +397,7 @@ class _VerifiedBadge extends StatelessWidget {
             fontSize: 14,
             height: 18 / 14,
             fontWeight: FontWeight.w500,
-            color: AppColors.linkBlue,
+            color: context.kuatia.link,
           ),
         ),
       ],

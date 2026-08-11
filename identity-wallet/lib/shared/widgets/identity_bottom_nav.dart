@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import '../theme/app_colors.dart';
 import '../theme/kuatia_colors.dart';
 
 /// Índices de las pestañas del navbar inferior.
@@ -183,6 +182,8 @@ class _QrButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
+    final dark = Theme.of(context).brightness == Brightness.dark;
     return Semantics(
       button: true,
       label: showClose ? 'Cerrar' : 'Escanear QR',
@@ -196,14 +197,14 @@ class _QrButton extends StatelessWidget {
             width: IdentityBottomNav._qrSize,
             height: IdentityBottomNav._qrSize,
             decoration: BoxDecoration(
-              color: AppColors.brandPrimary,
+              color: colors.accent,
               shape: BoxShape.circle,
-              border: Border.all(color: context.kuatia.border),
+              border: Border.all(color: colors.border),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.brandPrimary.withValues(alpha: 0.28),
-                  offset: const Offset(0, 5),
-                  blurRadius: 8,
+                  color: colors.accent.withValues(alpha: dark ? 0.22 : 0.28),
+                  offset: const Offset(0, 4),
+                  blurRadius: dark ? 10 : 8,
                 ),
               ],
             ),
@@ -215,8 +216,7 @@ class _QrButton extends StatelessWidget {
                 key: const ValueKey('navCenterIcon'),
                 width: 24,
                 height: 24,
-                // Tint ink sobre teal (PNG oscuro o blanco).
-                color: AppColors.inkOnAccent,
+                color: colors.ink,
                 colorBlendMode: BlendMode.srcIn,
               ),
             ),

@@ -5,8 +5,8 @@ import '../../../shared/identity_shared.dart';
 /// Barra flotante de acciones sobre el panel de categorías: "Añadir" y
 /// "Presentar". Aparece al tocar el botón central del navbar.
 ///
-/// Detrás lleva un degradado blanco (transparente → blanco) para que las
-/// píldoras se lean sobre el contenido. Entra con fade + slide-up.
+/// Detrás lleva un degradado del fondo del tema (transparente → panel) para
+/// que las píldoras se lean sin un fulgor blanco en dark.
 class HomeActionsBar extends StatefulWidget {
   const HomeActionsBar({super.key, this.onAdd, this.onPresent});
 
@@ -44,6 +44,7 @@ class _HomeActionsBarState extends State<HomeActionsBar>
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return FadeTransition(
       opacity: _curve,
       child: SlideTransition(
@@ -55,11 +56,16 @@ class _HomeActionsBarState extends State<HomeActionsBar>
           height: 100,
           alignment: Alignment.bottomCenter,
           padding: const EdgeInsets.only(bottom: 12),
-          decoration: const BoxDecoration(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
-              colors: [Color(0x00FFFFFF), Color(0xFFFFFFFF)],
+              colors: [
+                colors.bg.withValues(alpha: 0),
+                colors.bg.withValues(alpha: 0.75),
+                colors.panel,
+              ],
+              stops: const [0, 0.45, 1],
             ),
           ),
           child: Row(
@@ -84,8 +90,7 @@ class _HomeActionsBarState extends State<HomeActionsBar>
   }
 }
 
-/// Píldora de acción (fondo violeta de marca, radio 16, sombra xs) con icono y
-/// texto en blanco, igual que el botón QR del navbar.
+/// Píldora de acción (fondo teal Kuatia, radio 16) con ícono y texto ink.
 class _ActionPill extends StatelessWidget {
   const _ActionPill({required this.icon, required this.label, this.onTap});
 
@@ -95,36 +100,35 @@ class _ActionPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: AppColors.brandPrimary,
+          color: colors.accent,
           borderRadius: BorderRadius.circular(16),
           boxShadow: const [kShadowXs],
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // Los PNG vienen oscuros: se tiñen de blanco para contrastar sobre
-            // el violeta (mismo recurso que la cruz del navbar).
             Image.asset(
               icon,
               width: 18,
               height: 18,
-              color: Colors.white,
+              color: colors.ink,
               colorBlendMode: BlendMode.srcIn,
             ),
             const SizedBox(width: 8),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 height: 18 / 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: colors.ink,
               ),
             ),
           ],

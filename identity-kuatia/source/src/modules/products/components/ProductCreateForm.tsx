@@ -7,6 +7,7 @@
 import { Alert, Button, Field, Input } from '@/design-system'
 import { billingApi } from '@/shared/api/billing'
 import { ApiError } from '@/shared/api/client'
+import { setStoredApiKey } from '@/shared/credentials/apiKeyStore'
 import type { ResourceService } from '@/shared/types/billing'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
@@ -38,6 +39,7 @@ export function ProductCreateForm({
   const [walletId, setWalletId] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [secret, setSecret] = useState<string | null>(null)
+  const [createdProductId, setCreatedProductId] = useState<string | null>(null)
   const [pending, setPending] = useState(false)
 
   async function onSubmit(e: FormEvent) {
@@ -52,6 +54,7 @@ export function ProductCreateForm({
         walletId: walletId.trim() || slugWalletId(name),
       })
       setSecret(res.product.apiKey)
+      setCreatedProductId(res.product.id)
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo crear el producto')
     } finally {
@@ -59,23 +62,39 @@ export function ProductCreateForm({
     }
   }
 
-  if (secret) {
+  if (secret && createdProductId) {
     return (
       <div className="space-y-4">
         <Alert tone="info">Guardá esta API key ahora: no se vuelve a mostrar.</Alert>
         <code className="block break-all rounded-xl bg-[var(--kuatia-code-bg)] p-3 text-base text-[var(--kuatia-accent)]">
           {secret}
         </code>
-        <Button
-          size="lg"
-          onClick={() => {
-            onDone?.()
-            router.push('/app/productos')
-            router.refresh()
-          }}
-        >
-          Ir a productos
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Button
+            size="lg"
+            onClick={() => {
+              setStoredApiKey(createdProductId, secret)
+              onDone?.()
+              const tab = service === 'verifier' ? 'verificar' : 'emitir'
+              router.push(
+                `/app/credenciales?productId=${encodeURIComponent(createdProductId)}&tab=${tab}`,
+              )
+            }}
+          >
+            Usar en Credenciales
+          </Button>
+          <Button
+            size="lg"
+            variant="secondary"
+            onClick={() => {
+              onDone?.()
+              router.push('/app/productos')
+              router.refresh()
+            }}
+          >
+            Ir a productos
+          </Button>
+        </div>
       </div>
     )
   }

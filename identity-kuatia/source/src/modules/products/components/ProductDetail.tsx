@@ -7,6 +7,7 @@ import { Alert, Badge, Button, Field, Input, Panel } from '@/design-system'
 import { PageHeader } from '@/modules/console/components/PageHeader'
 import { billingApi } from '@/shared/api/billing'
 import { ApiError } from '@/shared/api/client'
+import { setStoredApiKey } from '@/shared/credentials/apiKeyStore'
 import type { Product } from '@/shared/types/billing'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
@@ -56,6 +57,7 @@ export function ProductDetail() {
     try {
       const res = await billingApi.rotateKey(product.resource.id)
       setNewKey(res.apiKey)
+      setStoredApiKey(id, res.apiKey)
       setProduct(await billingApi.getProduct(id))
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'No se pudo rotar la key')
@@ -129,7 +131,20 @@ export function ProductDetail() {
       ) : null}
       {newKey ? (
         <Alert tone="info" className="mb-4">
-          Nueva key (una sola vez): <code className="break-all">{newKey}</code>
+          <p>
+            Nueva key (una sola vez): <code className="break-all">{newKey}</code>
+          </p>
+          <Button
+            className="mt-3"
+            size="sm"
+            variant="secondary"
+            onClick={() => {
+              setStoredApiKey(id, newKey)
+              router.push(`/app/credenciales?productId=${encodeURIComponent(id)}`)
+            }}
+          >
+            Usar en Credenciales
+          </Button>
         </Alert>
       ) : null}
 

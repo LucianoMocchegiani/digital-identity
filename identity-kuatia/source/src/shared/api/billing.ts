@@ -3,7 +3,7 @@
  *
  * Consume `billingFetch` (rewrite `/api/billing`). Endpoints de cuenta suelen
  * requerir Bearer; register/login van con `auth: false`.
- * Futura extensión OpenID4VC reutilizará productos issuer/verifier ya provisionados aquí.
+ * OpenID4VC (offer/request) vive en `shared/api/protocol.ts` vía issuer/verifier.
  */
 import { billingFetch } from './client'
 import type {
