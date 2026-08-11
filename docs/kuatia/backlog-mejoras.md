@@ -296,7 +296,10 @@ Validar con abogado (PY + mercados destino):
 
 ### T8. Stores (wallet)
 
+Detalle operativo (dev + ficha + review): **[backlog-wallet-stores.md](./backlog-wallet-stores.md)**.
+
 - [ ] Apple Developer / Google Play a nombre de la org cuando publiquen.
+- [ ] Seguir checklist W* / S* del backlog wallet hasta primer submit.
 
 ### T9. KYC / entidad pasarela
 
@@ -315,7 +318,7 @@ T1 cuentas org ──► D9 OAuth apps + D15/T9 pagos
 T6 legal ──► T9 pagos + footer T2
 D8 anti-abuso ──► T6 ToS
 D4 planes ──► D15 checkout + T7 business
-D10 wallet estilos ──► T8 stores (si publican)
+D10 wallet estilos ──► T8 stores + backlog-wallet-stores.md
 D16 auditorías ──► narrativa enterprise (T3)
 D7 rate limits ──► D18 stress (post-deploy: RL + capacidad)
 D18 stress ──► calibrar PUBLIC_RATE_LIMIT_* / planes si hace falta

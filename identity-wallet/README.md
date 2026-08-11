@@ -134,6 +134,10 @@ dart analyze lib
 flutter test
 ```
 
+## Publicación en stores
+
+Backlog Play Store / App Store (dev + tramiterío): [`docs/kuatia/backlog-wallet-stores.md`](../docs/kuatia/backlog-wallet-stores.md).
+
 ## Licencia
 
 Privado — FleetStudio / Phinx
