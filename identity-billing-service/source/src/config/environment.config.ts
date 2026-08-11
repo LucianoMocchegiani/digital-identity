@@ -19,6 +19,16 @@ export type EnvironmentConfig = {
   verifierUrl: string
   /** Si false, POST /products no llama a issuer/verifier (solo billing). */
   provisionOnCreate: boolean
+  oauth: {
+    /** Base pública del billing `/v1`, p.ej. https://billing.kuatia.xyz/v1 */
+    publicBaseUrl: string
+    /** Origen del frontend (callback post-login). */
+    frontendUrl: string
+    googleClientId: string
+    googleClientSecret: string
+    githubClientId: string
+    githubClientSecret: string
+  }
 }
 
 /**
@@ -41,5 +51,13 @@ export const environmentConfig = (): EnvironmentConfig => {
     issuerUrl: process.env.ISSUER_URL ?? 'http://localhost:9001',
     verifierUrl: process.env.VERIFIER_URL ?? 'http://localhost:9002',
     provisionOnCreate: (process.env.PROVISION_ON_CREATE ?? 'true').toLowerCase() !== 'false',
+    oauth: {
+      publicBaseUrl: process.env.OAUTH_PUBLIC_BASE_URL ?? 'http://localhost:9000/v1',
+      frontendUrl: process.env.OAUTH_FRONTEND_URL ?? 'http://localhost:3000',
+      googleClientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+      githubClientId: process.env.GITHUB_CLIENT_ID ?? '',
+      githubClientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
+    },
   }
 }

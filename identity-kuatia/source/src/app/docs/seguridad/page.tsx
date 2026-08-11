@@ -41,6 +41,8 @@ export default function DocsSeguridadPage() {
           En billing guardamos el <span className="text-[var(--kuatia-text)]">hash</span> de la key
           (SHA-256), un prefijo visible y metadatos (revocada, último uso). El secreto en claro se
           muestra <span className="text-[var(--kuatia-text)]">una sola vez</span> al crear o rotar.
+          Las identidades OAuth se guardan como <code className="text-sm">provider</code> +{' '}
+          <code className="text-sm">sub</code> (sin tokens del IdP).
         </li>
         <li>
           La key debe vivir en tu <span className="text-[var(--kuatia-text)]">backend</span>, nunca
@@ -52,8 +54,9 @@ export default function DocsSeguridadPage() {
         </li>
       </DocsUl>
       <DocsP>
-        La consola Kuatia se autentica a billing con JWT de cuenta. Eso es independiente de la API
-        key del producto que usa tu integración OpenID4VC.
+        La consola Kuatia se autentica a billing con JWT de cuenta (email/contraseña u OAuth
+        Google/GitHub). Eso es independiente de la API key del producto que usa tu integración
+        OpenID4VC.
       </DocsP>
 
       <DocsH2>Multi-tenant</DocsH2>
@@ -81,13 +84,17 @@ export default function DocsSeguridadPage() {
 
       <DocsH2>Rate limits y cuotas</DocsH2>
       <DocsP>
-        Cada llamada autenticada relevante a issuer/verifier se valida y cuenta contra el plan
-        (solicitudes por minuto y transacciones del mes UTC). Planes actuales: Free, Pro, Pro Double
-        y Business a medida — ver precios en la landing o el panel Plan de la consola.
+        Hay dos capas distintas. No uses el RPM del plan como si aplicara a health o well-known.
+      </DocsP>
+      <DocsP>
+        <span className="text-[var(--kuatia-text)]">1) Autenticado (plan)</span> — cada llamada
+        relevante a issuer/verifier con API key se valida y cuenta contra el plan (solicitudes /
+        minuto y transacciones del mes UTC). Planes: Free, Pro, Pro Double y Business a medida.
       </DocsP>
       <DocsUl>
         <li>
-          <span className="text-[var(--kuatia-text)]">429</span> — rate limit (solicitudes / min).
+          <span className="text-[var(--kuatia-text)]">429</span> — rate limit del plan (solicitudes /
+          min).
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">402</span> — cuota mensual de transacciones
@@ -95,9 +102,28 @@ export default function DocsSeguridadPage() {
         </li>
       </DocsUl>
       <DocsP>
-        Health, well-known y <code className="text-sm">did.json</code> son públicos (wallets y
-        probes). Los límites específicos de esos endpoints públicos se irán documentando a medida
-        que se endurezcan en edge/producto; no asumas el mismo RPM del plan ahí.
+        <span className="text-[var(--kuatia-text)]">2) Público (por IP)</span> — health, did.json,
+        well-known, OOB, status-list GET, flujos OpenID4VC y DIDComm llevan un throttle en el
+        proceso (memoria local, por IP). Defaults orientados a no romper wallets ni probes:
+      </DocsP>
+      <DocsUl>
+        <li>
+          <span className="text-[var(--kuatia-text)]">health</span> — 300 req/min por IP
+        </li>
+        <li>
+          <span className="text-[var(--kuatia-text)]">discovery</span> (did.json, well-known, oob,
+          status-list) — 120 req/min por IP
+        </li>
+        <li>
+          <span className="text-[var(--kuatia-text)]">protocol</span> (openid4vc-flow / didcomm) —
+          180 req/min por IP
+        </li>
+      </DocsUl>
+      <DocsP>
+        Si enviás API key de producto, se omite el throttle público y mandan los cupos del plan.
+        Ajustable con <code className="text-sm">PUBLIC_RATE_LIMIT_*</code>. Respuesta 429 con{' '}
+        <code className="text-sm">Retry-After</code>. En multi-réplica el límite es por instancia
+        hasta haber edge/Redis compartido.
       </DocsP>
       <DocsP>
         Códigos HTTP habituales:{' '}

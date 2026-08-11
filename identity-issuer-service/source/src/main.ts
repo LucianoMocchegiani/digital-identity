@@ -20,6 +20,7 @@ import type {
   QuarkAskarStoreOptions,
   RecordStorage,
 } from '@identity/core'
+import { publicRateLimitConfigFromEnv, createPublicRateLimitMiddleware } from '@identity/core'
 import { DidCommService } from './didcomm/didcomm.service'
 
 const logger = new JsonLoggerService()
@@ -42,6 +43,7 @@ async function bootstrap(): Promise<void> {
 
   const port = environmentConfig().port
   const expressApp = app.getHttpAdapter().getInstance()
+  expressApp.use(createPublicRateLimitMiddleware(publicRateLimitConfigFromEnv()))
   const httpServer = app.getHttpServer()
   const wss = new WebSocketServer({ server: httpServer })
 

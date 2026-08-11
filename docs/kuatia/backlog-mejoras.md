@@ -33,9 +33,10 @@ Auth hoy: email + password. APIs bajo `/v1`.
 | D15 | Pasarela de pagos (integración) | Alta | Stripe/MP + webhooks + portal |
 | D16 | Auditorías | Alta | Rabbit → store → UI → docs |
 | D17 | Business overrides (admin/código) | Alta | Cupos custom en billing |
-| D18 | Seguridad: stress / romper la app | Alta / continua | k6, abuse, fail-closed |
+| D18 | Seguridad: stress / rate limit / capacidad | Alta / post-deploy | k6 en prod/staging; RL públicos + plan |
 
-**Primeros candidatos (dev):** D1 → D2 → D3 → D4 → D5/D6 → D7 → D8.
+**Primeros candidatos (dev):** D1 → D2 → D3 → D4 → D5/D6 → D7 → D8.  
+**Post-deploy (capacidades):** D18 (rate limit + estrés general).
 
 ---
 
@@ -99,9 +100,12 @@ APIs ya en `/v1`. Docs del sitio con versión y changelog.
 
 ### D7. Rate limits endpoints públicos
 
-- [ ] Defaults en billing + issuer/verifier (health, well-known, did.json, Credo).
-- [ ] Spike: no romper wallets.
-- [ ] Documentar límites públicos vs por plan.
+- [x] Defaults en issuer/verifier (Express, cubre Nest + Credo) y billing (`/health`).
+- [x] Buckets: health 300 / discovery 120 / protocol 180 rpm por IP; omite API key (manda el plan).
+- [x] Spike wallets: protocol laxo (180/min); ajustable vía `PUBLIC_RATE_LIMIT_*`.
+- [x] Documentar límites públicos vs por plan en `/docs/seguridad` (+ errores 429).
+- [ ] Edge/Redis compartido si hay multi-réplica (Phase 2 deploy).
+- [ ] Pruebas de rate limit + estrés → **D18** (hacer **después de deploy** estable).
 
 ### D8. Anti-abuso Free (ingeniería)
 
@@ -120,9 +124,14 @@ APIs ya en `/v1`. Docs del sitio con versión y changelog.
 
 ### D9. Login GitHub + Gmail
 
-- [ ] OAuth Google/GitHub; tabla identidades; link a cuenta existente.
-- [ ] UI login/register; apps OAuth en cuenta org (tramiterío T1).
-- [ ] Una cuenta free por `sub` OAuth.
+- [x] OAuth Google/GitHub; tabla identidades; link a cuenta existente (mismo email verificado).
+- [x] UI login/register + callback; apps OAuth en cuenta org → **tramiterío T1** (credenciales en env billing).
+- [x] Una cuenta free por `sub` OAuth (`account_identities` unique provider+subject).
+
+Redirect URIs (vía `billing.kuatia.xyz`):
+`{OAUTH_PUBLIC_BASE_URL}/auth/oauth/google|github/callback`
+(ej. `https://billing.kuatia.xyz/v1/auth/oauth/google/callback`).
+
 
 ### D10. Wallet: estilos Kuatia (`identity-wallet`)
 
@@ -166,10 +175,32 @@ Alineado a docs → Recomendaciones (cifrar con clave pública del holder).
 - [ ] Admin/API para cupos custom (piezas parciales ya existen).
 - [ ] Negociación comercial → T7.
 
-### D18. Seguridad — stress
+### D18. Seguridad — stress, rate limit y capacidad
 
-- [ ] k6 load/burst; auth abuse; payloads; cuota 402/429; billing down → fail closed.
-- [ ] Inventario `@Public()`; secretos fuera del repo; isolation tenant.
+**Cuándo:** con entorno **deployado** (staging o prod controlado), no solo `localhost`.  
+Objetivo: validar que los límites se comportan y medir capacidad real (issuer / verifier / billing / kuatia).
+
+#### A. Pruebas de rate limit (públicos vs plan)
+
+- [ ] Script k6 (o similar) contra URLs públicas HTTPS del deploy.
+- [ ] Bucket **health**: burst → 429 + `Retry-After`; probes normales no deben fallar.
+- [ ] Bucket **discovery** (did.json, well-known, oob, status-list): 429 al superar RPM; wallets típicas OK.
+- [ ] Bucket **protocol** (openid4vc-flow / didcomm): spike de wallet (offer→token→credential / authorize) sin 429 prematuro; abuso → 429.
+- [ ] Con **API key**: el throttle público no aplica; verificar 429 de **plan** (RPM) y 402 de **cuota TX**.
+- [ ] Documentar resultados (RPM observados, falsos positivos) y ajustar `PUBLIC_RATE_LIMIT_*` / planes si hace falta.
+
+#### B. Pruebas de estrés / capacidad (general)
+
+- [ ] Load sostenido + burst (k6): health, offer/request, session poll, billing `validate-and-meter`.
+- [ ] Auth abuse: register/login sin key; payloads inválidos / oversized.
+- [ ] Billing caído → issuer/verifier **fail closed** (503), no open.
+- [ ] Inventario `@Public()` + rutas Credo; secretos fuera del repo; isolation tenant (key de A no opera wallet de B).
+- [ ] Informe: RPS/latency p95, errores, cuellos (DB, Askar, billing, CPU).
+
+#### C. Artefactos
+
+- [ ] Carpeta `docs/kuatia/stress/` o `scripts/stress/`: escenarios k6 + README (URLs, env, umbrales).
+- [ ] Checklist de “go / no-go” post-deploy antes de abrir tráfico real.
 
 ---
 
@@ -286,5 +317,6 @@ D8 anti-abuso ──► T6 ToS
 D4 planes ──► D15 checkout + T7 business
 D10 wallet estilos ──► T8 stores (si publican)
 D16 auditorías ──► narrativa enterprise (T3)
-D7 rate limits ──► D18 stress
+D7 rate limits ──► D18 stress (post-deploy: RL + capacidad)
+D18 stress ──► calibrar PUBLIC_RATE_LIMIT_* / planes si hace falta
 ```

@@ -35,6 +35,10 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
             kind: 'added',
             text: 'Endpoints documentados: health, DID, metadata, branding, offer, request/session y errores HTTP.',
           },
+          {
+            kind: 'added',
+            text: 'Rate limit por IP en rutas públicas (health/discovery/OID4VC); el plan sigue mandando con API key.',
+          },
         ],
       },
       {
@@ -56,6 +60,10 @@ export const CHANGELOG_ENTRIES: ChangelogEntry[] = [
           {
             kind: 'added',
             text: 'Planes Free, Pro, Pro Double (×2 Pro) y Business a medida.',
+          },
+          {
+            kind: 'added',
+            text: 'Login consola con OAuth Google/GitHub (además de email/contraseña).',
           },
           {
             kind: 'added',

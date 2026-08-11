@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState, type FormEvent } from 'react'
 import { AuthShell } from './AuthShell'
+import { OAuthButtons } from './OAuthButtons'
 
 /** Alta self-serve (plan Free). */
 export function RegisterForm() {
@@ -89,6 +90,9 @@ export function RegisterForm() {
           {pending ? 'Creando…' : 'Crear cuenta'}
         </Button>
       </form>
+      <div className="mt-4">
+        <OAuthButtons />
+      </div>
     </AuthShell>
   )
 }

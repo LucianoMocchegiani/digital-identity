@@ -2,6 +2,7 @@ import 'reflect-metadata'
 import { RequestMethod, ValidationPipe } from '@nestjs/common'
 import { NestFactory } from '@nestjs/core'
 import { AppModule } from './app.module'
+import { createBillingPublicRateLimitMiddleware } from './common/public-rate-limit'
 import { environmentConfig } from './config/environment.config'
 
 /**
@@ -10,6 +11,7 @@ import { environmentConfig } from './config/environment.config'
  */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule)
+  app.use(createBillingPublicRateLimitMiddleware())
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }))
   app.setGlobalPrefix('v1', {
     exclude: [{ path: 'health', method: RequestMethod.GET }],

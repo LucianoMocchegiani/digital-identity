@@ -25,6 +25,8 @@ type AuthState = {
   account: Account | null
   loading: boolean
   login: (email: string, password: string) => Promise<void>
+  /** Sesión desde JWT OAuth (callback). */
+  loginWithToken: (accessToken: string) => Promise<void>
   register: (name: string, email: string, password: string) => Promise<void>
   logout: () => void
   refresh: () => Promise<void>
@@ -67,6 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccount(res.account)
   }, [])
 
+  const loginWithToken = useCallback(async (accessToken: string) => {
+    setAccessToken(accessToken)
+    const me = await billingApi.me()
+    setAccount(me)
+  }, [])
+
   const register = useCallback(async (name: string, email: string, password: string) => {
     const res = await billingApi.register({ name, email, password })
     setAccessToken(res.accessToken)
@@ -79,8 +87,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const value = useMemo(
-    () => ({ account, loading, login, register, logout, refresh }),
-    [account, loading, login, register, logout, refresh],
+    () => ({ account, loading, login, loginWithToken, register, logout, refresh }),
+    [account, loading, login, loginWithToken, register, logout, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

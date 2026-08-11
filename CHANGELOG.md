@@ -14,6 +14,7 @@ Sitio público: https://kuatia.xyz/docs/changelog
 
 - Prefijo público **`/v1`** en issuer, verifier y billing (sin `/v2`).
 - Endpoints documentados: health, DID, metadata, branding, offer, request/session, errores HTTP.
+- Rate limit por IP en rutas públicas (health / discovery / OID4VC+DIDComm); cupos de plan siguen en traffic con API key.
 
 ### Documentación
 
@@ -23,6 +24,7 @@ Sitio público: https://kuatia.xyz/docs/changelog
 ### Producto
 
 - Planes: Free · Pro · **Pro Double** (×2 Pro) · Business (a medida).
+- Login consola: email/contraseña + **OAuth Google/GitHub** (si hay client id/secret en billing).
 - Tema claro/oscuro, SEO técnico (sitemap, robots, OG), config de sitio vía env.
 
 ---

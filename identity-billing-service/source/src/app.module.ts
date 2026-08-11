@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 import { environmentConfig } from './config/environment.config'
 import { Account } from './entities/account.entity'
+import { AccountIdentity } from './entities/account-identity.entity'
 import { Product } from './entities/product.entity'
 import { Resource } from './entities/resource.entity'
 import { ApiKey } from './entities/api-key.entity'
@@ -31,6 +32,7 @@ import { ResourcesController } from './resources/resources.controller'
         url: environmentConfig().databaseUrl,
         entities: [
           Account,
+          AccountIdentity,
           Product,
           Resource,
           ApiKey,

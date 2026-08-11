@@ -25,7 +25,8 @@ export default function DocsErroresPage() {
           <span className="text-[var(--kuatia-text)]">404</span> — walletId o sesión inexistente
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">429</span> — rate limit (solicitudes por minuto)
+          <span className="text-[var(--kuatia-text)]">429</span> — rate limit (plan autenticado o
+          throttle público por IP en health/discovery/OID4VC)
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">503</span> — servicio no listo (revisá{' '}

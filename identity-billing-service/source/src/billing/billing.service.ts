@@ -12,6 +12,7 @@ import {
 import { InjectRepository } from '@nestjs/typeorm'
 import { IsNull, Repository } from 'typeorm'
 import { Account } from '../entities/account.entity'
+import { AccountIdentity } from '../entities/account-identity.entity'
 import { Product } from '../entities/product.entity'
 import { Resource, type ResourceService } from '../entities/resource.entity'
 import { ApiKey } from '../entities/api-key.entity'
@@ -73,6 +74,8 @@ export class BillingService {
 
   constructor(
     @InjectRepository(Account) private readonly accounts: Repository<Account>,
+    @InjectRepository(AccountIdentity)
+    private readonly identities: Repository<AccountIdentity>,
     @InjectRepository(Product) private readonly products: Repository<Product>,
     @InjectRepository(Resource) private readonly resources: Repository<Resource>,
     @InjectRepository(ApiKey) private readonly apiKeys: Repository<ApiKey>,
@@ -187,6 +190,82 @@ export class BillingService {
       throw new ForbiddenException('Cuenta suspendida')
     }
     return account
+  }
+
+  /**
+   * Login/alta vía OAuth. Unique (provider, subject) = una cuenta por sub.
+   * Si hay email y ya existe cuenta, vincula la identidad a esa cuenta.
+   */
+  async findOrCreateFromOAuth(profile: {
+    provider: 'google' | 'github'
+    subject: string
+    email: string | null
+    name: string | null
+    emailVerified?: boolean
+  }): Promise<{ account: ReturnType<BillingService['toAccountView']> }> {
+    const existingIdentity = await this.identities.findOne({
+      where: { provider: profile.provider, providerSubject: profile.subject },
+    })
+    if (existingIdentity) {
+      const account = await this.requireAccount(existingIdentity.accountId)
+      if (account.status === 'suspended') {
+        throw new ForbiddenException('Cuenta suspendida')
+      }
+      if (profile.email && !existingIdentity.email) {
+        existingIdentity.email = profile.email
+        await this.identities.save(existingIdentity)
+      }
+      return { account: this.toAccountView(account) }
+    }
+
+    let account: Account | null = null
+    const email = profile.email?.trim().toLowerCase() || null
+    if (email && profile.emailVerified !== false) {
+      account = await this.accounts.findOne({ where: { email } })
+    }
+
+    if (!account) {
+      const plan = resolvePlan('free')
+      const name =
+        (profile.name && profile.name.trim()) ||
+        (email ? email.split('@')[0] : null) ||
+        `${profile.provider}-${profile.subject.slice(0, 8)}`
+      account = await this.accounts.save(
+        this.accounts.create({
+          name,
+          email,
+          passwordHash: null,
+          plan: plan.id,
+          status: 'active',
+          maxProducts: plan.maxProducts,
+          rateLimitRpm: plan.rateLimitRpm,
+          monthlyTxQuota: plan.monthlyTxQuota,
+        }),
+      )
+      await this.subscriptions.save(
+        this.subscriptions.create({
+          accountId: account.id,
+          provider: this.paymentProvider.name,
+          externalId: null,
+          status: 'active',
+          plan: account.plan,
+        }),
+      )
+    } else if (account.status === 'suspended') {
+      throw new ForbiddenException('Cuenta suspendida')
+    }
+
+    await this.identities.save(
+      this.identities.create({
+        accountId: account.id,
+        provider: profile.provider,
+        providerSubject: profile.subject,
+        email,
+        displayName: profile.name,
+      }),
+    )
+
+    return { account: this.toAccountView(account) }
   }
 
   /**

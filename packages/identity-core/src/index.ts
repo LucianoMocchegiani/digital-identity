@@ -106,6 +106,12 @@ export type {
 
 // Utils
 export * from './utils/retry'
+export {
+  createPublicRateLimitMiddleware,
+  defaultPublicRateLimitBuckets,
+  publicRateLimitConfigFromEnv,
+} from './http/public-rate-limit'
+export type { PublicRateLimitBucket, PublicRateLimitOptions } from './http/public-rate-limit'
 
 // Revocation (Token Status List) — superficie pública controlada
 export { RevocationService } from './revocation/revocation.service';

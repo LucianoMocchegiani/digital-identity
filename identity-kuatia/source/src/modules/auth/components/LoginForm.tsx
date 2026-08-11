@@ -4,14 +4,17 @@ import { Alert, Button, Field, Input, PasswordInput } from '@/design-system'
 import { ApiError } from '@/shared/api/client'
 import { useAuth } from '@/shared/auth/AuthProvider'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useState, type FormEvent } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Suspense, useState, type FormEvent } from 'react'
 import { AuthShell } from './AuthShell'
+import { OAuthButtons } from './OAuthButtons'
 
 /** Pantalla de ingreso a la consola. */
-export function LoginForm() {
+function LoginFormInner() {
   const { login } = useAuth()
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const oauthError = searchParams.get('oauthError')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -31,6 +34,8 @@ export function LoginForm() {
     }
   }
 
+  const displayError = error ?? (oauthError ? `OAuth: ${oauthError}` : null)
+
   return (
     <AuthShell
       title="Ingresar"
@@ -45,7 +50,7 @@ export function LoginForm() {
       }
     >
       <form className="space-y-4" onSubmit={onSubmit}>
-        {error ? <Alert>{error}</Alert> : null}
+        {displayError ? <Alert>{displayError}</Alert> : null}
         <Field label="Email" htmlFor="email">
           <Input
             id="email"
@@ -72,6 +77,23 @@ export function LoginForm() {
           {pending ? 'Ingresando…' : 'Ingresar'}
         </Button>
       </form>
+      <div className="mt-4">
+        <OAuthButtons />
+      </div>
     </AuthShell>
+  )
+}
+
+export function LoginForm() {
+  return (
+    <Suspense
+      fallback={
+        <AuthShell title="Ingresar" subtitle="Accedé a la consola para gestionar productos e API keys.">
+          <p className="text-sm text-[var(--kuatia-muted)]">Cargando…</p>
+        </AuthShell>
+      }
+    >
+      <LoginFormInner />
+    </Suspense>
   )
 }
