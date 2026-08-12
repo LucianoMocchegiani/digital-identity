@@ -41,8 +41,20 @@ export class TenantProvisioner {
     const path = input.service === 'issuer' ? '/v1/issuers' : '/v1/verifiers'
     const body =
       input.service === 'issuer'
-        ? { issuerId: input.walletId }
-        : { verifierId: input.walletId }
+        ? {
+            issuerId: input.walletId,
+            oid4vc: {
+              display: [{ name: input.walletId, locale: 'es' }],
+              dpopSigningAlgValuesSupported: ['ES256'],
+              credentialConfigurationsSupported: {},
+            },
+          }
+        : {
+            verifierId: input.walletId,
+            oid4vp: {
+              clientMetadata: { client_name: input.walletId },
+            },
+          }
 
     let res: Response
     try {

@@ -45,4 +45,4 @@ npm run onboard -- --name "Demo" --email demo@example.com --password secret123 -
 
 Deploy Contabo: [`docs/deploy-contabo-phase1.md`](docs/deploy-contabo-phase1.md).
 
-Postman: importar `postman/` y el environment `Identity-Local-Docker`.
+Postman: importar `postman/` y el environment `Kuatia-Local-Docker` (o `Kuatia-Prod`).

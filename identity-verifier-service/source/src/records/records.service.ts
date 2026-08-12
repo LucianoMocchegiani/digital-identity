@@ -2,7 +2,6 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import {
   JsonTransformer,
   UnknownRecordTypeError,
-  VerifierOid4vcNotFoundError,
   getRecordTypeDescriptors,
   getTenantRecord,
   listTenantRecords,
@@ -65,34 +64,26 @@ export class RecordsService {
   }
 
   /**
-   * Obtiene un record por tipo e ID dentro del tenant.
-   *
-   * @param walletId - ID lógico del tenant
-   * @param recordType - Clase Credo o tipo en storage
-   * @param recordId - ID del record
-   * @throws {NotFoundException} Si la wallet o el record no existen
-   * @throws {BadRequestException} Si el tipo de record es inválido para verifier
+   * Fusiona metadata OID4VP en el `OpenId4VcVerifierRecord` del tenant (upsert).
    */
-  /** Fusiona metadata OID4VP en el `OpenId4VcVerifierRecord` del tenant. */
   async patchMetadata(walletId: string, dto: PatchVerifierMetadataDto): Promise<PatchVerifierMetadataResult> {
     const patch = dto as VerifierOid4vpMetadataPatch
-    try {
-      const record = await withWallet(walletId, (agent) =>
-        patchVerifierOid4vpMetadata(agent, walletId, patch),
-      )
-      return {
-        verifierId: walletId,
-        recordType: 'OpenId4VcVerifierRecord',
-        record: JsonTransformer.toJSON(record) as Record<string, unknown>,
-      }
-    } catch (err) {
-      if (err instanceof VerifierOid4vcNotFoundError) {
-        throw new NotFoundException(err.message)
-      }
-      throw err
+    const record = await withWallet(walletId, (agent) =>
+      patchVerifierOid4vpMetadata(agent, walletId, patch),
+    )
+    return {
+      verifierId: walletId,
+      recordType: 'OpenId4VcVerifierRecord',
+      record: JsonTransformer.toJSON(record) as Record<string, unknown>,
     }
   }
 
+  /**
+   * Obtiene un record por tipo e ID dentro del tenant.
+   *
+   * @throws {NotFoundException} Si la wallet o el record no existen
+   * @throws {BadRequestException} Si el tipo de record es inválido para verifier
+   */
   async get(walletId: string, recordType: string, recordId: string): Promise<TenantRecordResult> {
     try {
       const result = await withWallet(walletId, (agent) => getTenantRecord(agent, ROLE, recordType, recordId))

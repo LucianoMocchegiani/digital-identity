@@ -297,7 +297,7 @@ Todas las funciones reciben un **`Agent` del tenant** (en multi-tenant: dentro d
 | Función | Descripción |
 |---------|-------------|
 | `initializeIssuerOid4vc(agent, options, issuerId?)` | Crea/actualiza `OpenId4VcIssuerRecord` |
-| `patchIssuerOid4vcMetadata(agent, issuerId, patch)` | Merge metadata (configs, display, DPoP algs) |
+| `patchIssuerOid4vcMetadata(agent, issuerId, patch)` | Merge metadata (configs, display, DPoP); crea el record si falta |
 | `createSdJwtOffer(agent, options)` | Offer pre-authorized + `offerUri` |
 | `createCredentialOffer` / `getIssuanceSession` | Bajo nivel |
 | `ensureIssuer` | Registro de configuraciones soportadas |
@@ -306,7 +306,6 @@ Todas las funciones reciben un **`Agent` del tenant** (en multi-tenant: dentro d
 import {
   createSdJwtOffer,
   patchIssuerOid4vcMetadata,
-  IssuerOid4vcNotFoundError,
 } from '@quarkid/identity-core'
 
 await withWallet('issuer-wallet-oid4vc', async (agent) => {
@@ -500,8 +499,6 @@ const sessions = await withTenant(rootAgent, tenantId, (agent) =>
 
 | Error | Causa |
 |-------|--------|
-| `IssuerOid4vcNotFoundError` | `patchIssuerOid4vcMetadata` / offer sin `initializeIssuerOid4vc` previo |
-| `VerifierOid4vcNotFoundError` | Igual en verifier |
 | `UnknownRecordTypeError` | `recordType` inválido para el rol |
 | `Error al crear did:web:...` | Dominio inválido (ej. `:` o plantillas en `walletId`) |
 | OID4VC HTTP 404 | Falta `oid4vcBaseUrl` o `expressApp` en root agent |

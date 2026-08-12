@@ -219,28 +219,9 @@ export async function initializeVerifierOid4vc(
 export type VerifierOid4vpMetadataPatch = Partial<Pick<OpenId4VcUpdateVerifierRecordOptions, 'clientMetadata'>>
 
 /**
- * Indica que no existe un `OpenId4VcVerifierRecord` para el `verifierId` dado.
- *
- * @throws {VerifierOid4vcNotFoundError} Desde {@link patchVerifierOid4vpMetadata}
- */
-export class VerifierOid4vcNotFoundError extends Error {
-  constructor(readonly verifierId: string) {
-    super(`OpenId4VcVerifierRecord no encontrado para verifierId '${verifierId}'`)
-    this.name = 'VerifierOid4vcNotFoundError'
-  }
-}
-
-/**
  * Actualiza metadata OID4VP del verifier (merge de `clientMetadata`).
  *
- * Persiste en el record Credo **`OpenId4VcVerifierRecord`**
- * (`type: OpenId4VcVerifierRecord`). No modifica `DidRecord` ni sesiones de verificación.
- *
- * @param agent - Agente del tenant verifier
- * @param verifierId - `verifierId` público del registro OID4VP
- * @param patch - Metadata de cliente a fusionar
- * @returns Registro verifier actualizado
- * @throws {VerifierOid4vcNotFoundError} Si el verifier no fue creado previamente en el tenant
+ * Si aún no hay `OpenId4VcVerifierRecord`, lo crea con el patch (upsert).
  */
 export async function patchVerifierOid4vpMetadata(
   agent: Agent,
@@ -249,11 +230,18 @@ export async function patchVerifierOid4vpMetadata(
 ): Promise<OpenId4VcVerifierRecord> {
   const verifierApi = agent.dependencyManager.resolve(OpenId4VcVerifierApi)
 
-  let existing: OpenId4VcVerifierRecord
+  let existing: OpenId4VcVerifierRecord | undefined
   try {
     existing = await verifierApi.getVerifierByVerifierId(verifierId)
   } catch {
-    throw new VerifierOid4vcNotFoundError(verifierId)
+    existing = undefined
+  }
+
+  if (!existing) {
+    return initializeVerifierOid4vc(agent, {
+      verifierId,
+      clientMetadata: patch.clientMetadata,
+    })
   }
 
   if (patch.clientMetadata) {

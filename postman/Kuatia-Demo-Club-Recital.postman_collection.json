@@ -1,0 +1,1089 @@
+{
+  "info": {
+    "name": "Kuatia — Demo Club Norte · Recital Live",
+    "_postman_id": "a7c3e9d1-5b2f-4e8a-9c1d-6f4b0a2e8d55",
+    "description": "Demo Kuatia con **2 emisores** y metadata visual completa:\n\n1. **Club Norte** — `membership_card` / `MembershipCredential`\n2. **Recital Live** — `recital_ticket` / `RecitalTicketCredential`\n\n**Environment:** `Kuatia-Local-Docker.postman_environment.json` (o Prod).\n\n**Auth:** Billing JWT + `X-API-Key` en issuer/verifier (no usa API Gateway).\n\n**Imágenes:** logo y `background_image` en PNG/JPG (ver `postman/assets/demo-credentials/README.md`).\n\n**QR:** pestaña **Visualize** tras offer y request DCQL.\n\nOrden: `00` auth → `01` productos (4: necesita plan pro) → `02` PATCH metadata + well-known → `03` Club → `04` Recital.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "billingBaseUrl",
+      "value": "http://localhost:9000"
+    },
+    {
+      "key": "issuerBaseUrl",
+      "value": "http://localhost:9001"
+    },
+    {
+      "key": "verifierBaseUrl",
+      "value": "http://localhost:9002"
+    },
+    {
+      "key": "adminApiKey",
+      "value": "dev-admin-change-me"
+    },
+    {
+      "key": "email",
+      "value": "demo-club-recital@kuatia.local"
+    },
+    {
+      "key": "password",
+      "value": "password123"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "accountId",
+      "value": ""
+    },
+    {
+      "key": "clubIssuerId",
+      "value": "club-norte"
+    },
+    {
+      "key": "clubVerifierId",
+      "value": "club-norte"
+    },
+    {
+      "key": "clubIssuerApiKey",
+      "value": ""
+    },
+    {
+      "key": "clubVerifierApiKey",
+      "value": ""
+    },
+    {
+      "key": "recitalIssuerId",
+      "value": "recital-live"
+    },
+    {
+      "key": "recitalVerifierId",
+      "value": "recital-live"
+    },
+    {
+      "key": "recitalIssuerApiKey",
+      "value": ""
+    },
+    {
+      "key": "recitalVerifierApiKey",
+      "value": ""
+    },
+    {
+      "key": "issuerId",
+      "value": "club-norte"
+    },
+    {
+      "key": "verifierId",
+      "value": "club-norte"
+    },
+    {
+      "key": "issuerApiKey",
+      "value": ""
+    },
+    {
+      "key": "verifierApiKey",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 - Auth Billing",
+      "description": "Register (opcional) + login. Guarda JWT y accountId.",
+      "item": [
+        {
+          "name": "00.1 GET /health",
+          "request": {
+            "method": "GET",
+            "url": "{{billingBaseUrl}}/health"
+          }
+        },
+        {
+          "name": "00.2 POST /v1/auth/register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"name\": \"Demo Club Recital\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/auth/register",
+            "description": "Si el email ya existe, seguir con login (409 ok)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Register ok o ya existe', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 409]));",
+                  "if (pm.response.code === 200 || pm.response.code === 201) {",
+                  "  const res = pm.response.json();",
+                  "  if (res.accessToken) {",
+                  "    pm.collectionVariables.set('accessToken', res.accessToken);",
+                  "    try { pm.environment.set('accessToken', res.accessToken); } catch (e) {}",
+                  "  }",
+                  "  if (res.account?.id) {",
+                  "    pm.collectionVariables.set('accountId', res.account.id);",
+                  "    try { pm.environment.set('accountId', res.account.id); } catch (e) {}",
+                  "  }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "00.3 POST /v1/auth/login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Login 200', () => pm.response.to.have.status(200));",
+                  "if (res.accessToken) {",
+                  "  pm.collectionVariables.set('accessToken', res.accessToken);",
+                  "  try { pm.environment.set('accessToken', res.accessToken); } catch (e) {}",
+                  "}",
+                  "if (res.account?.id) {",
+                  "  pm.collectionVariables.set('accountId', res.account.id);",
+                  "  try { pm.environment.set('accountId', res.account.id); } catch (e) {}",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "00.4 POST admin set plan → pro",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-Admin-Key",
+                "value": "{{adminApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan\": \"pro\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/plan",
+            "description": "Free solo permite 2 productos; este demo crea 4 (2 issuers + 2 verifiers)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Plan pro', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 - Productos (billing)",
+      "description": "Crea issuer+verifier para Club Norte y Recital Live. Guarda API keys.",
+      "item": [
+        {
+          "name": "01.club — POST product issuer (Club Norte)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Club Norte Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{clubIssuerId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto issuer `club-norte` y guarda API key en `clubIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('clubIssuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('clubIssuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('clubIssuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('clubIssuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('issuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('issuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('issuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('issuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('clubIssuerApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.club — POST product verifier (Club Norte)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Club Norte Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{clubVerifierId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto verifier `club-norte` y guarda API key en `clubVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('clubVerifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('clubVerifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('clubVerifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('clubVerifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('verifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('verifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('verifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('verifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('clubVerifierApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.recital — POST product issuer (Recital Live)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Recital Live Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{recitalIssuerId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto issuer `recital-live` y guarda API key en `recitalIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('recitalIssuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('recitalIssuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('recitalIssuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('recitalIssuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('issuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('issuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('issuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('issuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('recitalIssuerApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.recital — POST product verifier (Recital Live)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Recital Live Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{recitalVerifierId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto verifier `recital-live` y guarda API key en `recitalVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('recitalVerifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('recitalVerifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('recitalVerifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('recitalVerifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('verifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('verifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('verifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('verifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('recitalVerifierApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "02 - Metadata visual (issuer + verifier)",
+      "description": "PATCH display completo (issuer + credential + claims) y verificación del well-known.",
+      "item": [
+        {
+          "name": "02.club — PATCH metadata display completa (Club Norte)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{clubIssuerApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display\": [\n    {\n      \"name\": \"Club Norte\",\n      \"locale\": \"es\",\n      \"background_color\": \"#0f766e\",\n      \"text_color\": \"#FFFFFF\",\n      \"logo\": {\n        \"uri\": \"https://img.icons8.com/fluency/192/football2.png\",\n        \"alt_text\": \"Club Norte\"\n      },\n      \"background_image\": {\n        \"uri\": \"https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg\"\n      }\n    }\n  ],\n  \"dpopSigningAlgValuesSupported\": [\n    \"ES256\"\n  ],\n  \"credentialConfigurationsSupported\": {\n    \"membership_card\": {\n      \"format\": \"dc+sd-jwt\",\n      \"vct\": \"MembershipCredential\",\n      \"cryptographic_binding_methods_supported\": [\n        \"did:jwk\",\n        \"jwk\"\n      ],\n      \"credential_signing_alg_values_supported\": [\n        \"ES256\"\n      ],\n      \"proof_types_supported\": {\n        \"jwt\": {\n          \"proof_signing_alg_values_supported\": [\n            \"ES256\"\n          ]\n        }\n      },\n      \"claims\": {\n        \"given_name\": {\n          \"display\": [\n            {\n              \"name\": \"Nombre\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"family_name\": {\n          \"display\": [\n            {\n              \"name\": \"Apellido\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"member_id\": {\n          \"display\": [\n            {\n              \"name\": \"Nº de socio\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"membership_tier\": {\n          \"display\": [\n            {\n              \"name\": \"Categoría\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"organization\": {\n          \"display\": [\n            {\n              \"name\": \"Organización\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"valid_from\": {\n          \"display\": [\n            {\n              \"name\": \"Válida desde\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"valid_until\": {\n          \"display\": [\n            {\n              \"name\": \"Válida hasta\",\n              \"locale\": \"es\"\n            }\n          ]\n        }\n      },\n      \"display\": [\n        {\n          \"name\": \"Membresía Club Norte\",\n          \"locale\": \"es\",\n          \"background_color\": \"#0f766e\",\n          \"text_color\": \"#FFFFFF\",\n          \"logo\": {\n            \"uri\": \"https://img.icons8.com/fluency/192/football2.png\",\n            \"alt_text\": \"Club Norte\"\n          },\n          \"background_image\": {\n            \"uri\": \"https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg\"\n          }\n        }\n      ]\n    }\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{clubIssuerId}}/records/metadata",
+            "description": "Publica display del emisor y de la credencial. Crea el OpenId4VcIssuerRecord si faltaba (upsert)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Metadata 2xx', () => pm.response.to.be.success);",
+                  "console.log('Patched Club Norte / membership_card');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.clubb — GET well-known (verificar display)",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{clubIssuerId}}/.well-known/openid-credential-issuer",
+            "description": "Sin API key. Debe traer logo del issuer + background_image de la credencial.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const configId = 'membership_card';",
+                  "const issuerDisplay = res.display?.[0];",
+                  "const credDisplay = res.credential_configurations_supported?.[configId]?.display?.[0];",
+                  "pm.test('Issuer display.name', () => pm.expect(issuerDisplay?.name).to.be.a('string').and.not.empty);",
+                  "pm.test('Issuer display.logo.uri (.png/.jpg)', () => {",
+                  "  const uri = issuerDisplay?.logo?.uri || '';",
+                  "  pm.expect(uri).to.match(/\\.(png|jpe?g|webp)(\\?|$)/i);",
+                  "});",
+                  "pm.test('Credential display.background_image.uri', () => {",
+                  "  pm.expect(credDisplay?.background_image?.uri).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Credential display colors', () => {",
+                  "  pm.expect(credDisplay?.background_color).to.be.a('string');",
+                  "  pm.expect(credDisplay?.text_color).to.be.a('string');",
+                  "});",
+                  "pm.test('Claims metadata', () => {",
+                  "  const claims = res.credential_configurations_supported?.[configId]?.claims;",
+                  "  pm.expect(claims).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.clubc — PATCH verifier client_name",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{clubVerifierApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientMetadata\": {\n    \"client_name\": \"Club Norte Accesos\"\n  }\n}"
+            },
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{clubVerifierId}}/records/metadata",
+            "description": "Nombre amigable del verificador en OID4VP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verifier metadata 2xx o 404 skip', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 404]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.recital — PATCH metadata display completa (Recital Live)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{recitalIssuerApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display\": [\n    {\n      \"name\": \"Recital Live\",\n      \"locale\": \"es\",\n      \"background_color\": \"#7c3aed\",\n      \"text_color\": \"#FFFFFF\",\n      \"logo\": {\n        \"uri\": \"https://img.icons8.com/fluency/192/musical-notes.png\",\n        \"alt_text\": \"Recital Live\"\n      },\n      \"background_image\": {\n        \"uri\": \"https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg\"\n      }\n    }\n  ],\n  \"dpopSigningAlgValuesSupported\": [\n    \"ES256\"\n  ],\n  \"credentialConfigurationsSupported\": {\n    \"recital_ticket\": {\n      \"format\": \"dc+sd-jwt\",\n      \"vct\": \"RecitalTicketCredential\",\n      \"cryptographic_binding_methods_supported\": [\n        \"did:jwk\",\n        \"jwk\"\n      ],\n      \"credential_signing_alg_values_supported\": [\n        \"ES256\"\n      ],\n      \"proof_types_supported\": {\n        \"jwt\": {\n          \"proof_signing_alg_values_supported\": [\n            \"ES256\"\n          ]\n        }\n      },\n      \"claims\": {\n        \"holder_name\": {\n          \"display\": [\n            {\n              \"name\": \"Titular\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"event_name\": {\n          \"display\": [\n            {\n              \"name\": \"Evento\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"venue\": {\n          \"display\": [\n            {\n              \"name\": \"Venue\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"seat\": {\n          \"display\": [\n            {\n              \"name\": \"Asiento\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"ticket_code\": {\n          \"display\": [\n            {\n              \"name\": \"Código\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"event_date\": {\n          \"display\": [\n            {\n              \"name\": \"Fecha\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"gate\": {\n          \"display\": [\n            {\n              \"name\": \"Puerta\",\n              \"locale\": \"es\"\n            }\n          ]\n        }\n      },\n      \"display\": [\n        {\n          \"name\": \"Entrada Recital\",\n          \"locale\": \"es\",\n          \"background_color\": \"#7c3aed\",\n          \"text_color\": \"#FFFFFF\",\n          \"logo\": {\n            \"uri\": \"https://img.icons8.com/fluency/192/musical-notes.png\",\n            \"alt_text\": \"Recital Live\"\n          },\n          \"background_image\": {\n            \"uri\": \"https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg\"\n          }\n        }\n      ]\n    }\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{recitalIssuerId}}/records/metadata",
+            "description": "Publica display del emisor y de la credencial. Crea el OpenId4VcIssuerRecord si faltaba (upsert)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Metadata 2xx', () => pm.response.to.be.success);",
+                  "console.log('Patched Recital Live / recital_ticket');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.recitalb — GET well-known (verificar display)",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{recitalIssuerId}}/.well-known/openid-credential-issuer",
+            "description": "Sin API key. Debe traer logo del issuer + background_image de la credencial.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const configId = 'recital_ticket';",
+                  "const issuerDisplay = res.display?.[0];",
+                  "const credDisplay = res.credential_configurations_supported?.[configId]?.display?.[0];",
+                  "pm.test('Issuer display.name', () => pm.expect(issuerDisplay?.name).to.be.a('string').and.not.empty);",
+                  "pm.test('Issuer display.logo.uri (.png/.jpg)', () => {",
+                  "  const uri = issuerDisplay?.logo?.uri || '';",
+                  "  pm.expect(uri).to.match(/\\.(png|jpe?g|webp)(\\?|$)/i);",
+                  "});",
+                  "pm.test('Credential display.background_image.uri', () => {",
+                  "  pm.expect(credDisplay?.background_image?.uri).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Credential display colors', () => {",
+                  "  pm.expect(credDisplay?.background_color).to.be.a('string');",
+                  "  pm.expect(credDisplay?.text_color).to.be.a('string');",
+                  "});",
+                  "pm.test('Claims metadata', () => {",
+                  "  const claims = res.credential_configurations_supported?.[configId]?.claims;",
+                  "  pm.expect(claims).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.recitalc — PATCH verifier client_name",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{recitalVerifierApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientMetadata\": {\n    \"client_name\": \"Recital Live Accesos\"\n  }\n}"
+            },
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{recitalVerifierId}}/records/metadata",
+            "description": "Nombre amigable del verificador en OID4VP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verifier metadata 2xx o 404 skip', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 404]));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 - Club Norte",
+      "description": "Emisor `{{clubIssuerId}}` · Verificador `{{clubVerifierId}}`.",
+      "item": [
+        {
+          "name": "03.A Membresía Club Norte",
+          "description": "Emisión y verificación de Membresía Club Norte.",
+          "item": [
+            {
+              "name": "Emisión — POST offer Membresía Club Norte + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{clubIssuerApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"credentialConfigurationId\": \"membership_card\",\n  \"vct\": \"MembershipCredential\",\n  \"claims\": {\n    \"given_name\": \"María\",\n    \"family_name\": \"López\",\n    \"member_id\": \"CN-10482\",\n    \"membership_tier\": \"Socio pleno\",\n    \"organization\": \"Club Norte\",\n    \"valid_from\": \"2026-01-01\",\n    \"valid_until\": \"2026-12-31\"\n  },\n  \"claimsDisplay\": {\n    \"given_name\": {\n      \"name\": \"Nombre\",\n      \"locale\": \"es\"\n    },\n    \"family_name\": {\n      \"name\": \"Apellido\",\n      \"locale\": \"es\"\n    },\n    \"member_id\": {\n      \"name\": \"Nº de socio\",\n      \"locale\": \"es\"\n    },\n    \"membership_tier\": {\n      \"name\": \"Categoría\",\n      \"locale\": \"es\"\n    },\n    \"organization\": {\n      \"name\": \"Organización\",\n      \"locale\": \"es\"\n    },\n    \"valid_from\": {\n      \"name\": \"Válida desde\",\n      \"locale\": \"es\"\n    },\n    \"valid_until\": {\n      \"name\": \"Válida hasta\",\n      \"locale\": \"es\"\n    }\n  },\n  \"disclosureFrame\": {\n    \"_sd\": [\n      \"member_id\",\n      \"membership_tier\",\n      \"valid_until\"\n    ]\n  }\n}"
+                },
+                "url": "{{issuerBaseUrl}}/v1/issuers/{{clubIssuerId}}/openid4vc/offer",
+                "description": "Tras **Send** → pestaña **Visualize** (Postman Desktop) para ver el QR."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.offerUri) {",
+                      "  try { pm.environment.set('clubMembershipOfferUri', res.offerUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('clubMembershipOfferUri', res.offerUri);",
+                      "  console.log('clubMembershipOfferUri:', res.offerUri);",
+                      "}",
+                      "if (res.issuanceSessionId) {",
+                      "  try { pm.environment.set('clubMembershipIssuanceSessionId', res.issuanceSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('clubMembershipIssuanceSessionId', res.issuanceSessionId);",
+                      "}",
+                      "pm.test('Offer Membresía Club Norte', () => pm.expect(res.offerUri).to.be.a('string').and.include('openid-credential-offer'));",
+                      "if (res.offerUri) {",
+                      "  const uri = res.offerUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Membresía Club Norte — Offer QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Escanear offer Membresía Club Norte",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('clubMembershipOfferUri') || pm.environment.get('clubMembershipOfferUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Verificación — POST request DCQL Membresía Club Norte + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{clubVerifierApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dcqlQuery\": {\n    \"credentials\": [\n      {\n        \"id\": \"membership_card\",\n        \"format\": \"dc+sd-jwt\",\n        \"meta\": {\n          \"vct_values\": [\n            \"MembershipCredential\"\n          ]\n        },\n        \"claims\": [\n          {\n            \"path\": [\n              \"given_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"family_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"member_id\"\n            ]\n          },\n          {\n            \"path\": [\n              \"membership_tier\"\n            ]\n          },\n          {\n            \"path\": [\n              \"organization\"\n            ]\n          }\n        ]\n      }\n    ]\n  },\n  \"responseMode\": \"direct_post\",\n  \"requestSignerMethod\": \"did\"\n}"
+                },
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{clubVerifierId}}/openid4vc/request",
+                "description": "Tras **Send** → pestaña **Visualize** para presentar en wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.requestUri) {",
+                      "  try { pm.environment.set('clubMembershipRequestUri', res.requestUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('clubMembershipRequestUri', res.requestUri);",
+                      "  console.log('clubMembershipRequestUri:', res.requestUri);",
+                      "}",
+                      "if (res.verificationSessionId) {",
+                      "  try { pm.environment.set('clubMembershipVerificationSessionId', res.verificationSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('clubMembershipVerificationSessionId', res.verificationSessionId);",
+                      "  console.log('clubMembershipVerificationSessionId:', res.verificationSessionId);",
+                      "}",
+                      "pm.test('Request Membresía Club Norte', () => pm.expect(res.requestUri).to.be.a('string'));",
+                      "if (res.requestUri) {",
+                      "  const uri = res.requestUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Membresía Club Norte — Request QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Presentar Membresía Club Norte",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('clubMembershipRequestUri') || pm.environment.get('clubMembershipRequestUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Resultado — GET session Membresía Club Norte",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{clubVerifierApiKey}}"
+                  }
+                ],
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{clubVerifierId}}/openid4vc/session/{{clubMembershipVerificationSessionId}}",
+                "description": "Tras presentar en wallet. Decode SD-JWT en consola."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "function b64urlDecode(str) {",
+                      "    str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                      "    while (str.length % 4) str += '=';",
+                      "    return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                      "}",
+                      "function decodeSdJwt(compact) {",
+                      "    var chunks = compact.split('~');",
+                      "    var payload = JSON.parse(b64urlDecode(chunks[0].split('.')[1]));",
+                      "    var skip = ['_sd','_sd_alg','cnf','iss','iat','vct'];",
+                      "    var claims = {};",
+                      "    Object.keys(payload).forEach(function(k) { if (skip.indexOf(k) === -1) claims[k] = payload[k]; });",
+                      "    chunks.slice(1).filter(function(p) {",
+                      "        try { var a = JSON.parse(b64urlDecode(p)); return Array.isArray(a) && a.length === 3; } catch(e) { return false; }",
+                      "    }).forEach(function(p) {",
+                      "        var arr = JSON.parse(b64urlDecode(p)); claims[arr[1]] = arr[2];",
+                      "    });",
+                      "    return { vct: payload.vct, issuer: payload.iss, issuedAt: payload.iat ? new Date(payload.iat*1000).toISOString() : null, claims: claims };",
+                      "}",
+                      "try {",
+                      "    var body = pm.response.json();",
+                      "    pm.test('Estado sesion: ' + (body.state || '?'), function() { pm.expect(body.state).to.be.a('string'); });",
+                      "    var vpToken = body.authorizationResponsePayload && body.authorizationResponsePayload.vp_token;",
+                      "    if (!vpToken) { console.log('Sin vp_token — escanear QR en wallet y reintentar'); return; }",
+                      "    var decoded = [];",
+                      "    var parsed; try { parsed = JSON.parse(vpToken); } catch(e) { parsed = vpToken; }",
+                      "    if (typeof parsed === 'string') {",
+                      "        decoded.push({ descriptor: 'vp_token', decoded: decodeSdJwt(parsed) });",
+                      "    } else {",
+                      "        Object.keys(parsed).forEach(function(key) {",
+                      "            var list = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];",
+                      "            list.forEach(function(compact) {",
+                      "                if (typeof compact === 'string' && compact.indexOf('.') > 0) {",
+                      "                    decoded.push({ descriptor: key, decoded: decodeSdJwt(compact) });",
+                      "                }",
+                      "            });",
+                      "        });",
+                      "    }",
+                      "    pm.test('Credencial(es) presentada(s) (' + decoded.length + ')', function() {",
+                      "        console.log(JSON.stringify(decoded, null, 2));",
+                      "        pm.expect(decoded.length).to.be.above(0);",
+                      "    });",
+                      "} catch(e) {",
+                      "    pm.test('Error decodificando vp_token', function() { pm.expect.fail(e.message); });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "04 - Recital Live",
+      "description": "Emisor `{{recitalIssuerId}}` · Verificador `{{recitalVerifierId}}`.",
+      "item": [
+        {
+          "name": "04.A Entrada Recital",
+          "description": "Emisión y verificación de Entrada Recital.",
+          "item": [
+            {
+              "name": "Emisión — POST offer Entrada Recital + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{recitalIssuerApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"credentialConfigurationId\": \"recital_ticket\",\n  \"vct\": \"RecitalTicketCredential\",\n  \"claims\": {\n    \"holder_name\": \"Diego Fernández\",\n    \"event_name\": \"Noche de Rock — Estadio Norte\",\n    \"venue\": \"Estadio Norte\",\n    \"seat\": \"Platea B · Fila 12 · Asiento 8\",\n    \"ticket_code\": \"RL-2026-88421\",\n    \"event_date\": \"2026-09-20T21:00:00-03:00\",\n    \"gate\": \"Puerta 4\"\n  },\n  \"claimsDisplay\": {\n    \"holder_name\": {\n      \"name\": \"Titular\",\n      \"locale\": \"es\"\n    },\n    \"event_name\": {\n      \"name\": \"Evento\",\n      \"locale\": \"es\"\n    },\n    \"venue\": {\n      \"name\": \"Venue\",\n      \"locale\": \"es\"\n    },\n    \"seat\": {\n      \"name\": \"Asiento\",\n      \"locale\": \"es\"\n    },\n    \"ticket_code\": {\n      \"name\": \"Código\",\n      \"locale\": \"es\"\n    },\n    \"event_date\": {\n      \"name\": \"Fecha\",\n      \"locale\": \"es\"\n    },\n    \"gate\": {\n      \"name\": \"Puerta\",\n      \"locale\": \"es\"\n    }\n  },\n  \"disclosureFrame\": {\n    \"_sd\": [\n      \"ticket_code\",\n      \"seat\",\n      \"gate\"\n    ]\n  }\n}"
+                },
+                "url": "{{issuerBaseUrl}}/v1/issuers/{{recitalIssuerId}}/openid4vc/offer",
+                "description": "Tras **Send** → pestaña **Visualize** (Postman Desktop) para ver el QR."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.offerUri) {",
+                      "  try { pm.environment.set('recitalTicketOfferUri', res.offerUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('recitalTicketOfferUri', res.offerUri);",
+                      "  console.log('recitalTicketOfferUri:', res.offerUri);",
+                      "}",
+                      "if (res.issuanceSessionId) {",
+                      "  try { pm.environment.set('recitalTicketIssuanceSessionId', res.issuanceSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('recitalTicketIssuanceSessionId', res.issuanceSessionId);",
+                      "}",
+                      "pm.test('Offer Entrada Recital', () => pm.expect(res.offerUri).to.be.a('string').and.include('openid-credential-offer'));",
+                      "if (res.offerUri) {",
+                      "  const uri = res.offerUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Entrada Recital — Offer QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Escanear offer Entrada Recital",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('recitalTicketOfferUri') || pm.environment.get('recitalTicketOfferUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Verificación — POST request DCQL Entrada Recital + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{recitalVerifierApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dcqlQuery\": {\n    \"credentials\": [\n      {\n        \"id\": \"recital_ticket\",\n        \"format\": \"dc+sd-jwt\",\n        \"meta\": {\n          \"vct_values\": [\n            \"RecitalTicketCredential\"\n          ]\n        },\n        \"claims\": [\n          {\n            \"path\": [\n              \"holder_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"event_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"venue\"\n            ]\n          },\n          {\n            \"path\": [\n              \"seat\"\n            ]\n          },\n          {\n            \"path\": [\n              \"ticket_code\"\n            ]\n          },\n          {\n            \"path\": [\n              \"gate\"\n            ]\n          }\n        ]\n      }\n    ]\n  },\n  \"responseMode\": \"direct_post\",\n  \"requestSignerMethod\": \"did\"\n}"
+                },
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{recitalVerifierId}}/openid4vc/request",
+                "description": "Tras **Send** → pestaña **Visualize** para presentar en wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.requestUri) {",
+                      "  try { pm.environment.set('recitalTicketRequestUri', res.requestUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('recitalTicketRequestUri', res.requestUri);",
+                      "  console.log('recitalTicketRequestUri:', res.requestUri);",
+                      "}",
+                      "if (res.verificationSessionId) {",
+                      "  try { pm.environment.set('recitalTicketVerificationSessionId', res.verificationSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('recitalTicketVerificationSessionId', res.verificationSessionId);",
+                      "  console.log('recitalTicketVerificationSessionId:', res.verificationSessionId);",
+                      "}",
+                      "pm.test('Request Entrada Recital', () => pm.expect(res.requestUri).to.be.a('string'));",
+                      "if (res.requestUri) {",
+                      "  const uri = res.requestUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Entrada Recital — Request QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Presentar Entrada Recital",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('recitalTicketRequestUri') || pm.environment.get('recitalTicketRequestUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Resultado — GET session Entrada Recital",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{recitalVerifierApiKey}}"
+                  }
+                ],
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{recitalVerifierId}}/openid4vc/session/{{recitalTicketVerificationSessionId}}",
+                "description": "Tras presentar en wallet. Decode SD-JWT en consola."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "function b64urlDecode(str) {",
+                      "    str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                      "    while (str.length % 4) str += '=';",
+                      "    return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                      "}",
+                      "function decodeSdJwt(compact) {",
+                      "    var chunks = compact.split('~');",
+                      "    var payload = JSON.parse(b64urlDecode(chunks[0].split('.')[1]));",
+                      "    var skip = ['_sd','_sd_alg','cnf','iss','iat','vct'];",
+                      "    var claims = {};",
+                      "    Object.keys(payload).forEach(function(k) { if (skip.indexOf(k) === -1) claims[k] = payload[k]; });",
+                      "    chunks.slice(1).filter(function(p) {",
+                      "        try { var a = JSON.parse(b64urlDecode(p)); return Array.isArray(a) && a.length === 3; } catch(e) { return false; }",
+                      "    }).forEach(function(p) {",
+                      "        var arr = JSON.parse(b64urlDecode(p)); claims[arr[1]] = arr[2];",
+                      "    });",
+                      "    return { vct: payload.vct, issuer: payload.iss, issuedAt: payload.iat ? new Date(payload.iat*1000).toISOString() : null, claims: claims };",
+                      "}",
+                      "try {",
+                      "    var body = pm.response.json();",
+                      "    pm.test('Estado sesion: ' + (body.state || '?'), function() { pm.expect(body.state).to.be.a('string'); });",
+                      "    var vpToken = body.authorizationResponsePayload && body.authorizationResponsePayload.vp_token;",
+                      "    if (!vpToken) { console.log('Sin vp_token — escanear QR en wallet y reintentar'); return; }",
+                      "    var decoded = [];",
+                      "    var parsed; try { parsed = JSON.parse(vpToken); } catch(e) { parsed = vpToken; }",
+                      "    if (typeof parsed === 'string') {",
+                      "        decoded.push({ descriptor: 'vp_token', decoded: decodeSdJwt(parsed) });",
+                      "    } else {",
+                      "        Object.keys(parsed).forEach(function(key) {",
+                      "            var list = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];",
+                      "            list.forEach(function(compact) {",
+                      "                if (typeof compact === 'string' && compact.indexOf('.') > 0) {",
+                      "                    decoded.push({ descriptor: key, decoded: decodeSdJwt(compact) });",
+                      "                }",
+                      "            });",
+                      "        });",
+                      "    }",
+                      "    pm.test('Credencial(es) presentada(s) (' + decoded.length + ')', function() {",
+                      "        console.log(JSON.stringify(decoded, null, 2));",
+                      "        pm.expect(decoded.length).to.be.above(0);",
+                      "    });",
+                      "} catch(e) {",
+                      "    pm.test('Error decodificando vp_token', function() { pm.expect.fail(e.message); });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

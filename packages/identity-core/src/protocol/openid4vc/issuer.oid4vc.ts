@@ -171,28 +171,9 @@ export type IssuerOid4vcMetadataPatch = Partial<
 >
 
 /**
- * Indica que no existe un `OpenId4VcIssuerRecord` para el `issuerId` dado.
- *
- * @throws {IssuerOid4vcNotFoundError} Desde {@link patchIssuerOid4vcMetadata}
- */
-export class IssuerOid4vcNotFoundError extends Error {
-  constructor(readonly issuerId: string) {
-    super(`OpenId4VcIssuerRecord no encontrado para issuerId '${issuerId}'`)
-    this.name = 'IssuerOid4vcNotFoundError'
-  }
-}
-
-/**
  * Actualiza metadata OID4VCI del issuer (merge sobre configs existentes).
  *
- * Persiste y re-firma el JWT en el record Credo **`OpenId4VcIssuerRecord`**
- * (`type: OpenId4VcIssuerRecord`). No modifica `DidRecord`, conexiones DIDComm ni sesiones.
- *
- * @param agent - Agente del tenant issuer
- * @param issuerId - `issuerId` público del registro OID4VCI
- * @param patch - Campos a fusionar (`credentialConfigurationsSupported` se mergea por clave)
- * @returns Registro issuer actualizado
- * @throws {IssuerOid4vcNotFoundError} Si el issuer no fue creado previamente en el tenant
+ * Si aún no hay `OpenId4VcIssuerRecord`, lo crea con el patch (upsert).
  */
 export async function patchIssuerOid4vcMetadata(
   agent: Agent,
@@ -201,11 +182,22 @@ export async function patchIssuerOid4vcMetadata(
 ): Promise<OpenId4VcIssuerRecord> {
   const issuerApi = agent.dependencyManager.resolve(OpenId4VcIssuerApi)
 
-  let existing: OpenId4VcIssuerRecord
+  let existing: OpenId4VcIssuerRecord | undefined
   try {
     existing = await issuerApi.getIssuerByIssuerId(issuerId)
   } catch {
-    throw new IssuerOid4vcNotFoundError(issuerId)
+    existing = undefined
+  }
+
+  if (!existing) {
+    return initializeIssuerOid4vc(agent, {
+      issuerId,
+      display: patch.display,
+      credentialConfigurationsSupported: patch.credentialConfigurationsSupported ?? {},
+      dpopSigningAlgValuesSupported: patch.dpopSigningAlgValuesSupported,
+      batchCredentialIssuance: patch.batchCredentialIssuance,
+      authorizationServerConfigs: patch.authorizationServerConfigs,
+    })
   }
 
   await issuerApi.updateIssuerMetadata({

@@ -10,20 +10,34 @@ Colecciones para billing / issuer / holder / verifier.
 | `Identity-Issuer.postman_collection.json` | API issuer |
 | `Identity-Holder.postman_collection.json` | API holder |
 | `Identity-Verifier.postman_collection.json` | API verifier |
-| `Identity-Demo-Multi-tenant.postman_collection.json` | Demo multi-tenant (emisión/verificación + QR) |
-| `Identity-Local-Docker.postman_environment.json` | `localhost:9000/9001/9002/9005` |
-| `Identity-Tunnel-Dominios.postman_environment.json` | HTTPS vía tunnel |
+| `Kuatia-Demo-Club-Recital.postman_collection.json` | Demo Kuatia: Club Norte + Recital Live (metadata visual completa + QR) |
+| `Kuatia-Local-Docker.postman_environment.json` | Kuatia local / tunnel: consola + billing/issuer/verifier; defaults Club Norte |
+| `Kuatia-Prod.postman_environment.json` | Kuatia prod (`kuatia.xyz` / `billing` / `issuer` / `verifier`); keys vacías — completar a mano |
 | `assets/demo-credentials/` | Logos/fondos de referencia para el demo |
-| `scripts/generate-multi-tenant-collection.mjs` | Regenerar la colección multi-tenant |
+| `scripts/generate-kuatia-club-recital-collection.mjs` | Regenerar demo Club + Recital |
 
 ## Uso rápido
 
 1. Importar colecciones + environment en Postman.
-2. Seleccionar **Identity Local Docker**.
+2. Seleccionar **Kuatia Local Docker** o **Kuatia Prod**.
 3. **Billing primero**: register/login → `POST /products` issuer → `POST /products` verifier (provision + activate automáticos; guarda keys en el environment). Issuer/verifier deben estar levantados.
-4. **Issuer / Verifier collections**: ya mandan header `X-API-Key: {{issuerApiKey}}` / `{{verifierApiKey}}`. Completá esas vars en **Identity Local Docker** (o copiá del log de Billing).
+4. **Issuer / Verifier collections**: ya mandan header `X-API-Key: {{issuerApiKey}}` / `{{verifierApiKey}}`. Completá esas vars en el environment activo (o copiá del log de Billing / consola Kuatia).
 5. Holder **no** usa API key de billing (fuera del perímetro).
 6. En offers/requests con QR: tras **Send**, abrir la pestaña **Visualize**.
+
+### Environments Kuatia
+
+Defaults útiles para Club Norte / membresía (alineados a la consola):
+
+| Variable | Valor tipico |
+|----------|----------------|
+| `credentialConfigurationId` | `membership_card` |
+| `vct` | `MembershipCredential` |
+| `issuerDisplayName` | `Club Norte` |
+| `credentialDisplayName` | `Membresía` |
+| `issuerLogoUri` / `credentialLogoUri` | URLs de logo (local trae placeholders) |
+
+Para que la wallet muestre nombre/logo (no “Credencial” / “Emisor desconocido”), tras provisionar el producto hay que publicar branding en el well-known (`PATCH /v1/issuers/{{issuerId}}/records/metadata` con `display` + `credentialConfigurationsSupported.{{credentialConfigurationId}}.display`). Usá las vars `issuerDisplayName`, `credentialDisplayName`, colores y logos del environment.
 
 ## URLs (Docker Compose)
 
@@ -40,8 +54,14 @@ Colecciones para billing / issuer / holder / verifier.
 | `Authorization: Bearer` | Billing `/me`, `/products` | JWT del register/login |
 | `X-API-Key` | Issuer / Verifier APIs | `iss_live_…` / `ver_live_…` del producto |
 
-Regenerar demo multi-tenant:
+### Demo Club + Recital (Kuatia)
+
+1. Environment **Kuatia Local Docker**.
+2. Correr colección `Kuatia-Demo-Club-Recital`: `00` auth → `01` productos (pasa account a **pro**, crea 4 keys) → `02` PATCH metadata + well-known → `03` Club / `04` Recital (offer QR → wallet → request QR).
+3. Tras el PATCH, la wallet debe mostrar nombre/logo/fondo (no “Credencial” / “Emisor desconocido”).
+
+Regenerar demo:
 
 ```bash
-node postman/scripts/generate-multi-tenant-collection.mjs
+node postman/scripts/generate-kuatia-club-recital-collection.mjs
 ```

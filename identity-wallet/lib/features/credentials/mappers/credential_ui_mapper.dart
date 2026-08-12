@@ -44,14 +44,22 @@ class CredentialUiMapper {
   /// se pierde sin este paso post-emisión.
   static CredentialRecord enrichFromOffer(
     CredentialRecord record,
-    ResolvedCredentialOffer offer,
-  ) {
-    final credentialDisplay = offer.credentialDisplay?.firstOrNull ??
+    ResolvedCredentialOffer offer, {
+    String locale = 'es',
+  }) {
+    final credentialDisplay = _pickDisplayEntry(
+          offer.credentialDisplay,
+          preferredLocale: locale,
+        ) ??
         _displayFromConfigurations(
           offer.issuerMetadata.credentialConfigurationsSupported,
           offer.offer.credentialConfigurationIds,
+          preferredLocale: locale,
         );
-    final issuerBrandDisplay = offer.issuerMetadata.display?.firstOrNull;
+    final issuerBrandDisplay = _pickDisplayEntry(
+      offer.issuerMetadata.display,
+      preferredLocale: locale,
+    );
     final displayMetadata =
         _mergeDisplayMetadata(credentialDisplay, issuerBrandDisplay);
 
@@ -79,20 +87,29 @@ class CredentialUiMapper {
   /// Útil en flujos de emisión para preview antes de que exista el record en
   /// Isar. Si la credencial no trae `display` en la oferta, intenta leerlo de
   /// `credentialConfigurationsSupported` del issuer metadata.
-  static WalletCredential fromResolvedOffer(ResolvedCredentialOffer offer) {
-    final credentialDisplay = offer.credentialDisplay?.firstOrNull ??
+  static WalletCredential fromResolvedOffer(
+    ResolvedCredentialOffer offer, {
+    String locale = 'es',
+  }) {
+    final credentialDisplay = _pickDisplayEntry(
+          offer.credentialDisplay,
+          preferredLocale: locale,
+        ) ??
         _displayFromConfigurations(
           offer.issuerMetadata.credentialConfigurationsSupported,
           offer.offer.credentialConfigurationIds,
+          preferredLocale: locale,
         );
-    final issuerDisplay = offer.issuerMetadata.display?.firstOrNull;
+    final issuerDisplay = _pickDisplayEntry(
+      offer.issuerMetadata.display,
+      preferredLocale: locale,
+    );
     final style = CredentialDisplayStyle.fromDisplayMetadata(credentialDisplay);
 
-    final title = credentialDisplay?['name'] as String? ??
-        offer.offer.credentialConfigurationIds.firstOrNull ??
-        'Credencial';
-
-    final issuer = issuerDisplay?['name'] as String? ?? offer.offer.credentialIssuer;
+    final title = _nameFromDisplay(credentialDisplay) ?? 'Credencial';
+    final issuer = _nameFromDisplay(issuerDisplay) ??
+        _friendlyIssuerRef(offer.offer.credentialIssuer) ??
+        'Emisor desconocido';
 
     return WalletCredential(
       title: title,
@@ -139,33 +156,40 @@ class CredentialUiMapper {
     ];
   }
 
-  static String credentialTitle(CredentialRecord record) {
-    final displayName = _resolveDisplayFor(record)?['name'] as String?;
-    if (displayName != null && displayName.isNotEmpty) return displayName;
+  /// Título de card: `display.name` de la credencial (nunca VCT/DID).
+  static String credentialTitle(
+    CredentialRecord record, {
+    String locale = 'es',
+  }) {
+    final displayName =
+        _nameFromDisplay(_resolveDisplayFor(record, preferredLocale: locale));
+    if (displayName != null) return displayName;
 
-    if (record is SdJwtVcRecord) {
-      return record.vct.split('.').last;
-    }
     if (record is W3cCredentialRecord) {
-      return record.types.lastOrNull ?? 'Credencial';
-    }
-    if (record is MdocRecord) {
-      return record.docType.split('.').last;
+      final type = record.types.lastOrNull;
+      if (type != null && !_looksTechnicalId(type)) return type;
     }
     return 'Credencial';
   }
 
+  /// Emisor de card: nombre de marca OID4VCI; evita DID/URL crudos.
+  ///
+  /// En SD-JWT, `issuerMetadata.display` es el display de la *credencial*
+  /// (config); el nombre del emisor vive en [issuerBrandDisplayKey].
   static String? credentialIssuer(CredentialRecord record) {
     if (record is SdJwtVcRecord) {
-      return record.issuerMetadata?['issuer'] as String?;
+      final meta = record.issuerMetadata;
+      final brandName = _nameFromDisplay(
+        _asStringKeyedMap(meta?[issuerBrandDisplayKey]),
+      );
+      if (brandName != null) return brandName;
+      return _friendlyIssuerRef(meta?['issuer'] as String?);
     }
     if (record is W3cCredentialRecord) {
       final issuerMeta = record.displayMetadata?['issuer'];
-      if (issuerMeta is Map) {
-        final name = issuerMeta['name'];
-        if (name is String && name.isNotEmpty) return name;
-      }
-      return record.issuerDid;
+      final name = _nameFromDisplay(_asStringKeyedMap(issuerMeta));
+      if (name != null) return name;
+      return _friendlyIssuerRef(record.issuerDid);
     }
     return null;
   }
@@ -204,17 +228,25 @@ class CredentialUiMapper {
     return null;
   }
 
-  /// Resuelve el bloque `display` de la credencial para estilos y título.
+  /// Bloque `display` de la credencial (nombre, logo, colores).
   ///
-  /// Prioridad: [SdJwtVcRecord.displayMetadata]. Si el SDK lo deja en `null`
-  /// (comportamiento actual), hace fallback a `issuerMetadata.display[0]`
-  /// donde identity-core a veces persiste los colores OID4VCI.
-  static Map<String, dynamic>? _resolveDisplayFor(CredentialRecord record) {
+  /// Prioridad: [displayMetadata] enriquecido → `issuerMetadata.display[]`
+  /// (config OID4VCI) eligiendo [preferredLocale] cuando hay varios.
+  static Map<String, dynamic>? _resolveDisplayFor(
+    CredentialRecord record, {
+    String preferredLocale = 'es',
+  }) {
     final direct = _displayMetadataFor(record);
-    if (direct != null && direct.isNotEmpty) return direct;
+    if (direct != null && direct.isNotEmpty) {
+      // displayMetadata ya es un objeto display (no lista).
+      return direct;
+    }
 
     if (record is SdJwtVcRecord) {
-      return _firstDisplayEntry(record.issuerMetadata?['display']);
+      return _pickDisplayEntry(
+        record.issuerMetadata?['display'],
+        preferredLocale: preferredLocale,
+      );
     }
     return null;
   }
@@ -278,28 +310,81 @@ class CredentialUiMapper {
     return null;
   }
 
-  static Map<String, dynamic>? _firstDisplayEntry(dynamic display) {
+  /// Elige un entry de `display[]` priorizando [preferredLocale].
+  static Map<String, dynamic>? _pickDisplayEntry(
+    dynamic display, {
+    String preferredLocale = 'es',
+  }) {
+    if (display is Map) return _asStringKeyedMap(display);
     if (display is! List || display.isEmpty) return null;
-    final first = display.first;
-    if (first is Map<String, dynamic>) return first;
-    if (first is Map) return Map<String, dynamic>.from(first);
-    return null;
+
+    Map<String, dynamic>? fallback;
+    final preferred = preferredLocale.toLowerCase();
+    for (final entry in display) {
+      final map = _asStringKeyedMap(entry);
+      if (map == null) continue;
+      fallback ??= map;
+      final locale = (map['locale'] as String?)?.toLowerCase();
+      if (locale == null) continue;
+      if (locale == preferred || locale.startsWith('$preferred-')) {
+        return map;
+      }
+    }
+    return fallback;
   }
 
   static Map<String, dynamic>? _displayFromConfigurations(
     Map<String, dynamic> configurations,
-    List<String> configurationIds,
-  ) {
+    List<String> configurationIds, {
+    String preferredLocale = 'es',
+  }) {
     for (final configId in configurationIds) {
       final config = configurations[configId];
       if (config is! Map) continue;
-      final display = config['display'];
-      if (display is List && display.isNotEmpty) {
-        final first = display.first;
-        if (first is Map<String, dynamic>) return first;
-      }
+      final picked = _pickDisplayEntry(
+        config['display'],
+        preferredLocale: preferredLocale,
+      );
+      if (picked != null) return picked;
     }
     return null;
+  }
+
+  static String? _nameFromDisplay(Map<String, dynamic>? display) {
+    final name = display?['name'];
+    if (name is String && name.trim().isNotEmpty) return name.trim();
+    return null;
+  }
+
+  static Map<String, dynamic>? _asStringKeyedMap(dynamic value) {
+    if (value is Map<String, dynamic>) return value;
+    if (value is Map) return Map<String, dynamic>.from(value);
+    return null;
+  }
+
+  /// Host legible para HTTPS; `null` si es DID u otro id técnico.
+  static String? _friendlyIssuerRef(String? raw) {
+    if (raw == null || raw.isEmpty) return null;
+    final value = raw.trim();
+    if (value.toLowerCase().startsWith('did:')) return null;
+    final uri = Uri.tryParse(value);
+    if (uri != null &&
+        uri.hasScheme &&
+        (uri.scheme == 'https' || uri.scheme == 'http') &&
+        uri.host.isNotEmpty) {
+      return uri.host.replaceFirst(RegExp(r'^www\.'), '');
+    }
+    if (_looksTechnicalId(value)) return null;
+    return value;
+  }
+
+  static bool _looksTechnicalId(String value) {
+    final v = value.toLowerCase();
+    if (v.startsWith('urn:')) return true;
+    if (v.startsWith('did:')) return true;
+    if (v.contains('europa.ec')) return true;
+    if (v.contains(':') && v.contains('.')) return true;
+    return false;
   }
 
   /// Claims con etiquetas legibles desde metadata OID4VCI del issuer.
