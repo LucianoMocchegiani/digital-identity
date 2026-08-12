@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Kuatia — Demo Club Norte · Recital Live",
+    "name": "Kuatia — Demo Club · Recital · Constructora Andes",
     "_postman_id": "a7c3e9d1-5b2f-4e8a-9c1d-6f4b0a2e8d55",
-    "description": "Demo Kuatia con **2 emisores** y metadata visual completa:\n\n1. **Club Norte** — `membership_card` / `MembershipCredential`\n2. **Recital Live** — `recital_ticket` / `RecitalTicketCredential`\n\n**Environment:** `Kuatia-Local-Docker.postman_environment.json` (o Prod).\n\n**Auth:** Billing JWT + `X-API-Key` en issuer/verifier (no usa API Gateway).\n\n**Imágenes:** logo y `background_image` en PNG/JPG (ver `postman/assets/demo-credentials/README.md`).\n\n**QR:** pestaña **Visualize** tras offer y request DCQL.\n\nOrden: `00` auth → `01` productos (4: necesita plan pro) → `02` PATCH metadata + well-known → `03` Club → `04` Recital.",
+    "description": "Demo Kuatia con **3 emisores** y metadata visual completa:\n\n1. **Club Norte** — `membership_card` / `MembershipCredential`\n2. **Recital Live** — `recital_ticket` / `RecitalTicketCredential`\n3. **Constructora Andes** — `machinery_operator_cert` / `HeavyMachineryOperatorCredential` (habilitación **interna** de empresa; sin validez ante terceros)\n\n**Environment:** `Kuatia-Local-Docker.postman_environment.json` (o Prod).\n\n**Auth:** Billing JWT + `X-API-Key` en issuer/verifier (no usa API Gateway).\n\n**Imágenes:** logo de marca + fondo corporativo/sede (ver `postman/assets/demo-credentials/README.md`). Sin fotos de maquinaria en display.\n\n**QR:** pestaña **Visualize** tras offer y request DCQL.\n\nOrden: `00` auth → `01` productos (6: plan pro_double) → `02` PATCH metadata + well-known → `03` Club → `04` Recital → `05` Andes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -24,7 +24,7 @@
     },
     {
       "key": "email",
-      "value": "demo-club-recital@kuatia.local"
+      "value": "demo-club-recital-andes@kuatia.local"
     },
     {
       "key": "password",
@@ -71,6 +71,22 @@
       "value": ""
     },
     {
+      "key": "andesIssuerId",
+      "value": "constructora-andes"
+    },
+    {
+      "key": "andesVerifierId",
+      "value": "constructora-andes"
+    },
+    {
+      "key": "andesIssuerApiKey",
+      "value": ""
+    },
+    {
+      "key": "andesVerifierApiKey",
+      "value": ""
+    },
+    {
       "key": "issuerId",
       "value": "club-norte"
     },
@@ -111,7 +127,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"name\": \"Demo Club Recital\"\n}"
+              "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\",\n  \"name\": \"Demo Club Recital Andes\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/auth/register",
             "description": "Si el email ya existe, seguir con login (409 ok)."
@@ -177,7 +193,7 @@
           ]
         },
         {
-          "name": "00.4 POST admin set plan → pro",
+          "name": "00.4 POST admin set plan → pro_double",
           "request": {
             "method": "POST",
             "header": [
@@ -192,10 +208,10 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"plan\": \"pro\"\n}"
+              "raw": "{\n  \"plan\": \"pro_double\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/plan",
-            "description": "Free solo permite 2 productos; este demo crea 4 (2 issuers + 2 verifiers)."
+            "description": "Free=2, Pro=5; este demo crea 6 productos (3 issuers + 3 verifiers) → plan pro_double (10)."
           },
           "event": [
             {
@@ -203,7 +219,7 @@
               "script": {
                 "type": "text/javascript",
                 "exec": [
-                  "pm.test('Plan pro', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
+                  "pm.test('Plan pro_double', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));"
                 ]
               }
             }
@@ -213,7 +229,7 @@
     },
     {
       "name": "01 - Productos (billing)",
-      "description": "Crea issuer+verifier para Club Norte y Recital Live. Guarda API keys.",
+      "description": "Crea issuer+verifier para Club Norte, Recital Live y Constructora Andes. Guarda API keys.",
       "item": [
         {
           "name": "01.club — POST product issuer (Club Norte)",
@@ -234,7 +250,7 @@
               "raw": "{\n  \"name\": \"Club Norte Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{clubIssuerId}}\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/products",
-            "description": "Crea producto issuer `club-norte` y guarda API key en `clubIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+            "description": "Crea producto issuer `club-norte` y guarda API key en `clubIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
           },
           "event": [
             {
@@ -278,7 +294,7 @@
               "raw": "{\n  \"name\": \"Club Norte Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{clubVerifierId}}\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/products",
-            "description": "Crea producto verifier `club-norte` y guarda API key en `clubVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+            "description": "Crea producto verifier `club-norte` y guarda API key en `clubVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
           },
           "event": [
             {
@@ -322,7 +338,7 @@
               "raw": "{\n  \"name\": \"Recital Live Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{recitalIssuerId}}\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/products",
-            "description": "Crea producto issuer `recital-live` y guarda API key en `recitalIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+            "description": "Crea producto issuer `recital-live` y guarda API key en `recitalIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
           },
           "event": [
             {
@@ -366,7 +382,7 @@
               "raw": "{\n  \"name\": \"Recital Live Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{recitalVerifierId}}\"\n}"
             },
             "url": "{{billingBaseUrl}}/v1/products",
-            "description": "Crea producto verifier `recital-live` y guarda API key en `recitalVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro)."
+            "description": "Crea producto verifier `recital-live` y guarda API key en `recitalVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
           },
           "event": [
             {
@@ -386,6 +402,94 @@
                   "try { pm.environment.set('verifierId', res.product.walletId); } catch (e) {}",
                   "try { pm.environment.set('verifierApiKey', res.product.apiKey); } catch (e) {}",
                   "console.log('recitalVerifierApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.andes — POST product issuer (Constructora Andes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Constructora Andes Issuer\",\n  \"service\": \"issuer\",\n  \"walletId\": \"{{andesIssuerId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto issuer `constructora-andes` y guarda API key en `andesIssuerApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('andesIssuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('andesIssuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('andesIssuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('andesIssuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('issuerId', res.product.walletId);",
+                  "pm.collectionVariables.set('issuerApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('issuerId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('issuerApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('andesIssuerApiKey=', res.product.apiKey);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "01.andes — POST product verifier (Constructora Andes)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Constructora Andes Verifier\",\n  \"service\": \"verifier\",\n  \"walletId\": \"{{andesVerifierId}}\"\n}"
+            },
+            "url": "{{billingBaseUrl}}/v1/products",
+            "description": "Crea producto verifier `constructora-andes` y guarda API key en `andesVerifierApiKey`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "pm.test('Producto creado', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "if (!res.product) return;",
+                  "pm.collectionVariables.set('andesVerifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('andesVerifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('andesVerifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('andesVerifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "pm.collectionVariables.set('verifierId', res.product.walletId);",
+                  "pm.collectionVariables.set('verifierApiKey', res.product.apiKey);",
+                  "try { pm.environment.set('verifierId', res.product.walletId); } catch (e) {}",
+                  "try { pm.environment.set('verifierApiKey', res.product.apiKey); } catch (e) {}",
+                  "console.log('andesVerifierApiKey=', res.product.apiKey);"
                 ]
               }
             }
@@ -599,6 +703,114 @@
               "raw": "{\n  \"clientMetadata\": {\n    \"client_name\": \"Recital Live Accesos\"\n  }\n}"
             },
             "url": "{{verifierBaseUrl}}/v1/verifiers/{{recitalVerifierId}}/records/metadata",
+            "description": "Nombre amigable del verificador en OID4VP."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Verifier metadata 2xx o 404 skip', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 204, 404]));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.andes — PATCH metadata display completa (Constructora Andes)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{andesIssuerApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"display\": [\n    {\n      \"name\": \"Constructora Andes\",\n      \"locale\": \"es\",\n      \"background_color\": \"#1c1917\",\n      \"text_color\": \"#FFFFFF\",\n      \"logo\": {\n        \"uri\": \"https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/main/postman/assets/demo-credentials/constructora-andes-mark.png\",\n        \"alt_text\": \"Constructora Andes\"\n      },\n      \"background_image\": {\n        \"uri\": \"https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg\"\n      }\n    }\n  ],\n  \"dpopSigningAlgValuesSupported\": [\n    \"ES256\"\n  ],\n  \"credentialConfigurationsSupported\": {\n    \"machinery_operator_cert\": {\n      \"format\": \"dc+sd-jwt\",\n      \"vct\": \"HeavyMachineryOperatorCredential\",\n      \"cryptographic_binding_methods_supported\": [\n        \"did:jwk\",\n        \"jwk\"\n      ],\n      \"credential_signing_alg_values_supported\": [\n        \"ES256\"\n      ],\n      \"proof_types_supported\": {\n        \"jwt\": {\n          \"proof_signing_alg_values_supported\": [\n            \"ES256\"\n          ]\n        }\n      },\n      \"claims\": {\n        \"given_name\": {\n          \"display\": [\n            {\n              \"name\": \"Nombre\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"family_name\": {\n          \"display\": [\n            {\n              \"name\": \"Apellido\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"employee_id\": {\n          \"display\": [\n            {\n              \"name\": \"Legajo\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"equipment_type\": {\n          \"display\": [\n            {\n              \"name\": \"Equipo habilitado\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"work_site\": {\n          \"display\": [\n            {\n              \"name\": \"Obra / frente\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"certificate_id\": {\n          \"display\": [\n            {\n              \"name\": \"Nº de certificado\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"organization\": {\n          \"display\": [\n            {\n              \"name\": \"Empresa\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"validity_scope\": {\n          \"display\": [\n            {\n              \"name\": \"Ámbito de validez\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"valid_from\": {\n          \"display\": [\n            {\n              \"name\": \"Válido desde\",\n              \"locale\": \"es\"\n            }\n          ]\n        },\n        \"valid_until\": {\n          \"display\": [\n            {\n              \"name\": \"Válido hasta\",\n              \"locale\": \"es\"\n            }\n          ]\n        }\n      },\n      \"display\": [\n        {\n          \"name\": \"Operador de Maquinaria Pesada\",\n          \"locale\": \"es\",\n          \"background_color\": \"#1c1917\",\n          \"text_color\": \"#FFFFFF\",\n          \"logo\": {\n            \"uri\": \"https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/main/postman/assets/demo-credentials/constructora-andes-mark.png\",\n            \"alt_text\": \"Constructora Andes\"\n          },\n          \"background_image\": {\n            \"uri\": \"https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg\"\n          }\n        }\n      ]\n    }\n  }\n}"
+            },
+            "url": "{{issuerBaseUrl}}/v1/issuers/{{andesIssuerId}}/records/metadata",
+            "description": "Publica display del emisor y de la credencial. Crea el OpenId4VcIssuerRecord si faltaba (upsert)."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Metadata 2xx', () => pm.response.to.be.success);",
+                  "console.log('Patched Constructora Andes / machinery_operator_cert');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.andesb — GET well-known (verificar display)",
+          "request": {
+            "method": "GET",
+            "url": "{{issuerBaseUrl}}/openid4vc-flow/{{andesIssuerId}}/.well-known/openid-credential-issuer",
+            "description": "Sin API key. Debe traer logo del issuer + background_image de la credencial.",
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const res = pm.response.json();",
+                  "const configId = 'machinery_operator_cert';",
+                  "const issuerDisplay = res.display?.[0];",
+                  "const credDisplay = res.credential_configurations_supported?.[configId]?.display?.[0];",
+                  "pm.test('Issuer display.name', () => pm.expect(issuerDisplay?.name).to.be.a('string').and.not.empty);",
+                  "pm.test('Issuer display.logo.uri (.png/.jpg)', () => {",
+                  "  const uri = issuerDisplay?.logo?.uri || '';",
+                  "  pm.expect(uri).to.match(/\\.(png|jpe?g|webp)(\\?|$)/i);",
+                  "});",
+                  "pm.test('Credential display.background_image.uri', () => {",
+                  "  pm.expect(credDisplay?.background_image?.uri).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Credential display colors', () => {",
+                  "  pm.expect(credDisplay?.background_color).to.be.a('string');",
+                  "  pm.expect(credDisplay?.text_color).to.be.a('string');",
+                  "});",
+                  "pm.test('Claims metadata', () => {",
+                  "  const claims = res.credential_configurations_supported?.[configId]?.claims;",
+                  "  pm.expect(claims).to.be.an('object');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "02.andesc — PATCH verifier client_name",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "X-API-Key",
+                "value": "{{andesVerifierApiKey}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"clientMetadata\": {\n    \"client_name\": \"Constructora Andes — Control de obra\"\n  }\n}"
+            },
+            "url": "{{verifierBaseUrl}}/v1/verifiers/{{andesVerifierId}}/records/metadata",
             "description": "Nombre amigable del verificador en OID4VP."
           },
           "event": [
@@ -1024,6 +1236,241 @@
                   }
                 ],
                 "url": "{{verifierBaseUrl}}/v1/verifiers/{{recitalVerifierId}}/openid4vc/session/{{recitalTicketVerificationSessionId}}",
+                "description": "Tras presentar en wallet. Decode SD-JWT en consola."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "function b64urlDecode(str) {",
+                      "    str = str.replace(/-/g, '+').replace(/_/g, '/');",
+                      "    while (str.length % 4) str += '=';",
+                      "    return CryptoJS.enc.Base64.parse(str).toString(CryptoJS.enc.Utf8);",
+                      "}",
+                      "function decodeSdJwt(compact) {",
+                      "    var chunks = compact.split('~');",
+                      "    var payload = JSON.parse(b64urlDecode(chunks[0].split('.')[1]));",
+                      "    var skip = ['_sd','_sd_alg','cnf','iss','iat','vct'];",
+                      "    var claims = {};",
+                      "    Object.keys(payload).forEach(function(k) { if (skip.indexOf(k) === -1) claims[k] = payload[k]; });",
+                      "    chunks.slice(1).filter(function(p) {",
+                      "        try { var a = JSON.parse(b64urlDecode(p)); return Array.isArray(a) && a.length === 3; } catch(e) { return false; }",
+                      "    }).forEach(function(p) {",
+                      "        var arr = JSON.parse(b64urlDecode(p)); claims[arr[1]] = arr[2];",
+                      "    });",
+                      "    return { vct: payload.vct, issuer: payload.iss, issuedAt: payload.iat ? new Date(payload.iat*1000).toISOString() : null, claims: claims };",
+                      "}",
+                      "try {",
+                      "    var body = pm.response.json();",
+                      "    pm.test('Estado sesion: ' + (body.state || '?'), function() { pm.expect(body.state).to.be.a('string'); });",
+                      "    var vpToken = body.authorizationResponsePayload && body.authorizationResponsePayload.vp_token;",
+                      "    if (!vpToken) { console.log('Sin vp_token — escanear QR en wallet y reintentar'); return; }",
+                      "    var decoded = [];",
+                      "    var parsed; try { parsed = JSON.parse(vpToken); } catch(e) { parsed = vpToken; }",
+                      "    if (typeof parsed === 'string') {",
+                      "        decoded.push({ descriptor: 'vp_token', decoded: decodeSdJwt(parsed) });",
+                      "    } else {",
+                      "        Object.keys(parsed).forEach(function(key) {",
+                      "            var list = Array.isArray(parsed[key]) ? parsed[key] : [parsed[key]];",
+                      "            list.forEach(function(compact) {",
+                      "                if (typeof compact === 'string' && compact.indexOf('.') > 0) {",
+                      "                    decoded.push({ descriptor: key, decoded: decodeSdJwt(compact) });",
+                      "                }",
+                      "            });",
+                      "        });",
+                      "    }",
+                      "    pm.test('Credencial(es) presentada(s) (' + decoded.length + ')', function() {",
+                      "        console.log(JSON.stringify(decoded, null, 2));",
+                      "        pm.expect(decoded.length).to.be.above(0);",
+                      "    });",
+                      "} catch(e) {",
+                      "    pm.test('Error decodificando vp_token', function() { pm.expect.fail(e.message); });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "05 - Constructora Andes",
+      "description": "Emisor `{{andesIssuerId}}` · Verificador `{{andesVerifierId}}`.",
+      "item": [
+        {
+          "name": "05.A Operador de Maquinaria Pesada",
+          "description": "Emisión y verificación de Operador de Maquinaria Pesada.",
+          "item": [
+            {
+              "name": "Emisión — POST offer Operador de Maquinaria Pesada + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{andesIssuerApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"credentialConfigurationId\": \"machinery_operator_cert\",\n  \"vct\": \"HeavyMachineryOperatorCredential\",\n  \"claims\": {\n    \"given_name\": \"Luis\",\n    \"family_name\": \"Benítez\",\n    \"employee_id\": \"CA-7841\",\n    \"equipment_type\": \"Excavadora hidráulica · Pala cargadora\",\n    \"work_site\": \"Obra Ruta 40 — Tramo Sur\",\n    \"certificate_id\": \"CA-OMP-2026-0312\",\n    \"organization\": \"Constructora Andes S.A.\",\n    \"validity_scope\": \"Solo válido en obras y frentes de Constructora Andes. Sin validez ante terceros.\",\n    \"valid_from\": \"2026-03-01\",\n    \"valid_until\": \"2027-02-28\"\n  },\n  \"claimsDisplay\": {\n    \"given_name\": {\n      \"name\": \"Nombre\",\n      \"locale\": \"es\"\n    },\n    \"family_name\": {\n      \"name\": \"Apellido\",\n      \"locale\": \"es\"\n    },\n    \"employee_id\": {\n      \"name\": \"Legajo\",\n      \"locale\": \"es\"\n    },\n    \"equipment_type\": {\n      \"name\": \"Equipo habilitado\",\n      \"locale\": \"es\"\n    },\n    \"work_site\": {\n      \"name\": \"Obra / frente\",\n      \"locale\": \"es\"\n    },\n    \"certificate_id\": {\n      \"name\": \"Nº de certificado\",\n      \"locale\": \"es\"\n    },\n    \"organization\": {\n      \"name\": \"Empresa\",\n      \"locale\": \"es\"\n    },\n    \"validity_scope\": {\n      \"name\": \"Ámbito de validez\",\n      \"locale\": \"es\"\n    },\n    \"valid_from\": {\n      \"name\": \"Válido desde\",\n      \"locale\": \"es\"\n    },\n    \"valid_until\": {\n      \"name\": \"Válido hasta\",\n      \"locale\": \"es\"\n    }\n  },\n  \"disclosureFrame\": {\n    \"_sd\": [\n      \"employee_id\",\n      \"certificate_id\",\n      \"work_site\",\n      \"valid_until\"\n    ]\n  }\n}"
+                },
+                "url": "{{issuerBaseUrl}}/v1/issuers/{{andesIssuerId}}/openid4vc/offer",
+                "description": "Tras **Send** → pestaña **Visualize** (Postman Desktop) para ver el QR."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.offerUri) {",
+                      "  try { pm.environment.set('andesOperatorOfferUri', res.offerUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('andesOperatorOfferUri', res.offerUri);",
+                      "  console.log('andesOperatorOfferUri:', res.offerUri);",
+                      "}",
+                      "if (res.issuanceSessionId) {",
+                      "  try { pm.environment.set('andesOperatorIssuanceSessionId', res.issuanceSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('andesOperatorIssuanceSessionId', res.issuanceSessionId);",
+                      "}",
+                      "pm.test('Offer Operador de Maquinaria Pesada', () => pm.expect(res.offerUri).to.be.a('string').and.include('openid-credential-offer'));",
+                      "if (res.offerUri) {",
+                      "  const uri = res.offerUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Operador de Maquinaria Pesada — Offer QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Escanear offer Operador de Maquinaria Pesada",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('andesOperatorOfferUri') || pm.environment.get('andesOperatorOfferUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Verificación — POST request DCQL Operador de Maquinaria Pesada + QR",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  },
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{andesVerifierApiKey}}"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"dcqlQuery\": {\n    \"credentials\": [\n      {\n        \"id\": \"machinery_operator_cert\",\n        \"format\": \"dc+sd-jwt\",\n        \"meta\": {\n          \"vct_values\": [\n            \"HeavyMachineryOperatorCredential\"\n          ]\n        },\n        \"claims\": [\n          {\n            \"path\": [\n              \"given_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"family_name\"\n            ]\n          },\n          {\n            \"path\": [\n              \"employee_id\"\n            ]\n          },\n          {\n            \"path\": [\n              \"equipment_type\"\n            ]\n          },\n          {\n            \"path\": [\n              \"organization\"\n            ]\n          },\n          {\n            \"path\": [\n              \"validity_scope\"\n            ]\n          },\n          {\n            \"path\": [\n              \"certificate_id\"\n            ]\n          }\n        ]\n      }\n    ]\n  },\n  \"responseMode\": \"direct_post\",\n  \"requestSignerMethod\": \"did\"\n}"
+                },
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{andesVerifierId}}/openid4vc/request",
+                "description": "Tras **Send** → pestaña **Visualize** para presentar en wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Status 200/201', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                      "const res = pm.response.json();",
+                      "if (res.requestUri) {",
+                      "  try { pm.environment.set('andesOperatorRequestUri', res.requestUri); } catch (e) {}",
+                      "  pm.collectionVariables.set('andesOperatorRequestUri', res.requestUri);",
+                      "  console.log('andesOperatorRequestUri:', res.requestUri);",
+                      "}",
+                      "if (res.verificationSessionId) {",
+                      "  try { pm.environment.set('andesOperatorVerificationSessionId', res.verificationSessionId); } catch (e) {}",
+                      "  pm.collectionVariables.set('andesOperatorVerificationSessionId', res.verificationSessionId);",
+                      "  console.log('andesOperatorVerificationSessionId:', res.verificationSessionId);",
+                      "}",
+                      "pm.test('Request Operador de Maquinaria Pesada', () => pm.expect(res.requestUri).to.be.a('string'));",
+                      "if (res.requestUri) {",
+                      "  const uri = res.requestUri;",
+                      "  pm.visualizer.set(`",
+                      "    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'><\\/script>",
+                      "    <div style='display:flex;flex-direction:column;align-items:center;padding:20px;font-family:sans-serif'>",
+                      "      <h3 style='margin-bottom:16px'>Operador de Maquinaria Pesada — Request QR</h3>",
+                      "      <p style='font-size:12px;color:#555;margin-bottom:16px'>Escanear con identity-wallet</p>",
+                      "      <div id='qr'></div>",
+                      "      <p style='margin-top:12px;font-size:11px;word-break:break-all;max-width:360px;text-align:center'>${uri}</p>",
+                      "    </div>",
+                      "    <script>new QRCode(document.getElementById('qr'),{text:'${uri}',width:280,height:280,correctLevel:QRCode.CorrectLevel.L})<\\/script>",
+                      "  `, { uri });",
+                      "}"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "[WALLET] Presentar Operador de Maquinaria Pesada",
+              "request": {
+                "method": "GET",
+                "url": "{{issuerBaseUrl}}/health",
+                "description": "**Paso manual.** Abrir pestaña **Visualize** del request de offer/request anterior y escanear con identity-wallet."
+              },
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "type": "text/javascript",
+                    "exec": [
+                      "pm.test('Paso manual wallet', () => pm.expect(true).to.be.true);",
+                      "console.log('URI:', pm.collectionVariables.get('andesOperatorRequestUri') || pm.environment.get('andesOperatorRequestUri'));"
+                    ]
+                  }
+                }
+              ]
+            },
+            {
+              "name": "Resultado — GET session Operador de Maquinaria Pesada",
+              "request": {
+                "method": "GET",
+                "header": [
+                  {
+                    "key": "X-API-Key",
+                    "value": "{{andesVerifierApiKey}}"
+                  }
+                ],
+                "url": "{{verifierBaseUrl}}/v1/verifiers/{{andesVerifierId}}/openid4vc/session/{{andesOperatorVerificationSessionId}}",
                 "description": "Tras presentar en wallet. Decode SD-JWT en consola."
               },
               "event": [

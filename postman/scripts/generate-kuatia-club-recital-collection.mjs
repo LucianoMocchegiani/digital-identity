@@ -10,7 +10,7 @@ const outPath = join(__dirname, '..', 'Kuatia-Demo-Club-Recital.postman_collecti
  * y no acepta SVG ni URLs tipo Unsplash sin `.jpg` en el path).
  *
  * Logos inventados en `postman/assets/demo-credentials/` (raw GitHub).
- * Fondos: Pexels (estadio / recital).
+ * Fondos: Pexels (estadio / recital / sede corporativa).
  */
 const ASSET_BASE =
   'https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/main/postman/assets/demo-credentials';
@@ -22,6 +22,10 @@ const IMG = {
   recitalLogo: `${ASSET_BASE}/recital-live-mark.png`,
   recitalBg:
     'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
+  // Sede / edificio corporativo (sin maquinaria).
+  andesLogo: `${ASSET_BASE}/constructora-andes-mark.png`,
+  andesBg:
+    'https://images.pexels.com/photos/323705/pexels-photo-323705.jpeg',
 };
 
 function displayBlock({ name, bgColor, textColor, logoUrl, logoAlt, bgImageUrl }) {
@@ -209,6 +213,94 @@ const ORGS = {
       },
     ],
   },
+  andes: {
+    key: 'andes',
+    title: 'Constructora Andes',
+    issuerIdVar: 'andesIssuerId',
+    verifierIdVar: 'andesVerifierId',
+    issuerApiKeyVar: 'andesIssuerApiKey',
+    verifierApiKeyVar: 'andesVerifierApiKey',
+    issuerIdDefault: 'constructora-andes',
+    verifierIdDefault: 'constructora-andes',
+    productIssuerName: 'Constructora Andes Issuer',
+    productVerifierName: 'Constructora Andes Verifier',
+    issuerDisplay: displayBlock({
+      name: 'Constructora Andes',
+      bgColor: '#1c1917',
+      textColor: '#FFFFFF',
+      logoUrl: IMG.andesLogo,
+      logoAlt: 'Constructora Andes',
+      bgImageUrl: IMG.andesBg,
+    }),
+    credentialConfigs: credConfig(
+      'machinery_operator_cert',
+      'HeavyMachineryOperatorCredential',
+      displayBlock({
+        name: 'Operador de Maquinaria Pesada',
+        bgColor: '#1c1917',
+        textColor: '#FFFFFF',
+        logoUrl: IMG.andesLogo,
+        logoAlt: 'Constructora Andes',
+        bgImageUrl: IMG.andesBg,
+      }),
+      {
+        given_name: 'Nombre',
+        family_name: 'Apellido',
+        employee_id: 'Legajo',
+        equipment_type: 'Equipo habilitado',
+        work_site: 'Obra / frente',
+        certificate_id: 'Nº de certificado',
+        organization: 'Empresa',
+        validity_scope: 'Ámbito de validez',
+        valid_from: 'Válido desde',
+        valid_until: 'Válido hasta',
+      },
+    ),
+    verifierClientName: 'Constructora Andes — Control de obra',
+    credentials: [
+      {
+        key: 'andesOperator',
+        label: 'Operador de Maquinaria Pesada',
+        configId: 'machinery_operator_cert',
+        vct: 'HeavyMachineryOperatorCredential',
+        claims: {
+          given_name: 'Luis',
+          family_name: 'Benítez',
+          employee_id: 'CA-7841',
+          equipment_type: 'Excavadora hidráulica · Pala cargadora',
+          work_site: 'Obra Ruta 40 — Tramo Sur',
+          certificate_id: 'CA-OMP-2026-0312',
+          organization: 'Constructora Andes S.A.',
+          validity_scope:
+            'Solo válido en obras y frentes de Constructora Andes. Sin validez ante terceros.',
+          valid_from: '2026-03-01',
+          valid_until: '2027-02-28',
+        },
+        claimsDisplay: {
+          given_name: { name: 'Nombre', locale: 'es' },
+          family_name: { name: 'Apellido', locale: 'es' },
+          employee_id: { name: 'Legajo', locale: 'es' },
+          equipment_type: { name: 'Equipo habilitado', locale: 'es' },
+          work_site: { name: 'Obra / frente', locale: 'es' },
+          certificate_id: { name: 'Nº de certificado', locale: 'es' },
+          organization: { name: 'Empresa', locale: 'es' },
+          validity_scope: { name: 'Ámbito de validez', locale: 'es' },
+          valid_from: { name: 'Válido desde', locale: 'es' },
+          valid_until: { name: 'Válido hasta', locale: 'es' },
+        },
+        sd: ['employee_id', 'certificate_id', 'work_site', 'valid_until'],
+        dcqlClaims: [
+          'given_name',
+          'family_name',
+          'employee_id',
+          'equipment_type',
+          'organization',
+          'validity_scope',
+          'certificate_id',
+        ],
+      },
+    ],
+  },
 };
 
 function qrOfferExec(cred) {
@@ -390,7 +482,7 @@ function productCreate(org, service) {
         ),
       },
       url: '{{billingBaseUrl}}/v1/products',
-      description: `Crea producto ${service} \`${defaultWallet}\` y guarda API key en \`${apiKeyVar}\`. Requiere plan con cupo (free=2; este demo usa 4 → set plan pro).`,
+      description: `Crea producto ${service} \`${defaultWallet}\` y guarda API key en \`${apiKeyVar}\`. Requiere plan con cupo (free=2; este demo usa 6 → plan pro_double).`,
     },
     event: [
       {
@@ -624,22 +716,23 @@ function buildOrgFolder(orgKey, folderNum) {
 
 const collection = {
   info: {
-    name: 'Kuatia — Demo Club Norte · Recital Live',
+    name: 'Kuatia — Demo Club · Recital · Constructora Andes',
     _postman_id: 'a7c3e9d1-5b2f-4e8a-9c1d-6f4b0a2e8d55',
-    description: `Demo Kuatia con **2 emisores** y metadata visual completa:
+    description: `Demo Kuatia con **3 emisores** y metadata visual completa:
 
 1. **Club Norte** — \`membership_card\` / \`MembershipCredential\`
 2. **Recital Live** — \`recital_ticket\` / \`RecitalTicketCredential\`
+3. **Constructora Andes** — \`machinery_operator_cert\` / \`HeavyMachineryOperatorCredential\` (habilitación **interna** de empresa; sin validez ante terceros)
 
 **Environment:** \`Kuatia-Local-Docker.postman_environment.json\` (o Prod).
 
 **Auth:** Billing JWT + \`X-API-Key\` en issuer/verifier (no usa API Gateway).
 
-**Imágenes:** logo y \`background_image\` en PNG/JPG (ver \`postman/assets/demo-credentials/README.md\`).
+**Imágenes:** logo de marca + fondo corporativo/sede (ver \`postman/assets/demo-credentials/README.md\`). Sin fotos de maquinaria en display.
 
 **QR:** pestaña **Visualize** tras offer y request DCQL.
 
-Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH metadata + well-known → \`03\` Club → \`04\` Recital.`,
+Orden: \`00\` auth → \`01\` productos (6: plan pro_double) → \`02\` PATCH metadata + well-known → \`03\` Club → \`04\` Recital → \`05\` Andes.`,
     schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
   },
   variable: [
@@ -647,7 +740,7 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
     { key: 'issuerBaseUrl', value: 'http://localhost:9001' },
     { key: 'verifierBaseUrl', value: 'http://localhost:9002' },
     { key: 'adminApiKey', value: 'dev-admin-change-me' },
-    { key: 'email', value: 'demo-club-recital@kuatia.local' },
+    { key: 'email', value: 'demo-club-recital-andes@kuatia.local' },
     { key: 'password', value: 'password123' },
     { key: 'accessToken', value: '' },
     { key: 'accountId', value: '' },
@@ -659,6 +752,10 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
     { key: 'recitalVerifierId', value: 'recital-live' },
     { key: 'recitalIssuerApiKey', value: '' },
     { key: 'recitalVerifierApiKey', value: '' },
+    { key: 'andesIssuerId', value: 'constructora-andes' },
+    { key: 'andesVerifierId', value: 'constructora-andes' },
+    { key: 'andesIssuerApiKey', value: '' },
+    { key: 'andesVerifierApiKey', value: '' },
     { key: 'issuerId', value: 'club-norte' },
     { key: 'verifierId', value: 'club-norte' },
     { key: 'issuerApiKey', value: '' },
@@ -684,7 +781,7 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
                 {
                   email: '{{email}}',
                   password: '{{password}}',
-                  name: 'Demo Club Recital',
+                  name: 'Demo Club Recital Andes',
                 },
                 null,
                 2,
@@ -753,16 +850,17 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
           ],
         },
         {
-          name: '00.4 POST admin set plan → pro',
+          name: '00.4 POST admin set plan → pro_double',
           request: {
             method: 'POST',
             header: [
               { key: 'Content-Type', value: 'application/json' },
               { key: 'X-Admin-Key', value: '{{adminApiKey}}' },
             ],
-            body: { mode: 'raw', raw: JSON.stringify({ plan: 'pro' }, null, 2) },
+            body: { mode: 'raw', raw: JSON.stringify({ plan: 'pro_double' }, null, 2) },
             url: '{{billingBaseUrl}}/v1/admin/accounts/{{accountId}}/plan',
-            description: 'Free solo permite 2 productos; este demo crea 4 (2 issuers + 2 verifiers).',
+            description:
+              'Free=2, Pro=5; este demo crea 6 productos (3 issuers + 3 verifiers) → plan pro_double (10).',
           },
           event: [
             {
@@ -770,7 +868,7 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
               script: {
                 type: 'text/javascript',
                 exec: [
-                  "pm.test('Plan pro', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "pm.test('Plan pro_double', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
                 ],
               },
             },
@@ -780,12 +878,15 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
     },
     {
       name: '01 - Productos (billing)',
-      description: 'Crea issuer+verifier para Club Norte y Recital Live. Guarda API keys.',
+      description:
+        'Crea issuer+verifier para Club Norte, Recital Live y Constructora Andes. Guarda API keys.',
       item: [
         productCreate(ORGS.club, 'issuer'),
         productCreate(ORGS.club, 'verifier'),
         productCreate(ORGS.recital, 'issuer'),
         productCreate(ORGS.recital, 'verifier'),
+        productCreate(ORGS.andes, 'issuer'),
+        productCreate(ORGS.andes, 'verifier'),
       ],
     },
     {
@@ -799,10 +900,14 @@ Orden: \`00\` auth → \`01\` productos (4: necesita plan pro) → \`02\` PATCH 
         patchMetadata(ORGS.recital),
         getWellKnown(ORGS.recital),
         patchVerifier(ORGS.recital),
+        patchMetadata(ORGS.andes),
+        getWellKnown(ORGS.andes),
+        patchVerifier(ORGS.andes),
       ],
     },
     buildOrgFolder('club', '03'),
     buildOrgFolder('recital', '04'),
+    buildOrgFolder('andes', '05'),
   ],
 };
 

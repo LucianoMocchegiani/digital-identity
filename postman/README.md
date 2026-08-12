@@ -10,11 +10,11 @@ Colecciones para billing / issuer / holder / verifier.
 | `Identity-Issuer.postman_collection.json` | API issuer |
 | `Identity-Holder.postman_collection.json` | API holder |
 | `Identity-Verifier.postman_collection.json` | API verifier |
-| `Kuatia-Demo-Club-Recital.postman_collection.json` | Demo Kuatia: Club Norte + Recital Live (metadata visual completa + QR) |
+| `Kuatia-Demo-Club-Recital.postman_collection.json` | Demo Kuatia: Club Norte + Recital Live + Constructora Andes (metadata visual + QR) |
 | `Kuatia-Local-Docker.postman_environment.json` | Kuatia local / tunnel: consola + billing/issuer/verifier; defaults Club Norte |
 | `Kuatia-Prod.postman_environment.json` | Kuatia prod (`kuatia.xyz` / `billing` / `issuer` / `verifier`); keys vacías — completar a mano |
 | `assets/demo-credentials/` | Logos/fondos de referencia para el demo |
-| `scripts/generate-kuatia-club-recital-collection.mjs` | Regenerar demo Club + Recital |
+| `scripts/generate-kuatia-club-recital-collection.mjs` | Regenerar demo Club + Recital + Andes |
 
 ## Uso rápido
 
@@ -54,11 +54,12 @@ Para que la wallet muestre nombre/logo (no “Credencial” / “Emisor desconoc
 | `Authorization: Bearer` | Billing `/me`, `/products` | JWT del register/login |
 | `X-API-Key` | Issuer / Verifier APIs | `iss_live_…` / `ver_live_…` del producto |
 
-### Demo Club + Recital (Kuatia)
+### Demo Club + Recital + Constructora Andes (Kuatia)
 
 1. Environment **Kuatia Local Docker**.
-2. Correr colección `Kuatia-Demo-Club-Recital`: `00` auth → `01` productos (pasa account a **pro**, crea 4 keys) → `02` PATCH metadata + well-known → `03` Club / `04` Recital (offer QR → wallet → request QR).
-3. Tras el PATCH, la wallet debe mostrar nombre/logo/fondo (no “Credencial” / “Emisor desconocido”).
+2. Correr colección `Kuatia-Demo-Club-Recital`: `00` auth → `01` productos (plan **pro_double**, 6 keys) → `02` PATCH metadata + well-known → `03` Club / `04` Recital / `05` Andes (offer QR → wallet → request QR).
+3. **Constructora Andes** emite `HeavyMachineryOperatorCredential` (habilitación interna; claim `validity_scope`). Display = marca + sede, no maquinaria.
+4. Tras el PATCH, la wallet debe mostrar nombre/logo/fondo (no “Credencial” / “Emisor desconocido”).
 
 Regenerar demo:
 
