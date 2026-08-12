@@ -4,9 +4,8 @@ export const size = { width: 32, height: 32 }
 export const contentType = 'image/png'
 
 /**
- * Favicon 32×32: K simple (legible en pestaña).
- * Marca completa: `public/kuatia-mark.png` (BrandMark / apple-icon).
- * OG: `opengraph-image.tsx` + `kuatia-mark-og.png`.
+ * Favicon 32×32: K simple sin caja de fondo (legible en pestaña).
+ * Preview social: `opengraph-image.tsx` (navy + mark).
  */
 export default function Icon() {
   return new ImageResponse(
@@ -18,13 +17,12 @@ export default function Icon() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#0B1520',
+          background: 'transparent',
           color: '#00a89d',
-          fontSize: 22,
+          fontSize: 26,
           fontWeight: 800,
           letterSpacing: '-0.06em',
           fontFamily: 'system-ui, sans-serif',
-          borderRadius: 8,
         }}
       >
         K

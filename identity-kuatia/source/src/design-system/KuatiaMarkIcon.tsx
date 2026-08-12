@@ -1,9 +1,9 @@
 import { cn } from '@/shared/lib/cn'
 
-/** Asset de marca (K + credencial). */
+/** Asset de marca sin fondo (K + credencial). El fondo navy solo va en OG. */
 export const KUATIA_MARK_SRC = '/kuatia-mark.png'
 
-/** Ícono de marca Kuatia (PNG). */
+/** Ícono de marca Kuatia (PNG transparente). */
 export function KuatiaMarkIcon({
   className,
   size = 20,
@@ -18,7 +18,7 @@ export function KuatiaMarkIcon({
       alt=""
       width={size}
       height={size}
-      className={cn('object-cover', className)}
+      className={cn('object-contain', className)}
       aria-hidden
     />
   )

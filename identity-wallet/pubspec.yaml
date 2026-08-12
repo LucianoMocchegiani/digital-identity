@@ -56,8 +56,9 @@ flutter_launcher_icons:
   android: true
   ios: true
   image_path: public/images/logo/kuatia-app-icon.png
-  adaptive_icon_background: "#041016"
+  adaptive_icon_background: "#0B1520"
   adaptive_icon_foreground: public/images/logo/kuatia-app-icon.png
+  remove_alpha_ios: true
 
 flutter:
   uses-material-design: true

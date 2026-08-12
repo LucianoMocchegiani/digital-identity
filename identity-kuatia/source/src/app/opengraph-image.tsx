@@ -8,14 +8,15 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 /**
- * Preview social: solo el ícono de marca, centrado y grande.
- * Título/descripción van en metadata (`og:title`, `og:description`).
+ * Preview social: mark a full-bleed sobre navy de marca.
+ * En UI (BrandMark / wallet) el PNG va sin fondo; acá sí hay canvas.
  *
  * @see https://developers.facebook.com/docs/whatsapp/link-previews/
  */
 export default async function OpenGraphImage() {
-  const mark = await readFile(join(process.cwd(), 'public/kuatia-mark-og.png'))
-  const markSrc = `data:image/png;base64,${mark.toString('base64')}`
+  // Versión precompuesta 1200×630 (navy + mark) para peso/caché estables.
+  const og = await readFile(join(process.cwd(), 'public/kuatia-mark-og.png'))
+  const ogSrc = `data:image/png;base64,${og.toString('base64')}`
 
   return new ImageResponse(
     (
@@ -24,19 +25,11 @@ export default async function OpenGraphImage() {
           width: '100%',
           height: '100%',
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
           background: '#0B1520',
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={markSrc}
-          width={630}
-          height={630}
-          alt=""
-          style={{ borderRadius: 0 }}
-        />
+        <img src={ogSrc} width={1200} height={630} alt="" />
       </div>
     ),
     { ...size },
