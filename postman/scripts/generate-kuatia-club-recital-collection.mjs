@@ -8,12 +8,18 @@ const outPath = join(__dirname, '..', 'Kuatia-Demo-Club-Recital.postman_collecti
 /**
  * Solo PNG/JPG/JPEG/WEBP con extensión en el path (la wallet ignora query strings
  * y no acepta SVG ni URLs tipo Unsplash sin `.jpg` en el path).
+ *
+ * Logos inventados en `postman/assets/demo-credentials/` (raw GitHub).
+ * Fondos: Pexels (estadio / recital).
  */
+const ASSET_BASE =
+  'https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/main/postman/assets/demo-credentials';
+
 const IMG = {
-  clubLogo: 'https://img.icons8.com/fluency/192/football2.png',
+  clubLogo: `${ASSET_BASE}/club-norte-crest.png`,
   clubBg:
     'https://images.pexels.com/photos/1884574/pexels-photo-1884574.jpeg',
-  recitalLogo: 'https://img.icons8.com/fluency/192/musical-notes.png',
+  recitalLogo: `${ASSET_BASE}/recital-live-mark.png`,
   recitalBg:
     'https://images.pexels.com/photos/1105666/pexels-photo-1105666.jpeg',
 };
