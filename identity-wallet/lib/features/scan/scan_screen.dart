@@ -202,6 +202,10 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
 
     return Scaffold(
       backgroundColor: Colors.black,
+      bottomNavigationBar: IdentityBottomNav.forTab(
+        context,
+        IdentityNavTab.scan,
+      ),
       body: Stack(
         children: [
           Positioned.fill(
@@ -249,15 +253,6 @@ class _ScanScreenState extends ConsumerState<ScanScreen>
               child: _ScanHint(),
             ),
           ],
-          SafeArea(
-            child: Align(
-              alignment: Alignment.topLeft,
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: _ScanBackButton(onTap: () => context.popOrGoHome()),
-              ),
-            ),
-          ),
         ],
       ),
     );
@@ -499,34 +494,6 @@ class _ScanHint extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _ScanBackButton extends StatelessWidget {
-  const _ScanBackButton({required this.onTap});
-
-  final VoidCallback onTap;
-
-  static const _arrowAsset = 'public/images/icons/Arrow-Left.png';
-
-  @override
-  Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(99);
-
-    return Material(
-      color: Colors.black.withValues(alpha: 0.7),
-      borderRadius: radius,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: radius,
-        child: Container(
-          width: 34,
-          height: 34,
-          alignment: Alignment.center,
-          child: Image.asset(_arrowAsset, width: 18, height: 18),
-        ),
-      ),
     );
   }
 }

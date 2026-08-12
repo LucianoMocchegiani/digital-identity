@@ -12,10 +12,9 @@ class MenuScreen extends StatelessWidget {
       appBar: IdentityTopBar(
         onNotificationsPressed: () => context.push('/home/inbox'),
       ),
-      bottomNavigationBar: IdentityBottomNav(
-        currentTab: IdentityNavTab.menu,
-        onHome: () => context.go('/home'),
-        onScan: () => context.push('/home/scan'),
+      bottomNavigationBar: IdentityBottomNav.forTab(
+        context,
+        IdentityNavTab.menu,
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),

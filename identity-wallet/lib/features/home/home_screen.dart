@@ -14,7 +14,6 @@ import '../credentials/models/credential_display_style.dart';
 import '../credentials/models/wallet_credential.dart';
 import '../credentials/providers/credentials_provider.dart';
 import '../credentials/widgets/credential_detail_drawer.dart';
-import 'widgets/home_actions_bar.dart';
 import 'widgets/home_feed.dart';
 
 /// Pantalla principal tras desbloquear la wallet (`/home`).
@@ -28,9 +27,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 }
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
-  /// True cuando la barra flotante de acciones (Añadir/Presentar) está abierta.
-  bool _actionsOpen = false;
-
   /// URLs ya pedidas a [precacheImage] en esta sesión de pantalla.
   final Set<String> _precachedUrls = {};
 
@@ -45,11 +41,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: IdentityTopBar(
         onNotificationsPressed: () => context.push('/home/inbox'),
       ),
-      bottomNavigationBar: IdentityBottomNav(
-        currentTab: IdentityNavTab.home,
-        showClose: _actionsOpen,
-        onScan: () => setState(() => _actionsOpen = !_actionsOpen),
-        onMenu: () => context.go('/home/menu'),
+      bottomNavigationBar: IdentityBottomNav.forTab(
+        context,
+        IdentityNavTab.home,
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -73,27 +67,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       allCredentials: allCredentials,
                     ),
                   ),
-                  if (_actionsOpen) ...[
-                    Positioned.fill(
-                      child: GestureDetector(
-                        behavior: HitTestBehavior.opaque,
-                        onTap: () => setState(() => _actionsOpen = false),
-                      ),
-                    ),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: HomeActionsBar(
-                        onAdd: () {
-                          setState(() => _actionsOpen = false);
-                          context.push('/home/scan');
-                        },
-                        onPresent: () {
-                          setState(() => _actionsOpen = false);
-                          context.push('/home/scan');
-                        },
-                      ),
-                    ),
-                  ],
                 ],
               );
             },
