@@ -39,12 +39,12 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     return Material(
       color: widget.category.rowColor,
       borderRadius: radius,
+      clipBehavior: Clip.antiAlias,
       child: InkWell(
         // Colapsada: toca para expandir. Expandida: el cierre lo maneja el ojo.
         onTap: _expanded ? null : () => setState(() => _expanded = true),
         borderRadius: radius,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: radius,
             border: Border.all(color: colors.border),
@@ -62,82 +62,98 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
   /// Estado colapsado: badge + nombre + subtítulo + ojo.
   Widget _buildCollapsed(KuatiaColors colors) {
     final category = widget.category;
-    return Row(
-      children: [
-        CategoryIcon(
-          asset: category.iconAsset,
-          colorArgb: category.colorArgb,
-          size: 35,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(category.label, style: _titleStyle(colors)),
-              const SizedBox(height: 2),
-              Text(
-                category.subtitle,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 18 / 14,
-                  fontWeight: FontWeight.w500,
-                  color: colors.muted,
-                ),
-              ),
-            ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          CategoryIcon(
+            asset: category.iconAsset,
+            colorArgb: category.colorArgb,
+            size: 35,
           ),
-        ),
-        const SizedBox(width: 12),
-        IdentityEyeToggle(
-          expanded: false,
-          onTap: () => setState(() => _expanded = true),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(category.label, style: _titleStyle(colors)),
+                const SizedBox(height: 2),
+                Text(
+                  category.subtitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    height: 18 / 14,
+                    fontWeight: FontWeight.w500,
+                    color: colors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          IdentityEyeToggle(
+            expanded: false,
+            onTap: () => setState(() => _expanded = true),
+          ),
+        ],
+      ),
     );
   }
 
   /// Estado expandido: nombre + acciones e cards / vacío.
+  ///
+  /// El head lleva inset horizontal; las [CredentialCard] van a ancho del
+  /// accordion (mismo que búsqueda / detalle del panel).
   Widget _buildExpanded(KuatiaColors colors) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Text(
-                widget.category.label,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: _titleStyle(colors),
-              ),
-            ),
-            const SizedBox(width: 8),
-            if (!widget.category.isSystem) ...[
-              _HeadIcon(
-                asset: 'public/images/icons/Pen.png',
-                color: colors.muted,
-                onTap: () => CategoryCreationModal.showEdit(
-                  context,
-                  category: widget.category,
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Text(
+                  widget.category.label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: _titleStyle(colors),
                 ),
               ),
               const SizedBox(width: 8),
+              if (!widget.category.isSystem) ...[
+                _HeadIcon(
+                  asset: 'public/images/icons/Pen.png',
+                  color: colors.muted,
+                  onTap: () => CategoryCreationModal.showEdit(
+                    context,
+                    category: widget.category,
+                  ),
+                ),
+                const SizedBox(width: 8),
+              ],
+              IdentityEyeToggle(
+                expanded: true,
+                onTap: () => setState(() => _expanded = false),
+              ),
             ],
-            IdentityEyeToggle(
-              expanded: true,
-              onTap: () => setState(() => _expanded = false),
-            ),
-          ],
+          ),
         ),
         const SizedBox(height: 12),
         if (widget.category.credentials.isEmpty)
-          _buildEmptyState(colors)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+            child: _buildEmptyState(colors),
+          )
         else
-          _buildCredentialCards(),
+          Padding(
+            // 2px por lado: panel en 14; card queda igual que con panel en 16.
+            padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
+            child: _buildCredentialCards(),
+          ),
       ],
     );
   }

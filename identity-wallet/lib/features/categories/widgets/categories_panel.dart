@@ -129,7 +129,7 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
                 ),
                 child: ListView(
                   controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(16, 22, 16, 16),
+                  padding: const EdgeInsets.fromLTRB(14, 22, 14, 16),
                   children: [
                     Center(
                       child: Container(
@@ -178,6 +178,8 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
         for (var i = 0; i < results.length; i++)
           Padding(
             padding: EdgeInsets.only(
+              left: 2,
+              right: 2,
               bottom: i == results.length - 1 ? 0 : 12,
             ),
             child: CredentialCard(
