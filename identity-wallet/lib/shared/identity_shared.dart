@@ -28,6 +28,7 @@ export 'widgets/flow_error_modal_launcher.dart';
 export 'widgets/flow_progress_view.dart';
 export 'widgets/flow_step_app_bar.dart';
 export 'widgets/flow_success_modal_launcher.dart';
+export 'widgets/app_network_image.dart';
 export 'widgets/network_logo_or_placeholder.dart';
 export 'widgets/notification_button.dart';
 export 'widgets/identity_bottom_nav.dart';

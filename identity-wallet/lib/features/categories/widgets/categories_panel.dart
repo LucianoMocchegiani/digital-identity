@@ -183,6 +183,7 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
               bottom: i == results.length - 1 ? 0 : 12,
             ),
             child: CredentialCard(
+              key: ValueKey('credential-card-${results[i].id}'),
               credential: results[i],
               onTap: () => widget.onCredentialTap?.call(results[i]),
             ),

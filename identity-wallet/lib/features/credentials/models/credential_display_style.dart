@@ -79,7 +79,7 @@ class CredentialDisplayStyle {
     return imageUrlFromDisplay(display, 'background_image');
   }
 
-  /// Indica si [url] apunta a un bitmap soportado por `Image.network`.
+  /// Indica si [url] apunta a un bitmap raster (PNG/JPG/WebP).
   ///
   /// Ignora query strings (p. ej. `.../foto.jpg?w=740`).
   static bool isRasterImageUrl(String? url) {

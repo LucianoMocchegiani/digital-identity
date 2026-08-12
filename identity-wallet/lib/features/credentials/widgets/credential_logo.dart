@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/app_network_image.dart';
 import '../models/credential_display_style.dart';
 
 /// Logo del emisor en tarjetas y listados de credenciales.
 ///
-/// Carga [logoUrl] remota (PNG/JPG/WebP) o muestra placeholder si falta o falla.
+/// Carga [logoUrl] remota (PNG/JPG/WebP) con cache en memoria, o muestra
+/// placeholder si falta o falla.
 class CredentialLogo extends StatelessWidget {
   const CredentialLogo({
     super.key,
@@ -46,16 +48,13 @@ class CredentialLogo extends StatelessWidget {
       return null;
     }
 
-    return Image.network(
-      url,
+    return AppNetworkImage(
+      url: url,
       width: size,
       height: size,
       fit: BoxFit.cover,
-      errorBuilder: (_, __, ___) => _placeholder(),
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
-        return _placeholder();
-      },
+      placeholder: _placeholder(),
+      error: _placeholder(),
     );
   }
 
@@ -64,55 +63,6 @@ class CredentialLogo extends StatelessWidget {
       Icons.badge_outlined,
       size: size * 0.55,
       color: Colors.black.withValues(alpha: 0.35),
-    );
-  }
-}
-
-/// Logo del emisor con insignia de verificado opcional.
-class CredentialLogoWithBadge extends StatelessWidget {
-  const CredentialLogoWithBadge({
-    super.key,
-    this.logoUrl,
-    this.size = 32,
-    this.verified = false,
-    this.borderColor,
-  });
-
-  final String? logoUrl;
-  final double size;
-  final bool verified;
-  final Color? borderColor;
-
-  static const _badgeSize = 16.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final slot = verified ? size + 4 : size;
-
-    return SizedBox(
-      width: slot,
-      height: slot,
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.topLeft,
-        children: [
-          CredentialLogo(
-            logoUrl: logoUrl,
-            size: size,
-            borderColor: borderColor,
-          ),
-          if (verified)
-            Positioned(
-              left: size - _badgeSize + 2,
-              top: size - _badgeSize + 2,
-              child: Image.asset(
-                'public/images/icons/Badge-wrapper.png',
-                width: _badgeSize,
-                height: _badgeSize,
-              ),
-            ),
-        ],
-      ),
     );
   }
 }

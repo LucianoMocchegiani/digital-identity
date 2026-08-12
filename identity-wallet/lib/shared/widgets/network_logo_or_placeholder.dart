@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'app_network_image.dart';
+
 /// Logo remoto con altura fija; si la URL falta o la carga falla, muestra [placeholder].
 class NetworkLogoOrPlaceholder extends StatelessWidget {
   const NetworkLogoOrPlaceholder({
@@ -19,10 +21,12 @@ class NetworkLogoOrPlaceholder extends StatelessWidget {
     if (url == null || url.isEmpty) {
       return placeholder;
     }
-    return Image.network(
-      url,
+    return AppNetworkImage(
+      url: url,
       height: height,
-      errorBuilder: (_, __, ___) => placeholder,
+      fit: BoxFit.contain,
+      placeholder: placeholder,
+      error: placeholder,
     );
   }
 }

@@ -192,12 +192,13 @@ class _FeedImage extends StatelessWidget {
         errorBuilder: (_, __, ___) => _placeholder(colors),
       );
     } else if (network != null) {
-      image = Image.network(
-        network,
+      image = AppNetworkImage(
+        url: network,
         fit: BoxFit.cover,
         width: double.infinity,
         height: double.infinity,
-        errorBuilder: (_, __, ___) => _placeholder(colors),
+        error: _placeholder(colors),
+        placeholder: _placeholder(colors),
       );
     } else {
       image = _placeholder(colors);

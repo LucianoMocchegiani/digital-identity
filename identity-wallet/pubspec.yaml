@@ -14,9 +14,6 @@ dependencies:
   mobile_scanner: ^5.0.0
   app_links: ^6.0.0
 
-  # Render de logos en formato SVG (ej. logo BA de las credenciales)
-  flutter_svg: ^2.0.10
-
   # Secure storage (usado directamente para verificar si el wallet existe)
   flutter_secure_storage: ^9.2.4
 

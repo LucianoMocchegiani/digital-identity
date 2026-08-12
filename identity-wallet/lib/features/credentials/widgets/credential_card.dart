@@ -10,11 +10,11 @@ import 'credential_logo.dart';
 
 /// Tarjeta de credencial reutilizable (componente `Credencial-v2`).
 ///
-/// Muestra logo + insignia de verificado, título y emisor. El ojo
-/// ([IdentityEyeToggle]) despliega los claims en una superficie aparte que asoma
-/// desde atrás de la tarjeta, con filas etiqueta/valor como el detalle y el
-/// share. La tarjeta no cambia: conserva su alto y su radio de 16 en las cuatro
-/// esquinas, expandida o no. El corazón marca o desmarca la favorita.
+/// Muestra logo, título y emisor. El ojo ([IdentityEyeToggle]) despliega los
+/// claims en una superficie aparte que asoma desde atrás de la tarjeta, con
+/// filas etiqueta/valor como el detalle y el share. La tarjeta no cambia:
+/// conserva su alto y su radio de 16 en las cuatro esquinas, expandida o no.
+/// El corazón marca o desmarca la favorita.
 class CredentialCard extends ConsumerStatefulWidget {
   const CredentialCard({
     super.key,
@@ -272,9 +272,8 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
   }
 
   Widget _logo(WalletCredential credential) {
-    return CredentialLogoWithBadge(
+    return CredentialLogo(
       logoUrl: credential.logoUrl,
-      verified: credential.verified,
       size: 32,
     );
   }

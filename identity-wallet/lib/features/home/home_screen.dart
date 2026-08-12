@@ -10,6 +10,7 @@ import '../../shared/identity_shared.dart';
 import '../categories/providers/categories_provider.dart';
 import '../categories/widgets/categories_panel.dart';
 import '../credentials/mappers/credential_ui_mapper.dart';
+import '../credentials/models/credential_display_style.dart';
 import '../credentials/models/wallet_credential.dart';
 import '../credentials/providers/credentials_provider.dart';
 import '../credentials/widgets/credential_detail_drawer.dart';
@@ -29,6 +30,9 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   /// True cuando la barra flotante de acciones (Añadir/Presentar) está abierta.
   bool _actionsOpen = false;
+
+  /// URLs ya pedidas a [precacheImage] en esta sesión de pantalla.
+  final Set<String> _precachedUrls = {};
 
   @override
   Widget build(BuildContext context) {
@@ -55,6 +59,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (_, __) => const SizedBox.shrink(),
             data: (allCredentials) {
+              _precacheCredentialImages(allCredentials);
               return Stack(
                 children: [
                   const Positioned.fill(
@@ -96,6 +101,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _precacheCredentialImages(List<CredentialRecord> records) {
+    if (!mounted) return;
+    final width = MediaQuery.sizeOf(context).width;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    // Ancho aproximado de la card en el panel (padding ~16+16+2+2).
+    final cardMemWidth = ((width - 36) * dpr).round().clamp(1, 4096);
+
+    final providers = <ImageProvider>[];
+    for (final record in records) {
+      final credential = CredentialUiMapper.toWalletCredential(record);
+      final bg = credential.backgroundImageUrl;
+      if (bg != null &&
+          CredentialDisplayStyle.isRasterImageUrl(bg) &&
+          _precachedUrls.add('bg:$bg:$cardMemWidth')) {
+        providers.add(
+          AppNetworkImage.providerFor(
+            context,
+            url: bg,
+            memCacheWidth: cardMemWidth,
+          ),
+        );
+      }
+      final logo = credential.logoUrl;
+      if (logo != null &&
+          CredentialDisplayStyle.isRasterImageUrl(logo) &&
+          _precachedUrls.add('logo:$logo')) {
+        providers.add(
+          AppNetworkImage.providerFor(
+            context,
+            url: logo,
+            width: 32,
+          ),
+        );
+      }
+    }
+    if (providers.isEmpty) return;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      for (final provider in providers) {
+        precacheImage(provider, context);
+      }
+    });
   }
 
   List<LabeledClaim> _labeledClaimsFor(

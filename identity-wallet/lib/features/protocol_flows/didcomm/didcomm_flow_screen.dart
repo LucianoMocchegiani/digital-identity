@@ -4,8 +4,8 @@ import 'package:go_router/go_router.dart';
 import 'package:identity_core_dart/identity_core.dart';
 import 'package:identity_wallet/shared/identity_shared.dart';
 
+import '../../categories/providers/categories_provider.dart';
 import '../../credentials/models/wallet_credential.dart';
-import '../../credentials/providers/credential_ux_provider.dart';
 import '../oid4vci/slides/add_credential_sheet.dart';
 import '../oid4vp/slides/select_credentials_slide.dart';
 import 'providers/didcomm_provider.dart';
@@ -34,11 +34,7 @@ class DidCommNotificationScreen extends ConsumerWidget {
     void doneInbox() => context.go('/home/inbox');
     void doneHome() => context.go('/home');
 
-    // Ids favoritos para el tab "Favoritas" del selector (mismo que OID4VP).
-    final favoriteIds = {
-      for (final entry in ref.watch(credentialUxMapProvider).entries)
-        if (entry.value.isFavorite) entry.key,
-    };
+    final categories = ref.watch(walletCategoriesProvider);
 
     const connectErrorTitle = 'Error al conectar';
 
@@ -102,7 +98,7 @@ class DidCommNotificationScreen extends ConsumerWidget {
           SelectCredentialsSlide(
             request: request,
             selected: selected,
-            favoriteIds: favoriteIds,
+            categories: categories,
             onSelect: notifier.selectCredential,
             onContinue: notifier.confirmSelection,
             onCancel: cancel,

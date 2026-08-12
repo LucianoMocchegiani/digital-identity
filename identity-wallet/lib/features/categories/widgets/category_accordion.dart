@@ -168,6 +168,7 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
           Padding(
             padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
             child: CredentialCard(
+              key: ValueKey('credential-card-${credentials[i].id}'),
               credential: credentials[i],
               onTap: () => widget.onCredentialTap?.call(credentials[i]),
             ),

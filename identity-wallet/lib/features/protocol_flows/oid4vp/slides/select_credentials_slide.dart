@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:identity_core_dart/identity_core.dart';
 import 'package:identity_wallet/shared/identity_shared.dart';
 
+import '../../../categories/models/wallet_category.dart';
+import '../../../categories/widgets/category_icon.dart';
 import '../../../credentials/mappers/credential_ui_mapper.dart';
 import '../../../credentials/models/wallet_credential.dart';
 import '../../../credentials/widgets/credential_logo.dart';
 
-/// Filtro del selector de credenciales (tags del mockup).
-enum _SelectFilter { todas, favoritas }
-
-/// Slide de selección de credenciales del flujo **OID4VP**.
+/// Slide de selección de credenciales del flujo **OID4VP** / DIDComm.
 ///
 /// Por cada requisito del verificador ([FormattedSubmissionEntry]) lista sus
-/// credenciales candidatas con radio de selección única, filtro
-/// Todas/Favoritas y búsqueda por título/emisor, como bottom sheet del design
+/// credenciales candidatas con radio de selección única, filtro por
+/// [WalletCategory] y búsqueda por título/emisor, como bottom sheet del design
 /// system ([IdentityFlowSheet]).
 ///
 /// [onSelect] notifica cada elección a `Oid4VpNotifier.selectCredential`;
@@ -24,7 +23,7 @@ class SelectCredentialsSlide extends StatefulWidget {
     super.key,
     required this.request,
     required this.selected,
-    required this.favoriteIds,
+    required this.categories,
     required this.onSelect,
     required this.onContinue,
     required this.onCancel,
@@ -36,8 +35,8 @@ class SelectCredentialsSlide extends StatefulWidget {
   /// Descriptor de entrada → id de la credencial elegida hasta ahora.
   final Map<String, String> selected;
 
-  /// Ids de credenciales marcadas como favoritas (tab "Favoritas").
-  final Set<String> favoriteIds;
+  /// Categorías del wallet (incluye "Todas las credenciales" de sistema).
+  final List<WalletCategory> categories;
 
   /// Notifica la elección de una credencial para un descriptor.
   final void Function(String inputDescriptorId, String credentialId) onSelect;
@@ -54,13 +53,54 @@ class SelectCredentialsSlide extends StatefulWidget {
 }
 
 class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
-  _SelectFilter _filter = _SelectFilter.todas;
+  String? _selectedCategoryId;
   final _searchController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedCategoryId = _defaultCategoryId(widget.categories);
+  }
+
+  @override
+  void didUpdateWidget(covariant SelectCredentialsSlide oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.categories != widget.categories) {
+      final stillValid = widget.categories.any((c) => c.id == _selectedCategoryId);
+      if (!stillValid) {
+        _selectedCategoryId = _defaultCategoryId(widget.categories);
+      }
+    }
+  }
 
   @override
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+
+  static String? _defaultCategoryId(List<WalletCategory> categories) {
+    for (final category in categories) {
+      if (category.isSystem) return category.id;
+    }
+    return categories.firstOrNull?.id;
+  }
+
+  WalletCategory? get _selectedCategory {
+    for (final category in widget.categories) {
+      if (category.id == _selectedCategoryId) return category;
+    }
+    return widget.categories.firstOrNull;
+  }
+
+  /// Ids permitidos por la categoría activa; `null` = sin filtro (sin categorías).
+  Set<String>? get _categoryCredentialIds {
+    final category = _selectedCategory;
+    if (category == null) return null;
+    return {
+      for (final credential in category.credentials)
+        if (credential.id != null) credential.id!,
+    };
   }
 
   /// Requisitos con candidatas: solo estos exigen selección.
@@ -74,20 +114,19 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
   /// Verdadero cuando cada requisito tiene una credencial elegida.
   bool get _allSelected {
     final entries = _selectableEntries;
-    // Sin requisitos no hay nada que presentar: el botón queda deshabilitado.
     return entries.isNotEmpty &&
         entries.every(
             (entry) => widget.selected.containsKey(entry.inputDescriptorId));
   }
 
-  /// Aplica filtro de favoritas y búsqueda sobre las candidatas de [entry].
+  /// Aplica filtro de categoría y búsqueda sobre las candidatas de [entry].
   List<WalletCredential> _visibleCredentials(FormattedSubmissionEntry entry) {
     final query = _searchController.text.trim().toLowerCase();
+    final allowedIds = _categoryCredentialIds;
     return [
       for (final record
           in entry.matchingCredentials ?? const <CredentialRecord>[])
-        if (_filter == _SelectFilter.todas ||
-            widget.favoriteIds.contains(record.id))
+        if (allowedIds == null || allowedIds.contains(record.id))
           CredentialUiMapper.toWalletCredential(record),
     ]
         .where((credential) =>
@@ -108,18 +147,20 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
         primaryLabel: 'Presentar',
         onPrimary: _allSelected ? widget.onContinue : null,
         children: [
-          _FilterTags(
-            selected: _filter,
-            onSelect: (filter) => setState(() => _filter = filter),
-          ),
-          SizedBox(height: 12),
+          if (widget.categories.isNotEmpty) ...[
+            _CategoryFilterTags(
+              categories: widget.categories,
+              selectedId: _selectedCategory?.id,
+              onSelect: (id) => setState(() => _selectedCategoryId = id),
+            ),
+            const SizedBox(height: 12),
+          ],
           _SearchField(
             controller: _searchController,
             onChanged: (_) => setState(() {}),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           for (final entry in entries) ...[
-            // Con un solo requisito el encabezado sobra (mockup).
             if (entries.length > 1 && entry.name != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8),
@@ -139,7 +180,7 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
               onSelect: (credentialId) =>
                   widget.onSelect(entry.inputDescriptorId, credentialId),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
           ],
         ],
       ),
@@ -147,16 +188,17 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
   }
 }
 
-/// Barra flotante segmentada Todas/Favoritas del sheet OID4VP
-/// (componente `Tag-group` de Figma).
-///
-/// Un único contenedor con borde y radio 16 envuelve los dos tags; el
-/// seleccionado va en accent sobre superficie accent.
-class _FilterTags extends StatelessWidget {
-  const _FilterTags({required this.selected, required this.onSelect});
+/// Chips horizontales de [WalletCategory].
+class _CategoryFilterTags extends StatelessWidget {
+  const _CategoryFilterTags({
+    required this.categories,
+    required this.selectedId,
+    required this.onSelect,
+  });
 
-  final _SelectFilter selected;
-  final ValueChanged<_SelectFilter> onSelect;
+  final List<WalletCategory> categories;
+  final String? selectedId;
+  final ValueChanged<String?> onSelect;
 
   @override
   Widget build(BuildContext context) {
@@ -169,34 +211,42 @@ class _FilterTags extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: AppColors.borderNeutral),
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _tag(
-              iconAsset: 'public/images/icons/credenciales.png',
-              label: 'Todas',
-              isSelected: selected == _SelectFilter.todas,
-              onTap: () => onSelect(_SelectFilter.todas),
-            ),
-            SizedBox(width: 2),
-            _tag(
-              iconAsset: 'public/images/icons/favoritos.png',
-              label: 'Favoritas',
-              isSelected: selected == _SelectFilter.favoritas,
-              onTap: () => onSelect(_SelectFilter.favoritas),
-            ),
-          ],
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              for (var i = 0; i < categories.length; i++) ...[
+                if (i > 0) const SizedBox(width: 2),
+                _CategoryTag(
+                  category: categories[i],
+                  isSelected: categories[i].id == selectedId,
+                  onTap: () => onSelect(categories[i].id),
+                ),
+              ],
+            ],
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _tag({
-    required String iconAsset,
-    required String label,
-    required bool isSelected,
-    required VoidCallback onTap,
-  }) {
+class _CategoryTag extends StatelessWidget {
+  const _CategoryTag({
+    required this.category,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  final WalletCategory category;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  String get _label => category.isSystem ? 'Todas' : category.label;
+
+  @override
+  Widget build(BuildContext context) {
     final color =
         isSelected ? AppColors.accentBlue : AppColors.textNeutralPrimary;
     final radius = BorderRadius.circular(16);
@@ -211,16 +261,14 @@ class _FilterTags extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Image.asset(
-                iconAsset,
-                width: 16,
-                height: 16,
-                color: color,
-                colorBlendMode: BlendMode.srcIn,
+              CategoryIcon(
+                asset: category.iconAsset,
+                colorArgb: category.colorArgb,
+                size: 18,
               ),
-              SizedBox(width: 4),
+              const SizedBox(width: 4),
               Text(
-                label,
+                _label,
                 style: TextStyle(
                   fontSize: 14,
                   height: 18 / 14,
@@ -262,7 +310,7 @@ class _SearchField extends StatelessWidget {
             color: AppColors.textNeutralSecondary,
             colorBlendMode: BlendMode.srcIn,
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: TextField(
               controller: controller,
@@ -293,8 +341,6 @@ class _SearchField extends StatelessWidget {
 }
 
 /// Lista de candidatas de un requisito con selección única por radio.
-///
-/// Presentacional y testeable sin construir [CredentialsForRequest].
 class _CredentialOptionList extends StatelessWidget {
   const _CredentialOptionList({
     required this.credentials,
@@ -302,20 +348,15 @@ class _CredentialOptionList extends StatelessWidget {
     required this.onSelect,
   });
 
-  /// Candidatas visibles tras filtro y búsqueda.
   final List<WalletCredential> credentials;
-
-  /// Id de la credencial elegida para este requisito; `null` si ninguna.
   final String? selectedId;
-
-  /// Notifica el id de la credencial tocada.
   final ValueChanged<String> onSelect;
 
   @override
   Widget build(BuildContext context) {
     if (credentials.isEmpty) {
       return Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
+        padding: const EdgeInsets.symmetric(vertical: 16),
         child: Text(
           'No se encontraron credenciales.',
           textAlign: TextAlign.center,
@@ -341,14 +382,14 @@ class _CredentialOptionList extends StatelessWidget {
               if (id != null) onSelect(id);
             },
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
         ],
       ],
     );
   }
 }
 
-/// Fila de candidata: logo + título + emisor + radio (mockup).
+/// Fila de candidata: logo + título + emisor + radio.
 class _CredentialOptionRow extends StatelessWidget {
   const _CredentialOptionRow({
     super.key,
@@ -382,7 +423,7 @@ class _CredentialOptionRow extends StatelessWidget {
           child: Row(
             children: [
               CredentialLogo(logoUrl: credential.logoUrl, size: 36),
-              SizedBox(width: 12),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -398,7 +439,7 @@ class _CredentialOptionRow extends StatelessWidget {
                         color: AppColors.textNeutralPrimary,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
                       credential.issuer,
                       maxLines: 1,
@@ -413,7 +454,7 @@ class _CredentialOptionRow extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(width: 8),
+              const SizedBox(width: 8),
               _RadioIndicator(isSelected: isSelected),
             ],
           ),

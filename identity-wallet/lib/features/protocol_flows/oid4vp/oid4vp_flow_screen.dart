@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:identity_wallet/shared/identity_shared.dart';
 
 import '../../../core/errors/flow_error_message.dart';
-import '../../credentials/providers/credential_ux_provider.dart';
+import '../../categories/providers/categories_provider.dart';
 import 'providers/oid4vp_provider.dart';
 import 'slides/select_credentials_slide.dart';
 import 'slides/share_credentials_slide.dart';
@@ -23,8 +23,6 @@ import 'slides/verify_verifier_slide.dart';
 /// El cierre usa extensiones de
 /// `go_router` sobre [BuildContext]: pop si la pila lo permite, si no navegación a `/home`.
 ///
-/// Tras resolver la URL se entra directo al selector (sin slide de “verificar verifier”).
-///
 /// Durante [Oid4VpSubmittingState] envuelve el contenido en [PopScope] con `canPop: false`
 /// para evitar salidas accidentales mientras se envía la presentación.
 class Oid4VpNotificationScreen extends ConsumerWidget {
@@ -38,11 +36,7 @@ class Oid4VpNotificationScreen extends ConsumerWidget {
     final async = ref.watch(oid4vpNotifierProvider(url));
     final notifier = ref.read(oid4vpNotifierProvider(url).notifier);
 
-    // Ids favoritos para el tab "Favoritas" del selector de credenciales.
-    final favoriteIds = {
-      for (final entry in ref.watch(credentialUxMapProvider).entries)
-        if (entry.value.isFavorite) entry.key,
-    };
+    final categories = ref.watch(walletCategoriesProvider);
 
     void cancel() => context.popOrGoHome();
     void done() => context.go('/home');
@@ -66,7 +60,7 @@ class Oid4VpNotificationScreen extends ConsumerWidget {
           SelectCredentialsSlide(
             request: request,
             selected: selected,
-            favoriteIds: favoriteIds,
+            categories: categories,
             onSelect: notifier.selectCredential,
             onContinue: notifier.confirmSelection,
             onCancel: cancel,

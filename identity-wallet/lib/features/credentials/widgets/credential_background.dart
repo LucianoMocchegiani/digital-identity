@@ -2,6 +2,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
 
+import '../../../shared/widgets/app_network_image.dart';
 import '../models/credential_display_style.dart';
 
 /// Fondo de tarjeta o cabecera de credencial: color sólido + imagen opcional.
@@ -37,10 +38,21 @@ class CredentialBackground extends StatelessWidget {
         children: [
           ColoredBox(color: backgroundColor),
           if (showImage)
-            Image.network(
-              imageUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final dpr = MediaQuery.devicePixelRatioOf(context);
+                // Solo ancho: la altura de la card cambia al expandir claims y
+                // no debe invalidar la clave de ImageCache.
+                final memW = constraints.maxWidth.isFinite
+                    ? (constraints.maxWidth * dpr).round()
+                    : null;
+                return AppNetworkImage(
+                  url: imageUrl,
+                  fit: BoxFit.cover,
+                  memCacheWidth: memW,
+                  error: const SizedBox.shrink(),
+                );
+              },
             ),
           if (showSheen) ...[
             _sheen(left: 200, top: -61, color: Colors.white.withValues(alpha: 0.25)),
