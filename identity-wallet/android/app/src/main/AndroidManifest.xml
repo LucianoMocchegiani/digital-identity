@@ -7,7 +7,7 @@
          en flutter_secure_storage). allowBackup=false evita que Auto Backup / D2D
          reviva la wallet tras desinstalar o limpiar datos. -->
     <application
-        android:label="identity_wallet"
+        android:label="Kuatia"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false">
