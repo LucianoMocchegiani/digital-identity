@@ -10,18 +10,26 @@ import '../models/credential_display_style.dart';
 /// Lee [backgroundImageUrl] del metadata OID4VCI (`display.background_image.uri`).
 /// Si la URL no es raster (PNG/JPG/WebP) o falla la carga, queda solo [backgroundColor].
 ///
+/// Con [textColor] y foto, aplica un scrim (degradé) del color de contraste de
+/// [textColor] para que el copy del emisor siga legible sin sustituir su color.
+///
 /// Con [showSheen] añade los reflejos suaves del componente `Credencial-v2`.
 class CredentialBackground extends StatelessWidget {
   const CredentialBackground({
     super.key,
     required this.backgroundColor,
     this.backgroundImageUrl,
+    this.textColor,
     this.borderRadius = BorderRadius.zero,
     this.showSheen = false,
   });
 
   final Color backgroundColor;
   final String? backgroundImageUrl;
+
+  /// `text_color` del emisor; solo se usa para orientar el scrim si hay imagen.
+  final Color? textColor;
+
   final BorderRadius borderRadius;
   final bool showSheen;
 
@@ -30,6 +38,7 @@ class CredentialBackground extends StatelessWidget {
     final imageUrl = backgroundImageUrl;
     final showImage =
         imageUrl != null && CredentialDisplayStyle.isRasterImageUrl(imageUrl);
+    final scrimFor = textColor;
 
     return ClipRRect(
       borderRadius: borderRadius,
@@ -54,6 +63,7 @@ class CredentialBackground extends StatelessWidget {
                 );
               },
             ),
+          if (showImage && scrimFor != null) _TextScrim(textColor: scrimFor),
           if (showSheen) ...[
             _sheen(left: 200, top: -61, color: Colors.white.withValues(alpha: 0.25)),
             _sheen(left: -6, top: 53, color: Colors.black.withValues(alpha: 0.05)),
@@ -80,6 +90,36 @@ class CredentialBackground extends StatelessWidget {
                 borderRadius: BorderRadius.circular(60),
               ),
             ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Degradé de contraste bajo la zona de texto (izquierda / centro).
+///
+/// Usa [CredentialDisplayStyle.contrastAgainst] del `text_color` del emisor.
+class _TextScrim extends StatelessWidget {
+  const _TextScrim({required this.textColor});
+
+  final Color textColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final edge = CredentialDisplayStyle.contrastAgainst(textColor);
+    return IgnorePointer(
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              edge.withValues(alpha: 0.52),
+              edge.withValues(alpha: 0.28),
+              edge.withValues(alpha: 0.08),
+            ],
+            stops: const [0.0, 0.45, 1.0],
           ),
         ),
       ),

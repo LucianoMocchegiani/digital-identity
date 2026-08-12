@@ -91,6 +91,33 @@ class CredentialDisplayStyle {
         path.endsWith('.webp');
   }
 
+  /// Umbral WCAG-ish: luminancia relativa > 0.45 → color “claro”.
+  static bool isLightColor(Color color) => color.computeLuminance() > 0.45;
+
+  /// Tinta de contraste para scrim/sombra frente a [textColor] del emisor.
+  ///
+  /// No invierte RGB (eso da tonos raros): si el texto es claro → negro;
+  /// si es oscuro → blanco. Así el halo siempre empuja el contraste local.
+  static Color contrastAgainst(Color textColor) =>
+      isLightColor(textColor) ? const Color(0xFF000000) : const Color(0xFFFFFFFF);
+
+  /// Sombras suaves para texto/íconos sobre foto de fondo.
+  static List<Shadow> legibilityShadows(Color textColor) {
+    final edge = contrastAgainst(textColor);
+    return [
+      Shadow(
+        color: edge.withValues(alpha: 0.55),
+        blurRadius: 6,
+        offset: const Offset(0, 1),
+      ),
+      Shadow(
+        color: edge.withValues(alpha: 0.35),
+        blurRadius: 2,
+        offset: Offset.zero,
+      ),
+    ];
+  }
+
   static String? imageUrlFromDisplay(
     Map<String, dynamic>? display,
     String key,

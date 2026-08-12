@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:identity_core_dart/identity_core.dart';
 
 import '../../../shared/identity_shared.dart';
+import '../models/credential_display_style.dart';
 import '../models/wallet_credential.dart';
 import '../providers/credential_ux_provider.dart';
 import 'credential_background.dart';
@@ -74,6 +75,11 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
     final brightness = Theme.of(context).brightness;
     final bg = credential.resolvedBackground(brightness);
     final fg = credential.resolvedForeground(brightness);
+    final hasPhoto = CredentialDisplayStyle.isRasterImageUrl(
+      credential.backgroundImageUrl,
+    );
+    final textShadows =
+        hasPhoto ? CredentialDisplayStyle.legibilityShadows(fg) : null;
     final showPanel =
         _showDetails && hasDetails && widget.showExpandToggle;
 
@@ -91,6 +97,7 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
               child: CredentialBackground(
                 backgroundColor: bg,
                 backgroundImageUrl: credential.backgroundImageUrl,
+                textColor: fg,
                 borderRadius: BorderRadius.circular(16),
                 showSheen: true,
               ),
@@ -101,9 +108,9 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildHead(credential, hasDetails, fg),
+                  _buildHead(credential, hasDetails, fg, textShadows),
                   const SizedBox(height: 14),
-                  _buildData(credential, fg),
+                  _buildData(credential, fg, textShadows),
                 ],
               ),
             ),
@@ -207,7 +214,12 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
     return value.toString();
   }
 
-  Widget _buildHead(WalletCredential credential, bool hasDetails, Color fg) {
+  Widget _buildHead(
+    WalletCredential credential,
+    bool hasDetails,
+    Color fg,
+    List<Shadow>? textShadows,
+  ) {
     // Sin alto fijo: la fila se ajusta al título cuando la fuente del sistema
     // es mayor (textScaleFactor alto), en vez de desbordar.
     return Row(
@@ -227,6 +239,7 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
                 height: 22 / 16,
                 fontWeight: FontWeight.w600,
                 color: fg,
+                shadows: textShadows,
               ),
             ),
           ),
@@ -278,7 +291,11 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
     );
   }
 
-  Widget _buildData(WalletCredential credential, Color fg) {
+  Widget _buildData(
+    WalletCredential credential,
+    Color fg,
+    List<Shadow>? textShadows,
+  ) {
     return Opacity(
       opacity: 0.7,
       child: Column(
@@ -292,6 +309,7 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
               height: 19 / 14,
               fontWeight: FontWeight.w600,
               color: fg,
+              shadows: textShadows,
             ),
           ),
         ],
