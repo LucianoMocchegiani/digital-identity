@@ -1,28 +1,37 @@
 ﻿import { cn } from '@/shared/lib/cn'
 import type { ReactNode } from 'react'
 
-/** Marco de teléfono reutilizable para mockups de wallet en la landing. */
+/** Marco de teléfono para mockups de wallet (respeta tema claro/oscuro). */
 export function PhoneFrame({
   children,
   className,
-  label = 'Wallet',
+  /** Si false, el contenido va a pantalla completa dentro del bezel. */
+  padded = true,
 }: {
   children: ReactNode
   className?: string
-  label?: string
+  padded?: boolean
 }) {
   return (
-    <div className={cn('relative mx-auto w-full max-w-[280px]', className)}>
+    <div className={cn('relative mx-auto w-full max-w-[300px]', className)}>
       <div
         aria-hidden
         className="absolute -inset-8 rounded-full bg-[var(--kuatia-accent)]/20 blur-3xl"
       />
-      <div className="relative rounded-[2rem] border border-white/15 bg-gradient-to-b from-[#0d1a22] to-[#050a10] p-2.5 shadow-2xl shadow-black/50">
-        <div className="mx-auto mb-2 h-1.5 w-16 rounded-full bg-white/15" />
-        <div className="rounded-[1.4rem] border border-[var(--kuatia-border)] bg-[#071018] p-3.5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wider text-[var(--kuatia-muted)]">
-            {label}
-          </p>
+      <div
+        className={cn(
+          'relative overflow-hidden rounded-[2.2rem] border border-[var(--kuatia-border)] p-2 shadow-2xl',
+          'bg-gradient-to-b from-[var(--kuatia-panel)] to-[var(--kuatia-atmosphere-mid)]',
+          'shadow-[var(--kuatia-ink)]/20',
+        )}
+      >
+        <div className="mx-auto mb-2 h-1.5 w-16 rounded-full bg-[var(--kuatia-muted)]/35" />
+        <div
+          className={cn(
+            'overflow-hidden rounded-[1.6rem] border border-[var(--kuatia-border)] bg-[var(--kuatia-bg)]',
+            padded && 'p-3.5',
+          )}
+        >
           {children}
         </div>
       </div>

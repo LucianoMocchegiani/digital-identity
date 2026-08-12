@@ -4,8 +4,8 @@ import {
   IconDoc,
   IconTicket,
   IconUsers,
-  PhoneFrame,
   SectionEyebrow,
+  type CredentialCardPreset,
 } from '@/design-system'
 import type { ComponentType, SVGProps } from 'react'
 import { MarketingShell } from './MarketingShell'
@@ -17,7 +17,7 @@ const cases: {
   subtitle: string
   Icon: IconComp
   bullets: string[]
-  card: { variant: 'document' | 'ticket' | 'membership'; eyebrow: string; title: string; meta: string }
+  preset: CredentialCardPreset
 }[] = [
   {
     title: 'Documentos',
@@ -28,12 +28,7 @@ const cases: {
       'El titular revela solo lo necesario',
       'Revocación cuando el caso lo pide',
     ],
-    card: {
-      variant: 'document',
-      eyebrow: 'Documento',
-      title: 'María Pérez',
-      meta: 'Argentina · Válido',
-    },
+    preset: 'operator',
   },
   {
     title: 'Eventos',
@@ -44,12 +39,7 @@ const cases: {
       'QR o deep link para la wallet',
       'Control de acceso en puerta',
     ],
-    card: {
-      variant: 'ticket',
-      eyebrow: 'Entrada',
-      title: 'Rock en el Parque',
-      meta: 'Campo · Transferible',
-    },
+    preset: 'ticket',
   },
   {
     title: 'Organizaciones',
@@ -60,16 +50,11 @@ const cases: {
       'Beneficios y accesos asociados',
       'Estado vigente al momento del control',
     ],
-    card: {
-      variant: 'membership',
-      eyebrow: 'Membresía',
-      title: 'Club Atlético Norte',
-      meta: 'Socio · Activo',
-    },
+    preset: 'membership',
   },
 ]
 
-/** Casos de uso con bullets + phones (mockup mid). */
+/** Casos de uso: copy + credencial suelta (sin marco de teléfono). */
 export function UseCases() {
   return (
     <MarketingShell as="section" id="producto" className="py-20">
@@ -90,10 +75,8 @@ export function UseCases() {
             <h3 className="font-display text-2xl font-semibold lg:text-3xl">{c.title}</h3>
             <p className="mt-1 text-base text-[var(--kuatia-accent)]">{c.subtitle}</p>
             <CheckList items={c.bullets} />
-            <div className="mt-6">
-              <PhoneFrame label={c.title} className="max-w-[240px]">
-                <CredentialCard {...c.card} />
-              </PhoneFrame>
+            <div className="mt-6 max-w-[280px]">
+              <CredentialCard preset={c.preset} />
             </div>
           </div>
         ))}

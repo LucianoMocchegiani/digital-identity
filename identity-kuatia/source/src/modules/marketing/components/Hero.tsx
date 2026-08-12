@@ -1,15 +1,10 @@
-import {
-  Button,
-  CredentialCard,
-  IconArrowRight,
-  IconCalendar,
-  PhoneFrame,
-} from '@/design-system'
+import { Button, IconArrowRight, IconCalendar, PhoneFrame } from '@/design-system'
 import { mailto } from '@/shared/config/site'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
+import { WalletHomeMock } from './WalletHomeMock'
 
-/** Primer viewport: copy + phone wallet (fiel al mockup long-1). */
+/** Primer viewport: copy + phone fiel a la wallet (credenciales + nav). */
 export function Hero() {
   return (
     <MarketingShell
@@ -44,21 +39,8 @@ export function Hero() {
         </div>
       </div>
 
-      <PhoneFrame className="xl:max-w-[320px]">
-        <div className="space-y-3">
-          <CredentialCard
-            variant="membership"
-            eyebrow="Membresía"
-            title="Atlántico FC"
-            meta="Socio Platino · 2026"
-          />
-          <CredentialCard
-            variant="ticket"
-            eyebrow="Entrada"
-            title="Live Night"
-            meta="Campo VIP · Transferible"
-          />
-        </div>
+      <PhoneFrame className="xl:max-w-[320px]" padded={false}>
+        <WalletHomeMock />
       </PhoneFrame>
     </MarketingShell>
   )
