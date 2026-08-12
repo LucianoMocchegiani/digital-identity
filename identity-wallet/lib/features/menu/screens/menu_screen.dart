@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:identity_wallet/shared/identity_shared.dart';
 
-/// Pestaña Configuración del navbar.
+/// Hub de la pestaña Menú del navbar.
 class MenuScreen extends StatelessWidget {
   const MenuScreen({super.key});
 
@@ -13,8 +13,8 @@ class MenuScreen extends StatelessWidget {
         onNotificationsPressed: () => context.push('/home/inbox'),
       ),
       bottomNavigationBar: IdentityBottomNav(
-        currentTab: IdentityNavTab.configuration,
-        onCredentials: () => context.go('/home'),
+        currentTab: IdentityNavTab.menu,
+        onHome: () => context.go('/home'),
         onScan: () => context.push('/home/scan'),
       ),
       body: ListView(

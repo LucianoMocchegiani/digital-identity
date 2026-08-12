@@ -66,29 +66,4 @@ class WalletCredential {
     if (textColor != null) return textColor!;
     return CredentialDisplayStyle.neutralFor(brightness).$2;
   }
-
-  /// Copia con los campos indicados reemplazados (útil en tests y previews).
-  WalletCredential copyWith({
-    String? id,
-    String? title,
-    String? issuer,
-    List<String>? details,
-    String? logoUrl,
-    Color? backgroundColor,
-    String? backgroundImageUrl,
-    Color? textColor,
-    bool? verified,
-  }) {
-    return WalletCredential(
-      id: id ?? this.id,
-      title: title ?? this.title,
-      issuer: issuer ?? this.issuer,
-      details: details ?? this.details,
-      logoUrl: logoUrl ?? this.logoUrl,
-      backgroundColor: backgroundColor ?? this.backgroundColor,
-      backgroundImageUrl: backgroundImageUrl ?? this.backgroundImageUrl,
-      textColor: textColor ?? this.textColor,
-      verified: verified ?? this.verified,
-    );
-  }
 }

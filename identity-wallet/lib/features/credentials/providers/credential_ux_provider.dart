@@ -14,12 +14,11 @@ final credentialUxMapProvider = Provider<Map<String, CredentialUxData>>((ref) {
   return ux?.credentialUx ?? const {};
 });
 
-/// Atajo a [WalletUxNotifier] para favoritas y asignación directa.
+/// Atajo a [WalletUxNotifier] para favoritas.
 ///
 /// Ejemplo:
 /// ```dart
 /// await ref.read(credentialUxNotifierProvider).toggleFavorite('sd-jwt-vc-abc');
-/// await ref.read(credentialUxNotifierProvider).addToCategory('sd-jwt-vc-abc', categoryId);
 /// ```
 final credentialUxNotifierProvider = Provider<WalletUxNotifier>((ref) {
   return ref.read(walletUxNotifierProvider.notifier);

@@ -147,12 +147,11 @@ class _SelectCredentialsSlideState extends State<SelectCredentialsSlide> {
   }
 }
 
-/// Barra flotante segmentada Todas/Favoritas, alineada a la izquierda
-/// (componente `Tag-group` de Figma; mismo lenguaje visual que
-/// `CredentialsFilterBar` pero fija y sin modo búsqueda).
+/// Barra flotante segmentada Todas/Favoritas del sheet OID4VP
+/// (componente `Tag-group` de Figma).
 ///
-/// Un único contenedor blanco con borde y radio 16 envuelve los dos tags; el
-/// seleccionado va en azul de acento sobre superficie celeste.
+/// Un único contenedor con borde y radio 16 envuelve los dos tags; el
+/// seleccionado va en accent sobre superficie accent.
 class _FilterTags extends StatelessWidget {
   const _FilterTags({required this.selected, required this.onSelect});
 

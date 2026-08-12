@@ -1,9 +1,9 @@
 import 'package:identity_core_dart/identity_core.dart';
 
 import '../../../core/persistence/models/category_data.dart';
-import '../../../core/persistence/models/credential_ux_data.dart';
 import '../../../core/persistence/models/wallet_ux_data.dart';
 import '../../credentials/mappers/credential_ui_mapper.dart';
+import '../../credentials/models/wallet_credential.dart';
 import '../constants/category_catalog.dart';
 import '../models/wallet_category.dart';
 
@@ -24,15 +24,23 @@ class CategoryMapper {
     required WalletUxData uxData,
     required List<CredentialRecord> credentials,
   }) {
-    final assignedIds = uxData.credentialUx.entries
-        .where((entry) => entry.value.categoryIds.contains(category.id))
-        .map((entry) => entry.key)
-        .toSet();
+    final isSystem = isSystemCategoryId(category.id);
+    final List<WalletCredential> assignedCredentials;
+    if (isSystem) {
+      assignedCredentials = credentials
+          .map(CredentialUiMapper.toWalletCredential)
+          .toList(growable: false);
+    } else {
+      final assignedIds = uxData.credentialUx.entries
+          .where((entry) => entry.value.categoryIds.contains(category.id))
+          .map((entry) => entry.key)
+          .toSet();
 
-    final assignedCredentials = credentials
-        .where((record) => assignedIds.contains(record.id))
-        .map(CredentialUiMapper.toWalletCredential)
-        .toList(growable: false);
+      assignedCredentials = credentials
+          .where((record) => assignedIds.contains(record.id))
+          .map(CredentialUiMapper.toWalletCredential)
+          .toList(growable: false);
+    }
 
     return WalletCategory(
       id: category.id,
@@ -42,6 +50,7 @@ class CategoryMapper {
       iconIndex: category.iconIndex,
       colorArgb: category.colorArgb,
       credentials: assignedCredentials,
+      isSystem: isSystem,
     );
   }
 
@@ -64,24 +73,8 @@ class CategoryMapper {
         .toList(growable: false);
   }
 
-  /// Retorna los IDs de credenciales asignadas a [categoryId].
-  static Set<String> credentialIdsForCategory(
-    WalletUxData uxData,
-    String categoryId,
-  ) {
-    return uxData.credentialUx.entries
-        .where((entry) => entry.value.categoryIds.contains(categoryId))
-        .map((entry) => entry.key)
-        .toSet();
-  }
-
   /// Indica si [credentialId] está marcada como favorita en [uxData].
   static bool isFavorite(WalletUxData uxData, String credentialId) {
     return uxData.credentialUx[credentialId]?.isFavorite ?? false;
-  }
-
-  /// Retorna las preferencias UX de [credentialId]; vacías si no hay entrada.
-  static CredentialUxData uxFor(WalletUxData uxData, String credentialId) {
-    return uxData.credentialUx[credentialId] ?? const CredentialUxData();
   }
 }

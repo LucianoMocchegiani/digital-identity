@@ -26,6 +26,10 @@
 	<string>$(FLUTTER_BUILD_NUMBER)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Kuatia Wallet usa la cámara para escanear códigos QR de ofertas y presentaciones de credenciales.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Kuatia Wallet usa Face ID para desbloquear la wallet de forma segura.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

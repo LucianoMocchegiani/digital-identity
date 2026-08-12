@@ -4,29 +4,27 @@ import '../theme/kuatia_colors.dart';
 
 /// Índices de las pestañas del navbar inferior.
 enum IdentityNavTab {
-  /// Pestaña de credenciales (vista por defecto).
-  credentials,
+  /// Pestaña Inicio (vista por defecto).
+  home,
 
-  /// Pestaña de configuración.
-  configuration,
+  /// Pestaña Menú (hub: actividad, conexiones, ajustes, etc.).
+  menu,
 }
 
 /// Navbar inferior fijo de la app (componente `Nav`).
 ///
-/// Barra de panel Kuatia con borde superior, dos pestañas ([IdentityNavTab]) a los
-/// lados y un botón QR teal central que sobresale 8px hacia arriba. La
-/// pestaña indicada por [currentTab] muestra su ícono en la variante activa
-/// (seleccionada), con texto en negrita y opacidad completa; la otra usa la
-/// variante inactiva y queda atenuada.
+/// Barra de panel Kuatia con borde superior, dos pestañas ([IdentityNavTab]) a
+/// los lados (solo ícono) y un botón QR teal central que sobresale 8px. La
+/// pestaña [currentTab] usa el ícono activo (acento); la otra queda atenuada.
 ///
-/// [onCredentials] y [onConfiguration] responden al toque de cada pestaña, y
+/// [onHome] y [onMenu] responden al toque de cada pestaña, y
 /// [onScan] al del botón QR central.
 class IdentityBottomNav extends StatelessWidget {
   const IdentityBottomNav({
     super.key,
     required this.currentTab,
-    this.onCredentials,
-    this.onConfiguration,
+    this.onHome,
+    this.onMenu,
     this.onScan,
     this.showClose = false,
   });
@@ -34,11 +32,11 @@ class IdentityBottomNav extends StatelessWidget {
   /// Pestaña actualmente seleccionada.
   final IdentityNavTab currentTab;
 
-  /// Callback al tocar la pestaña Credenciales.
-  final VoidCallback? onCredentials;
+  /// Callback al tocar la pestaña Inicio.
+  final VoidCallback? onHome;
 
-  /// Callback al tocar la pestaña Configuración.
-  final VoidCallback? onConfiguration;
+  /// Callback al tocar la pestaña Menú.
+  final VoidCallback? onMenu;
 
   /// Callback al tocar el botón QR central.
   final VoidCallback? onScan;
@@ -78,20 +76,19 @@ class IdentityBottomNav extends StatelessWidget {
                   children: [
                     Expanded(
                       child: _NavItem(
-                        selectedIcon: 'public/images/icons/Folder.png',
-                        unselectedIcon: 'public/images/icons/Folder-Open.png',
-                        label: 'Credenciales',
-                        selected: currentTab == IdentityNavTab.credentials,
-                        onTap: onCredentials,
+                        icon: Icons.home_outlined,
+                        selectedIcon: Icons.home,
+                        semanticLabel: 'Inicio',
+                        selected: currentTab == IdentityNavTab.home,
+                        onTap: onHome,
                       ),
                     ),
                     Expanded(
                       child: _NavItem(
-                        selectedIcon: 'public/images/icons/Settings-pulse.png',
-                        unselectedIcon: 'public/images/icons/Settings.png',
-                        label: 'Configuración',
-                        selected: currentTab == IdentityNavTab.configuration,
-                        onTap: onConfiguration,
+                        icon: Icons.menu,
+                        semanticLabel: 'Menú',
+                        selected: currentTab == IdentityNavTab.menu,
+                        onTap: onMenu,
                       ),
                     ),
                   ],
@@ -112,28 +109,23 @@ class IdentityBottomNav extends StatelessWidget {
   }
 }
 
-/// Pestaña individual del navbar inferior (componente `Btn-Navbar`): ícono 24px
-/// y label de 10px.
-///
-/// Según [selected] muestra el ícono [selectedIcon] (variante azul) o
-/// [unselectedIcon] (variante blanca); además, seleccionada va a opacidad
-/// completa y en negrita, y sin seleccionar queda levemente atenuada (0.9).
+/// Pestaña del navbar: solo ícono 24px (el [semanticLabel] queda para a11y).
 class _NavItem extends StatelessWidget {
   const _NavItem({
-    required this.selectedIcon,
-    required this.unselectedIcon,
-    required this.label,
+    required this.icon,
+    this.selectedIcon,
+    required this.semanticLabel,
     required this.selected,
     this.onTap,
   });
 
-  /// Ícono cuando la pestaña está seleccionada (variante azul).
-  final String selectedIcon;
+  /// Ícono cuando la pestaña no está seleccionada.
+  final IconData icon;
 
-  /// Ícono cuando la pestaña no está seleccionada (variante blanca).
-  final String unselectedIcon;
+  /// Ícono cuando está seleccionada; si es null, se reutiliza [icon].
+  final IconData? selectedIcon;
 
-  final String label;
+  final String semanticLabel;
   final bool selected;
   final VoidCallback? onTap;
 
@@ -141,32 +133,20 @@ class _NavItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.kuatia;
     final iconColor = selected ? colors.accent : colors.muted;
-    final labelColor = selected ? colors.text : colors.muted;
 
-    return InkWell(
-      onTap: onTap,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Image.asset(
-            selected ? selectedIcon : unselectedIcon,
-            width: 24,
-            height: 24,
+    return Semantics(
+      button: true,
+      selected: selected,
+      label: semanticLabel,
+      child: InkWell(
+        onTap: onTap,
+        child: Center(
+          child: Icon(
+            selected ? (selectedIcon ?? icon) : icon,
+            size: 24,
             color: iconColor,
-            colorBlendMode: BlendMode.srcIn,
           ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 10,
-              height: 16 / 10,
-              fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
-              color: labelColor,
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

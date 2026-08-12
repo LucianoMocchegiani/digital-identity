@@ -4,9 +4,8 @@ import '../../credentials/models/wallet_credential.dart';
 
 /// Categoría del wallet mostrada en el panel desplegable de categorías.
 ///
-/// [iconAsset] es un badge circular (ya incluye su color de fondo). [rowColor]
-/// es el tinte de fondo de la fila ([accordion]). [credentials] son las
-/// credenciales asignadas; si está vacía, el acordeón muestra el estado vacío.
+/// [iconAsset] y [rowColor] definen el look del contenedor; [credentials] son
+/// las asignadas (o todas, si [isSystem]).
 @immutable
 class WalletCategory {
   const WalletCategory({
@@ -17,15 +16,16 @@ class WalletCategory {
     this.iconIndex,
     this.colorArgb,
     this.credentials = const [],
+    this.isSystem = false,
   });
 
   /// Identificador de [CategoryData.id]; `null` solo en instancias transitorias.
   final String? id;
 
-  /// Nombre de la categoría (ej. "Identidad").
+  /// Nombre de la categoría (ej. "Viajes").
   final String label;
 
-  /// Ruta del badge circular de la categoría.
+  /// Ruta del asset del ícono (línea o badge).
   final String iconAsset;
 
   /// Tinte de fondo de la fila.
@@ -39,6 +39,9 @@ class WalletCategory {
 
   /// Credenciales asignadas a la categoría.
   final List<WalletCredential> credentials;
+
+  /// Categoría de sistema (ej. "Todas las credenciales"): no se elimina ni edita.
+  final bool isSystem;
 
   /// Cantidad de credenciales en la categoría.
   int get itemCount => credentials.length;

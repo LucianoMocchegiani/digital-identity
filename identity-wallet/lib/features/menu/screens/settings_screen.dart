@@ -1,3 +1,4 @@
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -12,7 +13,7 @@ final _biometricsEnabledProvider = FutureProvider<bool>((ref) async {
   return value == 'true';
 });
 
-/// Ajustes: biometría + tema claro/oscuro.
+/// Ajustes: biometría, tema y permiso de cámara (vía ajustes del sistema).
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
 
@@ -38,6 +39,14 @@ class SettingsScreen extends ConsumerWidget {
               data: (enabled) => _BiometricsRow(
                 enabled: enabled,
                 onChanged: (value) => _toggleBiometrics(context, ref, value),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          IdentityCard(
+            child: _CameraPermissionRow(
+              onOpenSettings: () => AppSettings.openAppSettings(
+                type: AppSettingsType.settings,
               ),
             ),
           ),
@@ -184,6 +193,57 @@ class _BiometricsRow extends StatelessWidget {
             )
           else
             Switch(value: enabled, onChanged: onChanged),
+        ],
+      ),
+    );
+  }
+}
+
+class _CameraPermissionRow extends StatelessWidget {
+  const _CameraPermissionRow({required this.onOpenSettings});
+
+  final VoidCallback onOpenSettings;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.kuatia;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Icon(Icons.photo_camera_outlined, size: 22, color: colors.muted),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Permiso de cámara',
+                  style: TextStyle(
+                    fontSize: 16,
+                    height: 22 / 16,
+                    fontWeight: FontWeight.w600,
+                    color: colors.text,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  'Si la denegaste, activá Cámara en los ajustes del sistema',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 16 / 12,
+                    fontWeight: FontWeight.w400,
+                    color: colors.muted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: onOpenSettings,
+            child: const Text('Ajustes'),
+          ),
         ],
       ),
     );

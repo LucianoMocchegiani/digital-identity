@@ -46,4 +46,3 @@ export 'widgets/identity_error_modal.dart';
 export 'widgets/identity_top_bar.dart';
 export 'widgets/kuatia_atmosphere.dart';
 export 'widgets/kuatia_mark.dart';
-export 'widgets/staggered_slide_in.dart';

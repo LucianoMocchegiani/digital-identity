@@ -10,22 +10,21 @@ import '../constants/category_catalog.dart';
 import '../models/wallet_category.dart';
 import '../providers/categories_provider.dart';
 import 'category_created_modal.dart';
+import 'category_icon.dart';
 
-const Color _labelColor = Color(0xFF181D27);
+TextStyle get _labelStyle => TextStyle(
+      fontSize: 14,
+      height: 18 / 14,
+      fontWeight: FontWeight.w500,
+      color: AppColors.textNeutralPrimary,
+    );
 
-final TextStyle _labelStyle = TextStyle(
-  fontSize: 14,
-  height: 18 / 14,
-  fontWeight: FontWeight.w500,
-  color: _labelColor,
-);
-
-final TextStyle _placeholderStyle = TextStyle(
-  fontSize: 14,
-  height: 18 / 14,
-  fontWeight: FontWeight.w400,
-  color: AppColors.textNeutralSecondary,
-);
+TextStyle get _placeholderStyle => TextStyle(
+      fontSize: 14,
+      height: 18 / 14,
+      fontWeight: FontWeight.w400,
+      color: AppColors.textNeutralSecondary,
+    );
 
 const List<BoxShadow> _shadowXs = [
   BoxShadow(
@@ -141,6 +140,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
   @override
   void initState() {
     super.initState();
+    _nameController.addListener(() => setState(() {}));
     // En edición, precarga las credenciales ya asignadas a la categoría.
     final id = widget.categoryId;
     if (id != null) {
@@ -258,7 +258,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
   /// Pide confirmación y elimina la categoría en edición.
   Future<void> _onDelete() async {
     final id = widget.categoryId;
-    if (id == null) return;
+    if (id == null || isSystemCategoryId(id)) return;
     final confirmed = await IdentityConfirmModal.show(
       context,
       title: 'Eliminar categoría',
@@ -290,7 +290,7 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           clipBehavior: Clip.antiAlias,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
-            side: BorderSide(color: Color(0xFFF1F1F1)),
+            side: BorderSide(color: AppColors.borderNeutral),
           ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
@@ -358,6 +358,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          _buildLivePreview(),
+          const SizedBox(height: 12),
           _buildNameInput(),
           SizedBox(height: 12),
           _buildIconSelector(),
@@ -368,6 +370,46 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
           SizedBox(height: 12),
           // Pie: "Crear" (creación) o "Eliminar" + "Guardar" (edición).
           if (widget.isEditing) _buildEditButtons() else _buildCreateButton(),
+        ],
+      ),
+    );
+  }
+
+  /// Vista previa en vivo (ícono + color + nombre) como en el panel.
+  Widget _buildLivePreview() {
+    final colors = context.kuatia;
+    final name = _nameController.text.trim();
+    final colorArgb = _colorArgbToSave;
+    final iconAsset = categoryIconAssetForIndex(_iconIndexToSave);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: categoryRowColor(colorArgb),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: colors.border),
+      ),
+      child: Row(
+        children: [
+          CategoryIcon(
+            asset: iconAsset,
+            colorArgb: colorArgb,
+            size: 35,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              name.isEmpty ? 'Vista previa' : name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 16,
+                height: 22 / 16,
+                fontWeight: FontWeight.w600,
+                color: name.isEmpty ? colors.muted : colors.text,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -505,13 +547,20 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
         ),
         child: Opacity(
           // Seleccionado a opacidad plena; el resto atenuado.
-          opacity: selected ? 1 : 0.3,
+          opacity: selected ? 1 : 0.45,
           child: Image.asset(
             asset,
             width: 24,
             height: 24,
-            color: selected ? AppColors.accentBlue : const Color(0xFF1C274C),
-            colorBlendMode: BlendMode.srcIn,
+            // Badges ya pintados no se tintan; los íconos de línea sí.
+            color: asset.contains('/categorias/')
+                ? null
+                : (selected
+                    ? AppColors.accentBlue
+                    : AppColors.textNeutralPrimary),
+            colorBlendMode: asset.contains('/categorias/')
+                ? null
+                : BlendMode.srcIn,
           ),
         ),
       ),
@@ -561,6 +610,8 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
               'public/images/icons/Question Circle.png',
               width: 16,
               height: 16,
+              color: AppColors.textNeutralSecondary,
+              colorBlendMode: BlendMode.srcIn,
             ),
           ],
         ),
@@ -804,16 +855,18 @@ class _CategoryCreationModalState extends ConsumerState<CategoryCreationModal> {
 
   /// Pie de edición: "Eliminar" (destructivo) + "Guardar".
   Widget _buildEditButtons() {
+    final canDelete = !isSystemCategoryId(widget.categoryId);
     return Row(
       children: [
-        // Eliminar (rojo suave).
-        Expanded(
-          child: IdentityDangerButton(
-            label: 'Eliminar',
-            onTap: _saving ? null : _onDelete,
+        if (canDelete) ...[
+          Expanded(
+            child: IdentityDangerButton(
+              label: 'Eliminar',
+              onTap: _saving ? null : _onDelete,
+            ),
           ),
-        ),
-        SizedBox(width: 12),
+          const SizedBox(width: 12),
+        ],
         // Guardar (primario).
         Expanded(
           child: GestureDetector(

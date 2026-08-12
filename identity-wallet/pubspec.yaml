@@ -42,8 +42,12 @@ dependencies:
   # Tipografía Manrope del design system (descarga/cachea las fuentes en runtime)
   google_fonts: ^6.2.1
 
-  # Browser in-app para OID4VCI authorization_code (issuer EUDI)
+  # Browser in-app para OID4VCI authorization_code (issuer EUDI) y player YouTube
   webview_flutter: ^4.10.0
+  app_settings: ^8.0.3
+
+  # Abrir links externos (novedades / YouTube)
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

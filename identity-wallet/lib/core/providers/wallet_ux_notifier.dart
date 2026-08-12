@@ -33,8 +33,8 @@ String _newCategoryId() {
 /// - Al bloquear/desbloquear invalida su estado automáticamente.
 ///
 /// **Consumo recomendado**
-/// - Lectura: [categoryDataListProvider], [walletCategoriesProvider],
-///   [credentialUxMapProvider], [filteredCredentialRecordsProvider].
+/// - Lectura: [walletCategoriesProvider], [credentialUxMapProvider],
+///   [isCredentialFavoriteProvider].
 /// - Escritura: métodos públicos de esta clase vía
 ///   [walletUxNotifierProvider.notifier] o los atajos
 ///   [categoriesNotifierProvider] / [credentialUxNotifierProvider].
@@ -64,29 +64,59 @@ class WalletUxNotifier extends AsyncNotifier<WalletUxData> {
     return _seedDefaultsIfNeeded(loaded);
   }
 
-  /// Siembra las categorías por defecto la primera vez (ej. "Identidad").
-  ///
-  /// Solo actúa si [WalletUxData.seededDefaults] es `false`, de modo que un
-  /// default borrado por el usuario no reaparezca. Persiste el resultado.
+  /// Asegura la categoría de sistema "Todas las credenciales" y limpia el
+  /// default legacy "Identidad" (ya no se crea solo).
   Future<WalletUxData> _seedDefaultsIfNeeded(WalletUxData data) async {
-    if (data.seededDefaults) return data;
+    var categories = [...data.categories];
+    var credentialUx = data.credentialUx;
+    var changed = false;
 
-    final identidad = CategoryData(
-      id: _newCategoryId(),
-      label: 'Identidad',
-      iconIndex: kIdentityIconIndex,
-      colorArgb: kCategoryColors[0].toARGB32(),
-      sortOrder: data.categories.length,
-      createdAt: DateTime.now().toUtc(),
-    );
+    final legacyIds = categories
+        .where(_isLegacyDefaultIdentidad)
+        .map((c) => c.id)
+        .toSet();
+    if (legacyIds.isNotEmpty) {
+      categories =
+          categories.where((c) => !legacyIds.contains(c.id)).toList();
+      for (final id in legacyIds) {
+        credentialUx = _removeCategoryFromCredentialUx(
+          credentialUx,
+          categoryId: id,
+        );
+      }
+      changed = true;
+    }
+
+    if (!categories.any((c) => isSystemCategoryId(c.id))) {
+      final allCredentials = CategoryData(
+        id: kAllCredentialsCategoryId,
+        label: kAllCredentialsCategoryLabel,
+        iconIndex: kAllCredentialsIconIndex,
+        colorArgb: kCategoryColors[5].toARGB32(),
+        sortOrder: -1,
+        createdAt: DateTime.now().toUtc(),
+      );
+      categories = [allCredentials, ...categories];
+      changed = true;
+    }
+
+    if (!changed && data.seededDefaults) return data;
 
     final seeded = data.copyWith(
-      categories: [...data.categories, identidad],
+      categories: categories,
+      credentialUx: credentialUx,
       seededDefaults: true,
     );
 
     await _repository?.save(seeded);
     return seeded;
+  }
+
+  /// Default viejo sembrado como "Identidad" (ícono + color fijos del seed).
+  bool _isLegacyDefaultIdentidad(CategoryData category) {
+    return category.label == 'Identidad' &&
+        category.iconIndex == kIdentityIconIndex &&
+        category.colorArgb == kCategoryColors[0].toARGB32();
   }
 
   /// Actualiza el estado en memoria y persiste en disco.
@@ -167,7 +197,11 @@ class WalletUxNotifier extends AsyncNotifier<WalletUxData> {
   }
 
   /// Elimina una categoría y quita su ID de todas las asignaciones.
+  ///
+  /// No-op si [id] es la categoría de sistema [kAllCredentialsCategoryId].
   Future<void> deleteCategory(String id) async {
+    if (isSystemCategoryId(id)) return;
+
     final categories =
         _current.categories.where((c) => c.id != id).toList(growable: false);
 
@@ -194,56 +228,14 @@ class WalletUxNotifier extends AsyncNotifier<WalletUxData> {
         .toSet();
   }
 
-  // — Favoritas y asignación directa —
+  // — Favoritas —
 
-  /// Alterna si [credentialId] es favorita.
+  /// Alterna si [credentialId] es favorita (flujos OID4VP / DIDComm).
   Future<void> toggleFavorite(String credentialId) async {
     final ux = _uxFor(credentialId);
     await _setUx(
       credentialId,
       ux.copyWith(isFavorite: !ux.isFavorite),
-    );
-  }
-
-  /// Establece explícitamente si [credentialId] es favorita.
-  ///
-  /// No hace nada si el valor ya coincide (evita escrituras innecesarias).
-  Future<void> setFavorite(String credentialId, bool isFavorite) async {
-    final ux = _uxFor(credentialId);
-    if (ux.isFavorite == isFavorite) return;
-    await _setUx(credentialId, ux.copyWith(isFavorite: isFavorite));
-  }
-
-  /// Reemplaza por completo las categorías de [credentialId].
-  Future<void> assignCategories(
-    String credentialId,
-    List<String> categoryIds,
-  ) async {
-    final normalized = categoryIds.toSet().toList(growable: false);
-    final ux = _uxFor(credentialId);
-    await _setUx(credentialId, ux.copyWith(categoryIds: normalized));
-  }
-
-  /// Agrega [credentialId] a [categoryId] sin duplicar.
-  Future<void> addToCategory(String credentialId, String categoryId) async {
-    final ux = _uxFor(credentialId);
-    if (ux.categoryIds.contains(categoryId)) return;
-    await _setUx(
-      credentialId,
-      ux.copyWith(categoryIds: [...ux.categoryIds, categoryId]),
-    );
-  }
-
-  /// Quita [credentialId] de [categoryId].
-  Future<void> removeFromCategory(String credentialId, String categoryId) async {
-    final ux = _uxFor(credentialId);
-    if (!ux.categoryIds.contains(categoryId)) return;
-    await _setUx(
-      credentialId,
-      ux.copyWith(
-        categoryIds:
-            ux.categoryIds.where((id) => id != categoryId).toList(growable: false),
-      ),
     );
   }
 
@@ -255,18 +247,6 @@ class WalletUxNotifier extends AsyncNotifier<WalletUxData> {
     if (!_current.credentialUx.containsKey(credentialId)) return;
     final credentialUx = Map<String, CredentialUxData>.from(_current.credentialUx)
       ..remove(credentialId);
-    await _persist(_current.copyWith(credentialUx: credentialUx));
-  }
-
-  /// Elimina entradas UX cuyos IDs ya no existen en [CredentialRecordStore].
-  ///
-  /// [validCredentialIds] debe ser el conjunto actual de `CredentialRecord.id`
-  /// emitido por [credentialsProvider].
-  Future<void> purgeOrphanCredentials(Set<String> validCredentialIds) async {
-    final credentialUx = Map<String, CredentialUxData>.from(_current.credentialUx)
-      ..removeWhere((id, _) => !validCredentialIds.contains(id));
-
-    if (credentialUx.length == _current.credentialUx.length) return;
     await _persist(_current.copyWith(credentialUx: credentialUx));
   }
 

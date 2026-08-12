@@ -82,7 +82,6 @@ class CredentialFieldsView extends StatelessWidget {
           credential: credential,
           // Los datos se listan como filas debajo: la tarjeta no los duplica.
           showExpandToggle: false,
-          showFavoriteToggle: false,
         ),
         const SizedBox(height: 20),
         for (final field in issuerFields)

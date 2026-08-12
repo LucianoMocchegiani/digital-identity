@@ -1,4 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-feature android:name="android.hardware.camera" android:required="false"/>
+
     <!-- Wallet SSI: nunca respaldar/restaurar datos (el salt de la wallet vive
          en flutter_secure_storage). allowBackup=false evita que Auto Backup / D2D
          reviva la wallet tras desinstalar o limpiar datos. -->
@@ -66,6 +70,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- url_launcher: abrir https (novedades / YouTube) -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

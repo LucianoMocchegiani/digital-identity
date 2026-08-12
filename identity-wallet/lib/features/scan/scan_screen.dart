@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:app_settings/app_settings.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -37,8 +40,20 @@ class ScanScreen extends ConsumerStatefulWidget {
 }
 
 /// Estado del escáner: evita dobles navegaciones tras el primer QR válido.
-class _ScanScreenState extends ConsumerState<ScanScreen> {
+class _ScanScreenState extends ConsumerState<ScanScreen>
+    with WidgetsBindingObserver {
   bool _handled = false;
+
+  /// Controller propio: con controller externo, [MobileScanner] **no** hace
+  /// stop/start en `inactive`/`resumed` (eso reiniciaba el pedido de permiso
+  /// y titilaba "Necesitamos la cámara" tras tocar No permitir).
+  MobileScannerController? _controller;
+
+  /// Pantalla fija de permiso/error; el scanner no vuelve a montarse solo.
+  bool _cameraBlocked = false;
+  String _blockMessage =
+      'Para escanear QR, activá el permiso de cámara en los ajustes del sistema.';
+  bool _awaitingSettingsReturn = false;
 
   ScanFeedback _feedback = ScanFeedback.idle;
   ScanError _error = ScanError.qrInvalido;
@@ -52,6 +67,66 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
   static const double _windowSize = 256;
   static const double _windowRadius = 24;
   static const double _minCodeWidthFraction = 0.15;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _createController();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _disposeController();
+    super.dispose();
+  }
+
+  void _createController() {
+    final controller = MobileScannerController();
+    controller.addListener(_onControllerUpdate);
+    _controller = controller;
+  }
+
+  void _disposeController() {
+    final controller = _controller;
+    if (controller == null) return;
+    controller.removeListener(_onControllerUpdate);
+    _controller = null;
+    unawaited(controller.dispose());
+  }
+
+  void _onControllerUpdate() {
+    final controller = _controller;
+    if (controller == null || _cameraBlocked) return;
+    final error = controller.value.error;
+    if (error == null) return;
+
+    final denied = error.errorCode == MobileScannerErrorCode.permissionDenied;
+    setState(() {
+      _cameraBlocked = true;
+      _blockMessage = denied
+          ? 'Para escanear QR, activá el permiso de cámara en los ajustes del sistema.'
+          : 'No se pudo iniciar la cámara.';
+    });
+    // Sacamos el scanner del árbol en este frame; dispose del controller después.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _disposeController();
+    });
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !_awaitingSettingsReturn) return;
+    _awaitingSettingsReturn = false;
+    _retryCamera();
+  }
+
+  void _retryCamera() {
+    _disposeController();
+    _createController();
+    setState(() => _cameraBlocked = false);
+  }
 
   void _onDetect(BarcodeCapture capture) {
     if (_handled) return;
@@ -115,42 +190,65 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
     return codeWidth / frameWidth < _minCodeWidthFraction;
   }
 
+  Future<void> _openSystemSettings() async {
+    _awaitingSettingsReturn = true;
+    await AppSettings.openAppSettings(type: AppSettingsType.settings);
+  }
+
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final showScanner = !_cameraBlocked && controller != null;
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          Positioned.fill(child: MobileScanner(onDetect: _onDetect)),
-          const Positioned.fill(
-            child: CustomPaint(
-              painter: _ScanOverlayPainter(
-                windowSize: _windowSize,
-                windowRadius: _windowRadius,
-              ),
-            ),
+          Positioned.fill(
+            child: showScanner
+                ? MobileScanner(
+                    controller: controller,
+                    onDetect: _onDetect,
+                    errorBuilder: (context, error, child) =>
+                        const ColoredBox(color: Colors.black),
+                  )
+                : _CameraPermissionGate(
+                    message: _blockMessage,
+                    onOpenSettings: _openSystemSettings,
+                    onRetry: _retryCamera,
+                  ),
           ),
-          Center(
-            child: SizedBox(
-              width: _windowSize,
-              height: _windowSize,
+          if (showScanner) ...[
+            const Positioned.fill(
               child: CustomPaint(
-                painter: _ScanCornersPainter(
-                  color: _frameColor,
-                  radius: _windowRadius,
+                painter: _ScanOverlayPainter(
+                  windowSize: _windowSize,
+                  windowRadius: _windowRadius,
                 ),
               ),
             ),
-          ),
-          if (_feedback != ScanFeedback.idle)
-            Align(
-              alignment: const Alignment(0, -0.42),
-              child: _ScanFeedbackBadge(feedback: _feedback, error: _error),
+            Center(
+              child: SizedBox(
+                width: _windowSize,
+                height: _windowSize,
+                child: CustomPaint(
+                  painter: _ScanCornersPainter(
+                    color: _frameColor,
+                    radius: _windowRadius,
+                  ),
+                ),
+              ),
             ),
-          const Align(
-            alignment: Alignment(0, 0.62),
-            child: _ScanHint(),
-          ),
+            if (_feedback != ScanFeedback.idle)
+              Align(
+                alignment: const Alignment(0, -0.42),
+                child: _ScanFeedbackBadge(feedback: _feedback, error: _error),
+              ),
+            const Align(
+              alignment: Alignment(0, 0.62),
+              child: _ScanHint(),
+            ),
+          ],
           SafeArea(
             child: Align(
               alignment: Alignment.topLeft,
@@ -161,6 +259,73 @@ class _ScanScreenState extends ConsumerState<ScanScreen> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Pantalla de bloqueo cuando el permiso de cámara no está concedido.
+class _CameraPermissionGate extends StatelessWidget {
+  const _CameraPermissionGate({
+    required this.message,
+    required this.onOpenSettings,
+    required this.onRetry,
+  });
+
+  final String message;
+  final VoidCallback onOpenSettings;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = context.kuatia;
+    return ColoredBox(
+      color: colors.bg,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.photo_camera_outlined,
+                size: 48,
+                color: colors.muted,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Necesitamos la cámara',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  height: 24 / 18,
+                  fontWeight: FontWeight.w600,
+                  color: colors.text,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 20 / 14,
+                  color: colors.muted,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton(
+                onPressed: onOpenSettings,
+                child: const Text('Abrir ajustes'),
+              ),
+              const SizedBox(height: 8),
+              TextButton(
+                onPressed: onRetry,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -9,7 +9,7 @@ Widget _wrap(Widget child) => MaterialApp(
 void main() {
   testWidgets('muestra el icono QR cuando showClose es false', (tester) async {
     await tester.pumpWidget(_wrap(
-      const IdentityBottomNav(currentTab: IdentityNavTab.credentials),
+      const IdentityBottomNav(currentTab: IdentityNavTab.home),
     ));
     final qr = tester.widget<Image>(
       find.byKey(const ValueKey('navCenterIcon')),
@@ -20,7 +20,7 @@ void main() {
   testWidgets('muestra la cruz cuando showClose es true', (tester) async {
     await tester.pumpWidget(_wrap(
       const IdentityBottomNav(
-        currentTab: IdentityNavTab.credentials,
+        currentTab: IdentityNavTab.home,
         showClose: true,
       ),
     ));

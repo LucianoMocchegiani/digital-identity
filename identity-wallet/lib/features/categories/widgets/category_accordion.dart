@@ -2,32 +2,24 @@ import 'package:flutter/material.dart';
 
 import '../../../shared/identity_shared.dart';
 import '../../credentials/models/wallet_credential.dart';
-import '../../credentials/widgets/credential_logo.dart';
+import '../../credentials/widgets/credential_card.dart';
 import '../models/wallet_category.dart';
 import 'category_creation_modal.dart';
+import 'category_icon.dart';
 
-/// Fila expandible de categoría del panel de categorías (componente `Accordion`).
+/// Contenedor expandible de categoría del panel.
 ///
-/// **Colapsada**: badge de [category], nombre, subtítulo ("N items") y el ojo.
-/// **Expandida**: muestra el nombre con acciones (editar / colapsar) y, si la
-/// categoría está vacía, una ilustración con el mensaje "Esta categoría está
-/// vacía". [onEdit] responde al lápiz.
-///
-/// El ojo es el mismo [IdentityEyeToggle] de la tarjeta de credencial, para que
-/// mostrar y ocultar contenido use un único gesto en toda la app.
+/// Colapsada: ícono, nombre, subtítulo y ojo. Expandida: editar (si no es
+/// sistema), colapsar, y las [CredentialCard] o estado vacío.
 class CategoryAccordion extends StatefulWidget {
   const CategoryAccordion({
     super.key,
     required this.category,
-    this.onEdit,
     this.onCredentialTap,
   });
 
   /// Categoría a representar.
   final WalletCategory category;
-
-  /// Callback al tocar el lápiz (editar).
-  final VoidCallback? onEdit;
 
   /// Callback al tocar una credencial de la lista (abre su detalle).
   final void Function(WalletCredential credential)? onCredentialTap;
@@ -41,61 +33,63 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.kuatia;
     final radius = BorderRadius.circular(12);
 
     return Material(
       color: widget.category.rowColor,
       borderRadius: radius,
       child: InkWell(
-        // Colapsada: toca para expandir. Expandida: el cierre lo maneja la X.
+        // Colapsada: toca para expandir. Expandida: el cierre lo maneja el ojo.
         onTap: _expanded ? null : () => setState(() => _expanded = true),
         borderRadius: radius,
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           decoration: BoxDecoration(
             borderRadius: radius,
-            border: Border.all(color: AppColors.borderNeutral),
+            border: Border.all(color: colors.border),
           ),
           child: AnimatedSize(
             duration: const Duration(milliseconds: 200),
             alignment: Alignment.topCenter,
-            child: _expanded ? _buildExpanded() : _buildCollapsed(),
+            child: _expanded ? _buildExpanded(colors) : _buildCollapsed(colors),
           ),
         ),
       ),
     );
   }
 
-  /// Estado colapsado: badge + nombre + subtítulo + chevron.
-  Widget _buildCollapsed() {
+  /// Estado colapsado: badge + nombre + subtítulo + ojo.
+  Widget _buildCollapsed(KuatiaColors colors) {
     final category = widget.category;
     return Row(
       children: [
-        Image.asset(category.iconAsset, width: 35, height: 35),
-        SizedBox(width: 12),
+        CategoryIcon(
+          asset: category.iconAsset,
+          colorArgb: category.colorArgb,
+          size: 35,
+        ),
+        const SizedBox(width: 12),
         Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(category.label, style: _titleStyle),
-              SizedBox(height: 2),
+              Text(category.label, style: _titleStyle(colors)),
+              const SizedBox(height: 2),
               Text(
                 category.subtitle,
-                // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
                 style: TextStyle(
                   fontSize: 14,
                   height: 18 / 14,
                   fontWeight: FontWeight.w500,
-                  color: AppColors.textNeutralSecondary,
+                  color: colors.muted,
                 ),
               ),
             ],
           ),
         ),
-        SizedBox(width: 12),
-        // Mismo ojo que la tarjeta de credencial: expandir y colapsar se ven
-        // igual en toda la app.
+        const SizedBox(width: 12),
         IdentityEyeToggle(
           expanded: false,
           onTap: () => setState(() => _expanded = true),
@@ -104,15 +98,12 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     );
   }
 
-  /// Estado expandido: nombre + acciones (editar / cerrar) e ilustración vacía.
-  Widget _buildExpanded() {
+  /// Estado expandido: nombre + acciones e cards / vacío.
+  Widget _buildExpanded(KuatiaColors colors) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Head: nombre + botones (lápiz / cerrar).
-        // Sin alto fijo: se adapta al texto cuando la fuente del sistema es
-        // mayor; los íconos quedan centrados respecto del título.
         Row(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -121,120 +112,56 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
                 widget.category.label,
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
-                style: _titleStyle,
+                style: _titleStyle(colors),
               ),
             ),
-            SizedBox(width: 8),
-            _HeadIcon(
-              asset: 'public/images/icons/Pen.png',
-              onTap: widget.onEdit ??
-                  () => CategoryCreationModal.showEdit(
-                        context,
-                        category: widget.category,
-                      ),
-            ),
-            SizedBox(width: 8),
+            const SizedBox(width: 8),
+            if (!widget.category.isSystem) ...[
+              _HeadIcon(
+                asset: 'public/images/icons/Pen.png',
+                color: colors.muted,
+                onTap: () => CategoryCreationModal.showEdit(
+                  context,
+                  category: widget.category,
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
             IdentityEyeToggle(
               expanded: true,
               onTap: () => setState(() => _expanded = false),
             ),
           ],
         ),
-        SizedBox(height: 12),
-        // Con credenciales: lista de filas. Sin credenciales: estado vacío.
+        const SizedBox(height: 12),
         if (widget.category.credentials.isEmpty)
-          _buildEmptyState()
+          _buildEmptyState(colors)
         else
-          _buildCredentialList(),
+          _buildCredentialCards(),
       ],
     );
   }
 
-  /// Lista de credenciales asignadas (componente `Institución-group`).
-  Widget _buildCredentialList() {
+  /// Cards de credencial dentro del contenedor de categoría.
+  Widget _buildCredentialCards() {
     final credentials = widget.category.credentials;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         for (var i = 0; i < credentials.length; i++)
           Padding(
-            padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-            child: GestureDetector(
+            padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
+            child: CredentialCard(
+              credential: credentials[i],
               onTap: () => widget.onCredentialTap?.call(credentials[i]),
-              behavior: HitTestBehavior.opaque,
-              child: _buildCredentialRow(credentials[i]),
             ),
           ),
       ],
     );
   }
 
-  /// Fila de una credencial dentro del acordeón (logo + datos + flecha).
-  ///
-  /// Sin alto fijo: la fila se ajusta a su contenido para no desbordar cuando
-  /// el sistema usa un tamaño de fuente mayor (`textScaleFactor` alto) o en
-  /// pantallas de menor densidad.
-  Widget _buildCredentialRow(WalletCredential credential) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Expanded(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              CredentialLogo(
-                logoUrl: credential.logoUrl,
-                size: 35,
-                radius: 8,
-                borderColor: AppColors.borderNeutral,
-              ),
-              SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      credential.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: _titleStyle,
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      credential.issuer,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
-                      style: TextStyle(
-                        fontSize: 14,
-                        height: 18 / 14,
-                        fontWeight: FontWeight.w500,
-                        color: AppColors.textNeutralSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-        SizedBox(width: 13),
-        // Chevron de detalle: mismo ícono vectorial y gris que el de la
-        // categoría colapsada, para que todos los íconos queden en sintonía.
-        // (El asset PNG de flecha tiene un trazo muy fino y se veía más claro
-        // pese al mismo color.)
-        Icon(
-          Icons.chevron_right,
-          size: 24,
-          color: AppColors.textNeutralSecondary,
-        ),
-      ],
-    );
-  }
-
-  /// Estado vacío: ilustración + mensaje "Esta categoría está vacía".
-  Widget _buildEmptyState() {
+  /// Estado vacío: ilustración + mensaje.
+  Widget _buildEmptyState(KuatiaColors colors) {
     return SizedBox(
       width: double.infinity,
       child: Column(
@@ -246,18 +173,17 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
             height: 74.53,
             fit: BoxFit.contain,
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Text(
             'Esta categoría está vacía',
-            // TODO: aplicar la familia 'Manrope' al definir la tipografía global.
             style: TextStyle(
               fontSize: 14,
               height: 18 / 14,
               fontWeight: FontWeight.w600,
-              color: AppColors.textNeutralSecondary,
+              color: colors.muted,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             'Todavía no hay credenciales asignadas.',
             textAlign: TextAlign.center,
@@ -265,7 +191,7 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
               fontSize: 12,
               height: 16 / 12,
               fontWeight: FontWeight.w400,
-              color: AppColors.textNeutralSecondary,
+              color: colors.muted,
             ),
           ),
         ],
@@ -273,19 +199,20 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     );
   }
 
-  static TextStyle get _titleStyle => TextStyle(
-    fontSize: 16,
-    height: 22 / 16,
-    fontWeight: FontWeight.w600,
-    color: AppColors.textNeutralPrimary,
-  );
+  TextStyle _titleStyle(KuatiaColors colors) => TextStyle(
+        fontSize: 16,
+        height: 22 / 16,
+        fontWeight: FontWeight.w600,
+        color: colors.text,
+      );
 }
 
-/// Ícono de acción del head (lápiz / cerrar): 24px, gris secundario.
+/// Ícono de acción del head (lápiz): 24px, color del tema.
 class _HeadIcon extends StatelessWidget {
-  const _HeadIcon({required this.asset, this.onTap});
+  const _HeadIcon({required this.asset, required this.color, this.onTap});
 
   final String asset;
+  final Color color;
   final VoidCallback? onTap;
 
   @override
@@ -297,7 +224,7 @@ class _HeadIcon extends StatelessWidget {
         asset,
         width: 24,
         height: 24,
-        color: AppColors.textNeutralSecondary,
+        color: color,
         colorBlendMode: BlendMode.srcIn,
       ),
     );

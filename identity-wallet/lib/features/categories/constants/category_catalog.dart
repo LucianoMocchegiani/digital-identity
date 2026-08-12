@@ -14,10 +14,25 @@ const List<String> kCategoryIconAssets = [
   'public/images/icons/Basketball.png',
   'public/images/icons/Home.png',
   'public/images/categorias/identidad-category.png',
+  'public/images/icons/credenciales.png',
 ];
 
 /// Índice en [kCategoryIconAssets] del ícono de la categoría "Identidad".
 const int kIdentityIconIndex = 5;
+
+/// Índice del ícono de la categoría de sistema "Todas las credenciales".
+const int kAllCredentialsIconIndex = 6;
+
+/// ID fijo de la categoría de sistema que agrupa todas las credenciales.
+///
+/// No se puede eliminar. El contenido se resuelve en el mapper (todas las del SDK).
+const String kAllCredentialsCategoryId = 'system-all-credentials';
+
+/// Nombre visible de la categoría de sistema.
+const String kAllCredentialsCategoryLabel = 'Todas las credenciales';
+
+/// Indica si [id] es la categoría de sistema protegida.
+bool isSystemCategoryId(String? id) => id == kAllCredentialsCategoryId;
 
 /// Paleta de colores seleccionables (orden = índice persistido como ARGB entero).
 const List<Color> kCategoryColors = [

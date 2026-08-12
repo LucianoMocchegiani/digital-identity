@@ -62,8 +62,8 @@ Hoy:
 
 La app usa **cámara** (QR) y **biometría** (`local_auth`). En iOS hace falta declaration + usage description o App Review rechaza.
 
-- [ ] iOS `Info.plist`: `NSCameraUsageDescription` (escaneo de códigos / ofertas).
-- [ ] iOS: `NSFaceIDUsageDescription` (desbloqueo de la wallet).
+- [x] iOS `Info.plist`: `NSCameraUsageDescription` (escaneo de códigos / ofertas).
+- [x] iOS: `NSFaceIDUsageDescription` (desbloqueo de la wallet).
 - [ ] Android: revisar `CAMERA` / biometría declarados por plugins; no pedir permisos de más.
 - [ ] Copy en español (y EN si listing bilingüe): claro, sin jerga SSI innecesaria.
 - [ ] Documentar en notas de review *por qué* cámara y biometría.
@@ -152,6 +152,10 @@ Checklist mínimo antes del primer submit:
 - [ ] Métricas de adopción store; respuesta a reviews.
 - [ ] Roadmap producto wallet (backup social, multi-device, etc.) **fuera** del MVP store.
 - [ ] Mejorar diseño de **categorías** (panel home, chips, creación/edición; alinear a tema Kuatia light/dark).
+  - Parcial: contenedor con `CredentialCard` adentro + íconos del modal edit visibles en dark.
+  - Parcial: panel renombrado a **Credenciales**; sin Favoritas ni listado plano; lupa + crear categoría en el panel.
+- [x] **Feed de Inicio** (sliders hero Guías / Novedades / Eventos): UI + seed estático tipado + player YouTube embebido / links externos.
+- [ ] **Diseñar e implementar sistema para cargar contenido a los sliders** del feed (CMS/API o panel admin): altas/edición de secciones e ítems (título, imagen, chip, YouTube o URL), sin release de app; el provider del wallet ya está listo para enchufar remoto + fallback al seed.
 
 ---
 

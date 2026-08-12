@@ -11,7 +11,7 @@ import 'credential_ux_data.dart';
 /// ```json
 /// {
 ///   "version": 1,
-///   "categories": [ { "id": "...", "label": "Identidad", ... } ],
+///   "categories": [ { "id": "...", "label": "Viajes", ... } ],
 ///   "credentialUx": {
 ///     "sd-jwt-vc-abc": { "isFavorite": true, "categoryIds": ["cat-1"] }
 ///   }
@@ -37,9 +37,10 @@ class WalletUxData {
   /// Preferencias por credencial, indexadas por [CredentialRecord.id].
   final Map<String, CredentialUxData> credentialUx;
 
-  /// Indica si ya se sembraron las categorías por defecto (ej. "Identidad").
+  /// Indica si ya se sembraron defaults de categorías.
   ///
-  /// Evita que un default reaparezca tras ser borrado por el usuario.
+  /// Hoy solo asegura "Todas las credenciales"; el viejo default "Identidad"
+  /// se elimina en migración y no vuelve a crearse.
   final bool seededDefaults;
 
   /// Estado vacío usado antes del primer guardado o con wallet bloqueada.

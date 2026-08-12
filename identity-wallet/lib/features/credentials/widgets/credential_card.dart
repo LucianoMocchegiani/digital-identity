@@ -22,7 +22,7 @@ class CredentialCard extends ConsumerStatefulWidget {
     this.labeledClaims = const [],
     this.initiallyExpanded = false,
     this.showExpandToggle = true,
-    this.showFavoriteToggle = true,
+    this.showFavoriteToggle = false,
     this.onTap,
   });
 
@@ -55,6 +55,10 @@ class CredentialCard extends ConsumerStatefulWidget {
 
 /// Cuánto se mete la superficie del panel por debajo de la tarjeta.
 const double _panelOverlap = 16;
+
+/// Inset horizontal del panel (= radio de la card) para alinear con el arranque
+/// del redondeo y centrarlo respecto a la tarjeta.
+const double _panelInset = 16;
 
 class _CredentialCardState extends ConsumerState<CredentialCard> {
   late bool _showDetails = widget.initiallyExpanded;
@@ -139,6 +143,7 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
 
   /// Contenedor propio de claims que asoma desde atrás de la tarjeta.
   Widget _buildDetailsPanel() {
+    final colors = context.kuatia;
     final rows = widget.labeledClaims.isNotEmpty
         ? widget.labeledClaims
         : [
@@ -152,41 +157,42 @@ class _CredentialCardState extends ConsumerState<CredentialCard> {
               ),
           ];
 
-    return Stack(
-      clipBehavior: Clip.none,
-      children: [
-        // La superficie arranca por encima del contenido para meterse debajo de
-        // la tarjeta: su borde y sus esquinas superiores nunca se ven. Ocupa
-        // solo el alto del contenido, así el bloque no gana espacio abajo.
-        Positioned(
-          top: -_panelOverlap,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              color: AppColors.panel,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.borderNeutral),
-              boxShadow: const [kShadowXs],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: _panelInset),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          // La superficie arranca por encima del contenido para meterse debajo
+          // de la tarjeta: su borde y sus esquinas superiores nunca se ven.
+          Positioned(
+            top: -_panelOverlap,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                color: colors.bg,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: colors.border),
+              ),
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (final claim in rows)
-                SheetFieldRow(
-                  label: claim.label,
-                  value: _formatValue(claim.value),
-                ),
-            ],
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (final claim in rows)
+                  SheetFieldRow(
+                    label: claim.label,
+                    value: _formatValue(claim.value),
+                  ),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

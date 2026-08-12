@@ -12,7 +12,7 @@ class CredentialUxData {
     this.categoryIds = const [],
   });
 
-  /// Indica si la credencial aparece en la pestaña "Favoritas" del home.
+  /// Indica si la credencial está marcada como favorita (selectores OID4VP).
   final bool isFavorite;
 
   /// IDs de [CategoryData] a los que está asignada esta credencial.
