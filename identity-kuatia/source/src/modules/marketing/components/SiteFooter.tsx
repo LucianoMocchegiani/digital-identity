@@ -11,8 +11,7 @@ export function SiteFooter() {
         <div className="lg:col-span-1">
           <BrandMark size="sm" />
           <p className="mt-3 max-w-xs text-base text-[var(--kuatia-muted)]">
-            Emisión y verificación de credenciales digitales para documentos, eventos y
-            organizaciones.
+            Infraestructura para emitir y verificar credenciales digitales con estándares abiertos.
           </p>
         </div>
         <div>
@@ -35,8 +34,18 @@ export function SiteFooter() {
               </Link>
             </li>
             <li>
+              <Link href="/docs/wallet" className="hover:text-[var(--kuatia-accent)]">
+                Wallet
+              </Link>
+            </li>
+            <li>
+              <Link href="/docs/introduccion" className="hover:text-[var(--kuatia-accent)]">
+                Introducción
+              </Link>
+            </li>
+            <li>
               <Link href="/docs/empezar" className="hover:text-[var(--kuatia-accent)]">
-                Primeros pasos
+                Primera credencial
               </Link>
             </li>
             <li>

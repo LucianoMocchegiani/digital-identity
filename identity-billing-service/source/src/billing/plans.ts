@@ -24,21 +24,26 @@ export const PLANS: Record<PlanId, PlanDefinition> = {
   pro: {
     id: 'pro',
     label: 'Pro',
-    maxProducts: 5,
+    /** Mismo cupo de productos que Free; más RPM y TX. */
+    maxProducts: 2,
     rateLimitRpm: 600,
     monthlyTxQuota: 100_000,
   },
-  /** ×2 Pro: puente entre Pro y Business. */
+  /** Varias marcas / líneas de negocio (hasta 10 productos). */
   pro_double: {
     id: 'pro_double',
-    label: 'Pro Double',
+    label: 'Proveedores',
     maxProducts: 10,
     rateLimitRpm: 1_200,
     monthlyTxQuota: 200_000,
   },
+  /**
+   * Cupos baseline solo para overrides admin / contratos.
+   * En marketing: card “Dedicado” (on-prem / gobierno) vía ventas — no self-serve.
+   */
   business: {
     id: 'business',
-    label: 'Business',
+    label: 'Dedicado',
     maxProducts: 20,
     rateLimitRpm: 3_000,
     monthlyTxQuota: 1_000_000,

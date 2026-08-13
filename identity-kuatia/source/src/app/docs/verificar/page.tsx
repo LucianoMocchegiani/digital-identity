@@ -38,8 +38,8 @@ X-API-Key: ver_live_…
       "meta": { "vct_values": ["MembershipCredential"] },
       "claims": [
         { "path": ["name"] },
-        { "path": ["email"] },
-        { "path": ["role"] }
+        { "path": ["role"] },
+        { "path": ["organization"] }
       ]
     }]
   },

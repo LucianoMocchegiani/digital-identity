@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: absoluteUrl(item.href),
       lastModified,
       changeFrequency: 'monthly' as const,
-      priority: item.href === '/docs/introduccion' ? 0.9 : 0.7,
+      priority: item.href === '/docs/introduccion' ? 0.95 : item.href === '/docs/empezar' ? 0.9 : 0.7,
     })),
   ]
 }

@@ -23,11 +23,11 @@ Flujo:
 | Plan | Productos | Rate limit | Cuota mensual |
 |------|-----------|------------|---------------|
 | `free` | 2 | 30 rpm | 5_000 |
-| `pro` | 5 | 600 rpm | 100_000 |
-| `pro_double` | 10 | 1_200 rpm | 200_000 |
-| `business` | *a medida* (default catálogo 20 / 3k / 1M; cupos reales vía admin/override) |
+| `pro` | 2 | 600 rpm | 100_000 |
+| `pro_double` (label Proveedores) | 10 | 1_200 rpm | 200_000 |
+| `business` (label Dedicado) | *a medida* (baseline 20 / 3k / 1M; marketing = on-prem / ventas) |
 
-Alias legacy: `paid` → `pro`. **Pro Double** = ×2 Pro. **Business** = comercial a medida (no self-serve).
+Alias legacy: `paid` → `pro`. **Proveedores** = más productos y volumen. **Dedicado** = contrato / on-prem (no self-serve).
 
 ---
 

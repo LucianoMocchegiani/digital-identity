@@ -20,11 +20,11 @@ const cases: {
   preset: CredentialCardPreset
 }[] = [
   {
-    title: 'Documentos',
-    subtitle: 'Constancias y certificados',
+    title: 'Acreditaciones',
+    subtitle: 'Certificados y habilitaciones',
     Icon: IconDoc,
     bullets: [
-      'Datos firmados por tu organización',
+      'Afirmaciones firmadas por tu organización',
       'El titular revela solo lo necesario',
       'Revocación cuando el caso lo pide',
     ],
@@ -63,8 +63,9 @@ export function UseCases() {
         Un solo modelo de credencial
       </h2>
       <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:text-lg lg:text-xl">
-        El mismo flujo OpenID4VC sirve para documentos, entradas y membresías. Tu backend emite o
-        pide una prueba; la wallet del usuario completa el protocolo; el verifier valida el resultado.
+        El mismo flujo OpenID4VC sirve para certificados, entradas, membresías y accesos. Tu backend
+        emite o pide una prueba; la wallet del usuario completa el protocolo; el verifier valida el
+        resultado.
       </p>
       <div className="mt-12 grid gap-10 md:grid-cols-3 lg:gap-12">
         {cases.map((c) => (

@@ -8,76 +8,50 @@ export default function DocsComoFuncionaPage() {
   return (
     <>
       <DocsTitle>Cómo funciona</DocsTitle>
-      <DocsLead>
-        Flujo práctico entre emisor, titular y verificador. Si una palabra no te suena, mirá el{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          glosario
-        </Link>
-        .
-      </DocsLead>
+      <DocsLead>Flujo entre emisor, titular y verificador.</DocsLead>
 
       <DocsH2>Los tres roles</DocsH2>
       <DocsUl>
         <li>
-          <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-            Issuer (emisor)
-          </Link>{' '}
-          — tu organización firma y entrega una credencial (membresía, entrada, documento).
+          <span className="text-[var(--kuatia-text)]">Issuer (emisor)</span> — tu organización firma
+          y entrega una credencial (membresía, entrada, constancia).
         </li>
         <li>
-          <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-            Holder (titular)
-          </Link>{' '}
-          — la persona guarda la credencial en su wallet (app en el teléfono). Decide qué revelar al
-          presentarla.
+          <span className="text-[var(--kuatia-text)]">Holder (titular)</span> — guarda la credencial
+          en su wallet y decide qué revelar al presentarla.
         </li>
         <li>
-          <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-            Verifier (verificador)
-          </Link>{' '}
-          — tu sistema pide una prueba (“¿es miembro activo?”) y valida la respuesta. En el flujo
-          típico no hace falta llamar a tu base de datos en cada control en puerta.
+          <span className="text-[var(--kuatia-text)]">Verifier (verificador)</span> — pide una prueba
+          (“¿es miembro activo?”) y valida la respuesta criptográfica y de protocolo.
         </li>
       </DocsUl>
 
       <DocsH2>Emisión (OID4VCI)</DocsH2>
       <DocsP>
-        Tu backend llama a la API del issuer con la API key y recibe una URI de{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          oferta
-        </Link>
-        . La mostrás como QR o deep link. La wallet del usuario escanea, habla con el issuer y
-        guarda la credencial. Tu servidor no implementa el protocolo de la wallet: solo crea la
-        oferta (
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          OID4VCI
+        Tu backend llama a la API del issuer con la API key y recibe una URI de oferta. La mostrás
+        como QR o deep link. La wallet escanea, habla con el issuer y guarda la credencial. Tu
+        servidor no implementa el protocolo de la wallet: solo crea la oferta (
+        <Link href="/docs/emitir" className="text-[var(--kuatia-accent)] hover:underline">
+          Emitir
         </Link>
         ).
       </DocsP>
 
       <DocsH2>Verificación (OID4VP)</DocsH2>
       <DocsP>
-        Tu backend crea un{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          presentation request
-        </Link>{' '}
-        (qué credencial y qué campos necesitás). La wallet muestra al usuario qué se pide; el
-        usuario acepta y envía la prueba. Consultás el estado de la sesión hasta obtener el
-        resultado (
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          OID4VP
+        Tu backend crea un presentation request (qué credencial y qué campos). La wallet muestra al
+        usuario qué se pide; el usuario acepta y envía la prueba. Consultás el estado de la sesión
+        hasta el resultado (
+        <Link href="/docs/verificar" className="text-[var(--kuatia-accent)] hover:underline">
+          Verificar
         </Link>
         ).
       </DocsP>
 
       <DocsH2>SD-JWT y divulgación selectiva</DocsH2>
       <DocsP>
-        Kuatia usa credenciales{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          SD-JWT VC
-        </Link>
-        : un token firmado donde algunos campos pueden marcarse como divulgables. Al presentar, el
-        holder puede ocultar claims que no quiera compartir. Eso se prepara en la emisión con{' '}
+        Kuatia usa credenciales SD-JWT VC: un token firmado donde algunos campos pueden marcarse
+        como divulgables. Al presentar, el holder puede ocultar claims. Se prepara en la emisión con{' '}
         <code className="text-sm">disclosureFrame</code> y en la verificación pidiendo solo lo
         necesario.
       </DocsP>
@@ -85,16 +59,31 @@ export default function DocsComoFuncionaPage() {
       <DocsH2>Qué hace Kuatia vs tu app</DocsH2>
       <DocsUl>
         <li>
-          <span className="text-[var(--kuatia-text)]">Kuatia</span> — agentes issuer/verifier,
-          firmas, metadata OpenID4VC, cupos y API keys.
+          <span className="text-[var(--kuatia-text)]">Kuatia (cloud)</span> — agentes{' '}
+          <Link href="/docs/issuer" className="text-[var(--kuatia-accent)] hover:underline">
+            issuer
+          </Link>{' '}
+          /{' '}
+          <Link href="/docs/verifier" className="text-[var(--kuatia-accent)] hover:underline">
+            verifier
+          </Link>
+          , firmas, metadata OpenID4VC, cupos y API keys.
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">Tu app</span> — lógica de negocio, UI del QR,
-          claims a emitir, políticas de qué pedir al verificar, branding.
+          <span className="text-[var(--kuatia-text)]">Wallet Kuatia</span> — app opcional para
+          titulares (
+          <Link href="/docs/wallet" className="text-[var(--kuatia-accent)] hover:underline">
+            Wallet
+          </Link>
+          ).
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">La wallet</span> — guarda claves del usuario y
-          completa los pasos del protocolo.
+          <span className="text-[var(--kuatia-text)]">Tu producto</span> — negocio, UX, UI del QR y,
+          si aplica, wallet propia en tu app.
+        </li>
+        <li>
+          <span className="text-[var(--kuatia-text)]">Tu backend</span> — claims a emitir, cuándo
+          emitir y qué exigir al verificar.
         </li>
       </DocsUl>
     </>

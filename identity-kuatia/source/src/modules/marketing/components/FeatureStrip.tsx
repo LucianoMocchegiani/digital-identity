@@ -6,18 +6,18 @@ type IconComp = ComponentType<SVGProps<SVGSVGElement> & { size?: number }>
 
 const items: { title: string; body: string; Icon: IconComp }[] = [
   {
-    title: 'Estándar abierto',
-    body: 'Emisión y verificación con OpenID4VC: interoperable con wallets compatibles, sin protocolo propio cerrado.',
+    title: 'Privacidad del titular',
+    body: 'La credencial vive en su wallet. Vos verificás la prueba — no acumulás una copia central de su identidad.',
     Icon: IconShield,
   },
   {
-    title: 'Eventos',
-    body: 'Entradas firmadas, transferibles y difíciles de clonar. Validación en puerta con QR o deep link.',
+    title: 'Acceso y eventos',
+    body: 'Membresías, pases y entradas firmadas. Validación en puerta con QR o deep link.',
     Icon: IconTicket,
   },
   {
     title: 'Organizaciones',
-    body: 'Membresías, carnets y acceso a instalaciones para empresas, clubes e instituciones.',
+    body: 'Acreditaciones, roles y acceso a instalaciones para empresas, clubes e instituciones.',
     Icon: IconUsers,
   },
 ]

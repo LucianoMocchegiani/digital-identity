@@ -12,6 +12,7 @@ import { Pricing } from './Pricing'
 import { SiteFooter } from './SiteFooter'
 import { Standards } from './Standards'
 import { UseCases } from './UseCases'
+import { WalletHolder } from './WalletHolder'
 
 /** Schema.org: Organization + WebSite (sin “offers” de checkout). */
 const landingJsonLd = [
@@ -45,6 +46,7 @@ export function LandingPage() {
         <FeatureStrip />
         <UseCases />
         <Standards />
+        <WalletHolder />
         <Pricing />
         <FinalCta />
         <SiteFooter />

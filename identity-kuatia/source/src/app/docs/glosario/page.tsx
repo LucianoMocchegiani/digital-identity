@@ -1,5 +1,4 @@
-﻿import { DocsLead, DocsP, DocsTitle } from '@/modules/docs/components/DocsPrimitives'
-import Link from 'next/link'
+﻿import { DocsLead, DocsTitle } from '@/modules/docs/components/DocsPrimitives'
 import { docsPageMeta } from '@/shared/seo/docs'
 
 export const metadata = docsPageMeta('glosario')
@@ -7,7 +6,7 @@ export const metadata = docsPageMeta('glosario')
 const TERMS: { term: string; def: string }[] = [
   {
     term: 'Producto (Kuatia)',
-    def: 'Unidad de facturación y provisionamiento en la consola: un issuer o un verifier. Cada producto tiene walletId, API key y cupos del plan.',
+    def: 'Unidad de facturación y provisionamiento en la consola: un issuer o un verifier. Cada producto tiene walletId, API key y cupos del plan. Una cuenta puede administrar varios productos para líneas de negocio distintas.',
   },
   {
     term: 'SSI',
@@ -107,18 +106,7 @@ export default function DocsGlosarioPage() {
   return (
     <>
       <DocsTitle>Glosario</DocsTitle>
-      <DocsLead>
-        Palabras que aparecen en esta documentación y en la API. Pensado para quien no vive de SSI
-        día a día. Para el “por qué” del producto, volvé a la{' '}
-        <Link href="/docs/introduccion" className="text-[var(--kuatia-accent)] hover:underline">
-          introducción
-        </Link>
-        .
-      </DocsLead>
-
-      <DocsP>
-        Tip: si en otra página ves una sigla en negrita o código, buscala acá.
-      </DocsP>
+      <DocsLead>Términos de la API y del producto Kuatia.</DocsLead>
 
       <dl className="mt-10 space-y-8">
         {TERMS.map(({ term, def }) => (

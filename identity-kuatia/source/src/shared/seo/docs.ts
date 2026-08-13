@@ -7,7 +7,7 @@ export const DOCS_PAGE_META = {
     title: 'Introducción',
     path: '/docs/introduccion',
     description:
-      'Qué es Kuatia: emisión y verificación de credenciales digitales con OpenID4VC, antifraude y stack Credo / OpenWallet Foundation.',
+      'Qué es Kuatia: infraestructura para emitir y verificar credenciales verificables con OpenID4VC.',
   },
   glosario: {
     title: 'Glosario',
@@ -21,23 +21,47 @@ export const DOCS_PAGE_META = {
     description:
       'Roles issuer, holder y verifier; flujos OID4VCI / OID4VP y divulgación selectiva con SD-JWT.',
   },
+  issuer: {
+    title: 'Issuer',
+    path: '/docs/issuer',
+    description:
+      'Producto issuer Kuatia: emisión OID4VCI, varios emisores por cuenta y qué records persiste.',
+  },
+  verifier: {
+    title: 'Verifier',
+    path: '/docs/verifier',
+    description:
+      'Producto verifier Kuatia: verificación OID4VP, varios verificadores por cuenta y qué records persiste.',
+  },
+  records: {
+    title: 'Records',
+    path: '/docs/records',
+    description:
+      'GET de records Credo del issuer/verifier: tipos, listado paginado y lectura por id.',
+  },
   recomendaciones: {
     title: 'Recomendaciones',
     path: '/docs/recomendaciones',
     description:
-      'Buenas prácticas: mínimo de datos, divulgación selectiva, datos sensibles y operación segura de la API.',
+      'Mínimo de datos, divulgación selectiva, datos sensibles y operación segura de la API Kuatia.',
   },
   seguridad: {
     title: 'Seguridad y confianza',
     path: '/docs/seguridad',
     description:
-      'API keys, multi-tenant, rate limits, qué datos guarda Kuatia y stack Credo / OpenID4VC — sin claims de compliance inventados.',
+      'API keys, multi-tenant, rate limits, qué datos guarda Kuatia y estándares OpenID4VC / SD-JWT.',
   },
   empezar: {
-    title: 'Primeros pasos',
+    title: 'Primera credencial',
     path: '/docs/empezar',
     description:
-      'Creá un producto, obtené API key y walletId, y seguí el flujo típico de integración Kuatia.',
+      'Quickstart: emití y verificá desde la consola Kuatia, o integrá la misma API con curl.',
+  },
+  wallet: {
+    title: 'Wallet',
+    path: '/docs/wallet',
+    description:
+      'Wallet Kuatia para titulares, o wallet en tu app con OpenID4VC — integración propia o con el equipo Kuatia.',
   },
   autenticacion: {
     title: 'Autenticación',

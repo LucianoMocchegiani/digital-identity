@@ -15,14 +15,14 @@ export default function DocsSeguridadPage() {
     <>
       <DocsTitle>Seguridad y confianza</DocsTitle>
       <DocsLead>
-        Cómo autentica Kuatia, cómo aísla tenants, qué cupos aplican y qué datos entran en juego —
-        sin claims de certificaciones que no tenemos (SOC 2, ISO, eIDAS, etc.).
+        Cómo autentica Kuatia las rutas admin, cómo aísla tenants, qué cupos aplican y qué datos
+        entran en juego en billing e issuer/verifier.
       </DocsLead>
 
       <DocsH2>Autenticación (API key)</DocsH2>
       <DocsP>
-        Las rutas de administración del issuer/verifier (offers, requests, branding, revocación
-        mutante) exigen API key. Detalle operativo en{' '}
+        Las rutas de administración (offers, requests, branding, revocación mutante) exigen API key.
+        Prefijos y header:{' '}
         <Link href="/docs/autenticacion" className="text-[var(--kuatia-accent)] hover:underline">
           Autenticación
         </Link>
@@ -30,37 +30,21 @@ export default function DocsSeguridadPage() {
       </DocsP>
       <DocsUl>
         <li>
-          Prefijos: <code className="text-sm">iss_live_…</code> (issuer) y{' '}
-          <code className="text-sm">ver_live_…</code> (verifier).
-        </li>
-        <li>
-          Header: <code className="text-sm">X-API-Key</code> (también se acepta Bearer con el mismo
-          secreto).
-        </li>
-        <li>
-          En billing guardamos el <span className="text-[var(--kuatia-text)]">hash</span> de la key
+          Billing guarda el <span className="text-[var(--kuatia-text)]">hash</span> de la key
           (SHA-256), un prefijo visible y metadatos (revocada, último uso). El secreto en claro se
           muestra <span className="text-[var(--kuatia-text)]">una sola vez</span> al crear o rotar.
-          Las identidades OAuth se guardan como <code className="text-sm">provider</code> +{' '}
-          <code className="text-sm">sub</code> (sin tokens del IdP).
         </li>
         <li>
-          La key debe vivir en tu <span className="text-[var(--kuatia-text)]">backend</span>, nunca
-          en un cliente público ni en un repo.
+          La key debe vivir en tu backend. Está ligada al producto /{' '}
+          <code className="text-sm">walletId</code>: usarla en otro tenant → 403.
         </li>
         <li>
-          La key está ligada al producto / <code className="text-sm">walletId</code>: usarla en otro
-          tenant → 403.
+          La consola usa JWT de cuenta (email/contraseña u OAuth). Eso es independiente de la API
+          key del producto.
         </li>
       </DocsUl>
-      <DocsP>
-        La consola Kuatia se autentica a billing con JWT de cuenta (email/contraseña u OAuth
-        Google/GitHub). Eso es independiente de la API key del producto que usa tu integración
-        OpenID4VC.
-      </DocsP>
 
       <DocsH2>Multi-tenant</DocsH2>
-      <DocsP>Modelo de aislamiento:</DocsP>
       <DocsUl>
         <li>
           <span className="text-[var(--kuatia-text)]">Cuenta</span> — plan, cupos, login.
@@ -70,26 +54,20 @@ export default function DocsSeguridadPage() {
           verifier.
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">walletId</span> — id del tenant en el agente
-          (aparece en las URLs de la API).
+          <span className="text-[var(--kuatia-text)]">walletId</span> — id del tenant en las URLs de
+          la API.
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">API key</span> — credencial de ese producto.
         </li>
       </DocsUl>
-      <DocsP>
-        Cada producto se provisiona en su propio espacio de agente. No mezclamos claves ni cupos
-        entre cuentas.
-      </DocsP>
+      <DocsP>Cada producto se provisiona en su propio espacio de agente; claves y cupos no se comparten entre cuentas.</DocsP>
 
       <DocsH2>Rate limits y cuotas</DocsH2>
       <DocsP>
-        Hay dos capas distintas. No uses el RPM del plan como si aplicara a health o well-known.
-      </DocsP>
-      <DocsP>
-        <span className="text-[var(--kuatia-text)]">1) Autenticado (plan)</span> — cada llamada
-        relevante a issuer/verifier con API key se valida y cuenta contra el plan (solicitudes /
-        minuto y transacciones del mes UTC). Planes: Free, Pro, Pro Double y Business a medida.
+        <span className="text-[var(--kuatia-text)]">1) Autenticado (plan)</span> — llamadas con API
+        key a issuer/verifier cuentan contra el plan (solicitudes / minuto y transacciones del mes
+        UTC). Planes cloud: Free, Pro y Proveedores; despliegue dedicado vía ventas.
       </DocsP>
       <DocsUl>
         <li>
@@ -102,31 +80,26 @@ export default function DocsSeguridadPage() {
         </li>
       </DocsUl>
       <DocsP>
-        <span className="text-[var(--kuatia-text)]">2) Público (por IP)</span> — health, did.json,
-        well-known, OOB, status-list GET, flujos OpenID4VC y DIDComm llevan un throttle en el
-        proceso (memoria local, por IP). Defaults orientados a no romper wallets ni probes:
+        <span className="text-[var(--kuatia-text)]">2) Público (por IP)</span> — health, discovery
+        (did.json, well-known, status-list) y flujos de protocolo OpenID4VC llevan throttle en el
+        proceso (memoria local, por IP), orientado a no romper wallets ni probes:
       </DocsP>
       <DocsUl>
         <li>
           <span className="text-[var(--kuatia-text)]">health</span> — 300 req/min por IP
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">discovery</span> (did.json, well-known, oob,
-          status-list) — 120 req/min por IP
+          <span className="text-[var(--kuatia-text)]">discovery</span> — 120 req/min por IP
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">protocol</span> (openid4vc-flow / didcomm) —
-          180 req/min por IP
+          <span className="text-[var(--kuatia-text)]">protocolo</span> — 180 req/min por IP
         </li>
       </DocsUl>
       <DocsP>
-        Si enviás API key de producto, se omite el throttle público y mandan los cupos del plan.
-        Ajustable con <code className="text-sm">PUBLIC_RATE_LIMIT_*</code>. Respuesta 429 con{' '}
+        Con API key de producto se omite el throttle público y mandan los cupos del plan. Ajustable
+        con <code className="text-sm">PUBLIC_RATE_LIMIT_*</code>. Respuesta 429 con{' '}
         <code className="text-sm">Retry-After</code>. En multi-réplica el límite es por instancia
-        hasta haber edge/Redis compartido.
-      </DocsP>
-      <DocsP>
-        Códigos HTTP habituales:{' '}
+        hasta haber edge/Redis compartido. Códigos:{' '}
         <Link href="/docs/errores" className="text-[var(--kuatia-accent)] hover:underline">
           Errores
         </Link>
@@ -135,9 +108,9 @@ export default function DocsSeguridadPage() {
 
       <DocsH2>Qué guardamos y qué no</DocsH2>
       <DocsP>
-        Kuatia <span className="text-[var(--kuatia-text)]">no</span> es un repositorio central de la
-        identidad del usuario final. La credencial emitida vive en la{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
+        Kuatia no es un repositorio central de la identidad del usuario final. La credencial emitida
+        vive en la{' '}
+        <Link href="/docs/wallet" className="text-[var(--kuatia-accent)] hover:underline">
           wallet
         </Link>{' '}
         del titular.
@@ -145,67 +118,41 @@ export default function DocsSeguridadPage() {
       <DocsUl>
         <li>
           <span className="text-[var(--kuatia-text)]">Billing</span> — cuenta, productos, hashes de
-          API keys, uso del período. Contraseñas de consola con hash (scrypt). No corre Credo.
+          API keys, uso del período. Contraseñas de consola con hash (scrypt).
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">Issuer / verifier</span> — estado del agente
           (claves del emisor/verificador, metadata, sesiones de protocolo). El issuer puede mantener
-          listas de estado para{' '}
-          <span className="text-[var(--kuatia-text)]">revocación</span> cuando el caso lo usa.
+          listas de estado para revocación cuando el caso lo usa.
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">Claims del offer</span> — los enviás vos al
-          emitir; no operamos un “vault” de VCs del holder aparte de lo que el protocolo y el agente
-          necesitan para completar el flujo.
+          <span className="text-[var(--kuatia-text)]">Claims del offer</span> — los enviás al emitir;
+          no hay un vault aparte de VCs del holder más allá de lo que el protocolo necesita para el
+          flujo.
         </li>
         <li>
-          <span className="text-[var(--kuatia-text)]">Tu app</span> — sigue siendo responsable de PII
-          de negocio, KYC al emitir y de no meter secretos en claims. Ver{' '}
+          <span className="text-[var(--kuatia-text)]">Tu app</span> — PII de negocio y secretos
+          siguen siendo tu responsabilidad (
           <Link href="/docs/recomendaciones" className="text-[var(--kuatia-accent)] hover:underline">
             Recomendaciones
           </Link>
-          .
+          ).
         </li>
       </DocsUl>
 
-      <DocsH2>Estándares y stack (sin lavado de compliance)</DocsH2>
+      <DocsH2>Estándares</DocsH2>
       <DocsP>
-        Los agentes se construyen sobre{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          Credo
-        </Link>{' '}
-        (TypeScript; ecosistema de la{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          OpenWallet Foundation
-        </Link>
-        ) y hablan{' '}
+        Los agentes hablan{' '}
         <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
           OpenID4VC
         </Link>{' '}
-        / SD-JWT VC. Eso mejora interoperabilidad y reduce reinventar criptografía de protocolo;{' '}
-        <span className="text-[var(--kuatia-text)]">
-          no equivale a una certificación SOC 2, ISO, eIDAS u otra auditoría que no hayamos
-          publicado
-        </span>
-        .
-      </DocsP>
-      <DocsP>
-        Contexto más amplio (antifraude por diseño, roles):{' '}
-        <Link href="/docs/introduccion" className="text-[var(--kuatia-accent)] hover:underline">
-          Introducción
-        </Link>{' '}
-        y{' '}
-        <Link href="/docs/como-funciona" className="text-[var(--kuatia-accent)] hover:underline">
-          Cómo funciona
-        </Link>
-        .
+        y SD-JWT VC.
       </DocsP>
 
       <DocsH2>HTTPS, salud y revocación</DocsH2>
       <DocsUl>
         <li>
-          Usá siempre <span className="text-[var(--kuatia-text)]">HTTPS</span> en las base URLs
-          públicas del issuer/verifier (TLS en el edge / proxy).
+          Usá siempre HTTPS en las base URLs públicas del issuer/verifier (TLS en el edge / proxy).
         </li>
         <li>
           <Link href="/docs/health" className="text-[var(--kuatia-accent)] hover:underline">
@@ -214,22 +161,10 @@ export default function DocsSeguridadPage() {
           — liveness y readiness públicos sin API key.
         </li>
         <li>
-          Cuando el producto lo habilita, la revocación se apoya en status lists del issuer (consultas
-          públicas de estado; mutaciones con API key).
+          Cuando el producto lo habilita, la revocación se apoya en status lists del issuer
+          (consultas públicas de estado; mutaciones con API key).
         </li>
       </DocsUl>
-
-      <DocsH2>Responsabilidad compartida</DocsH2>
-      <DocsP>
-        Kuatia cubre el plano de emisión/verificación con estándar abierto y controles de cuenta
-        (keys, cupos, aislamiento). Vos cubrís la lógica de negocio, el cuidado de datos al emitir,
-        el secreto de las API keys y el uso correcto de divulgación selectiva. Si algo no está
-        certificado o auditado acá, no lo demos por hecho: pedilo al equipo o mirá el{' '}
-        <Link href="/docs/changelog" className="text-[var(--kuatia-accent)] hover:underline">
-          changelog
-        </Link>
-        .
-      </DocsP>
     </>
   )
 }

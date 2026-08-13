@@ -4,7 +4,7 @@ import type { Metadata } from 'next'
 import type { ReactNode } from 'react'
 
 const docsDescription =
-  'Documentación Kuatia: OpenID4VC, recomendaciones de uso y referencia de la API issuer/verifier.'
+  'Documentación Kuatia: introducción, primera credencial, conceptos OpenID4VC y referencia de la API issuer/verifier.'
 
 export const metadata: Metadata = {
   title: {

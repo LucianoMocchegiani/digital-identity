@@ -7,59 +7,42 @@ export const metadata = docsPageMeta('recomendaciones')
 export default function DocsRecomendacionesPage() {
   return (
     <>
-      <DocsTitle>Recomendaciones de uso</DocsTitle>
+      <DocsTitle>Recomendaciones</DocsTitle>
       <DocsLead>
-        Guías prácticas para diseñar credenciales y flujos sin ser experto en SSI. Objetivo: menos
-        datos expuestos, menos riesgo y mejor experiencia para el usuario.
+        Cómo diseñar credenciales y flujos con menos datos expuestos y menos riesgo operativo.
       </DocsLead>
 
       <DocsH2>Mínimo de datos en la credencial</DocsH2>
       <DocsP>
-        Emití solo lo que necesitás demostrar más adelante. Cada{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          claim
-        </Link>{' '}
-        extra es superficie de privacidad. Preferí identificadores o flags de negocio (“socio
-        activo”, “nivel gold”) frente a volcar historiales o documentos completos en la credencial.
+        Emití solo lo que necesitás demostrar más adelante. Cada claim extra es superficie de
+        privacidad. Preferí identificadores o flags de negocio (“socio activo”, “nivel gold”) frente
+        a volcar historiales o documentos completos en la credencial.
       </DocsP>
 
       <DocsH2>Divulgación selectiva</DocsH2>
       <DocsP>
         Marcá en <code className="text-sm">disclosureFrame._sd</code> los claims que el titular
         debería poder ocultar. Al verificar, pedí únicamente los campos del caso de uso (p. ej.
-        nombre + estado, no el email si no hace falta). Más contexto en el{' '}
-        <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
-          glosario
-        </Link>
-        .
+        nombre + rol, no un email si no hace falta).
       </DocsP>
 
-      <DocsH2>Datos sensibles y uso online</DocsH2>
+      <DocsH2>Datos sensibles</DocsH2>
       <DocsP>
-        Si tu aplicación (la que consume o complementa las credenciales) va a manejar información
-        sensible del usuario y el uso es <span className="text-[var(--kuatia-text)]">online</span>,
-        no la dejes en claro en tus servidores ni en claims de la credencial si no es imprescindible.
+        Si el uso es online, dejá el detalle sensible en tu backend (o en un almacenamiento que
+        controles vos) y poné en la credencial un identificador, un flag o una referencia. Kuatia no
+        ofrece un esquema de cifrado de claims con la clave del holder: ese patrón, si lo necesitás,
+        es de tu aplicación.
       </DocsP>
       <DocsUl>
         <li>
-          Preferí cifrar esa información sensible con la{' '}
-          <span className="text-[var(--kuatia-text)]">clave pública del usuario</span> (la de su
-          identidad / wallet), de modo que solo el titular pueda descifrarla con su clave privada.
+          Online — la credencial demuestra el hecho firmado; el detalle sensible se resuelve en tu
+          sistema tras una verificación exitosa.
         </li>
         <li>
-          En la credencial podés guardar un identificador, un hash o una referencia cifrada, y
-          mantener el detalle sensible en tu backend o en un blob cifrado para el holder.
-        </li>
-        <li>
-          Si el flujo debe funcionar <span className="text-[var(--kuatia-text)]">offline</span>,
-          planificá qué datos mínimos tienen que viajar dentro de la credencial firmada (porque no
-          habrá round-trip a tu servidor) y qué puede quedarse fuera.
+          Offline — planificá qué mínimo tiene que viajar dentro de la credencial firmada (no habrá
+          round-trip a tu servidor) y qué puede quedarse fuera.
         </li>
       </DocsUl>
-      <DocsP>
-        En resumen: la credencial demuestra hechos firmados por vos; el cifrado con clave pública
-        del usuario protege secretos que solo él debería leer cuando el canal es online.
-      </DocsP>
 
       <DocsH2>Qué no poner en claims en claro</DocsH2>
       <DocsUl>
@@ -67,13 +50,6 @@ export default function DocsRecomendacionesPage() {
         <li>Datos de salud, financieros o documento completo si un flag o hash alcanza</li>
         <li>Datos personales que nunca vas a pedir en una presentación</li>
       </DocsUl>
-
-      <DocsH2>Branding vs configuración técnica</DocsH2>
-      <DocsP>
-        Personalizá nombre, logo y colores de la card. Dejá format,{' '}
-        <code className="text-sm">vct</code> y algoritmos como los provisionó Kuatia. Tipos de
-        credencial nuevos: pedilos al equipo Kuatia.
-      </DocsP>
 
       <DocsH2>Operación</DocsH2>
       <DocsUl>
@@ -84,6 +60,13 @@ export default function DocsRecomendacionesPage() {
         </li>
         <li>
           Cada offer/request consume cuota del plan: evitá crear ofertas que nadie va a escanear.
+        </li>
+        <li>
+          Logo, colores y nombre de card:{' '}
+          <Link href="/docs/branding" className="text-[var(--kuatia-accent)] hover:underline">
+            Branding
+          </Link>
+          .
         </li>
       </DocsUl>
     </>

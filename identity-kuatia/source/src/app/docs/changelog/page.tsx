@@ -10,7 +10,6 @@ import {
   type ChangelogKind,
 } from '@/modules/docs/changelog'
 import { docsPageMeta } from '@/shared/seo/docs'
-import Link from 'next/link'
 
 export const metadata = docsPageMeta('changelog')
 
@@ -25,14 +24,7 @@ export default function DocsChangelogPage() {
   return (
     <>
       <DocsTitle>Changelog</DocsTitle>
-      <DocsLead>
-        Cambios relevantes para integradores: API, documentación y producto. Política de versiones
-        en{' '}
-        <Link href="/docs/versionado" className="text-[var(--kuatia-accent)] hover:underline">
-          Versionado
-        </Link>
-        .
-      </DocsLead>
+      <DocsLead>Cambios relevantes para integradores: API, documentación y producto.</DocsLead>
 
       <DocsP>
         Fuente en el monorepo: <code className="text-sm">CHANGELOG.md</code> (raíz del repo).

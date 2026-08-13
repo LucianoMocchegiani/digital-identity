@@ -5,6 +5,7 @@ import {
   DocsP,
   DocsTitle,
 } from '@/modules/docs/components/DocsPrimitives'
+import { mailtoSales, siteConfig } from '@/shared/config/site'
 import { docsPageMeta } from '@/shared/seo/docs'
 
 export const metadata = docsPageMeta('branding')
@@ -14,9 +15,12 @@ export default function DocsBrandingPage() {
     <>
       <DocsTitle>Branding</DocsTitle>
       <DocsLead>
-        En la práctica, cambiá solo lo visual. format, vct y algoritmos los define Kuatia al
-        provisionar; no los modifiques desde tu integración. Nuevos tipos de credencial: contactá a
-        Kuatia.
+        Cambiá logo, colores y nombre de la card. format, vct y algoritmos los define Kuatia al
+        provisionar; no los modifiques desde tu integración. Tipos de credencial nuevos:{' '}
+        <a href={mailtoSales('Nuevo tipo de credencial')} className="text-[var(--kuatia-accent)] hover:underline">
+          {siteConfig.salesEmail}
+        </a>
+        .
       </DocsLead>
 
       <DocsEndpoint

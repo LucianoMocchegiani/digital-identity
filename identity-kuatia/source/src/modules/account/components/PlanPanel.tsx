@@ -15,16 +15,23 @@ import { PageHeader } from '@/modules/console/components/PageHeader'
 import { billingApi } from '@/shared/api/billing'
 import { ApiError } from '@/shared/api/client'
 import { useAuth } from '@/shared/auth/AuthProvider'
-import { mailto } from '@/shared/config/site'
+import { mailtoSales } from '@/shared/config/site'
 import type { PlanInfo } from '@/shared/types/billing'
 import { useEffect, useState } from 'react'
 
 function planFeatures(plan: PlanInfo): string[] {
   if (plan.id === 'business') {
     return [
-      'Cupos a medida (productos, RPM, TX)',
-      'Onboarding asistido',
-      'Soporte dedicado',
+      'Instalación en tu servidor o red',
+      'Despliegue asistido (gobiernos y grandes orgs)',
+      'Cupos, SLA y soporte acordados',
+    ]
+  }
+  if (plan.id === 'pro_double') {
+    return [
+      `Hasta ${plan.maxProducts} productos`,
+      `${plan.rateLimitRpm.toLocaleString('es-AR')} solicitudes / min`,
+      `${plan.monthlyTxQuota.toLocaleString('es-AR')} transacciones / mes`,
     ]
   }
   return [
@@ -160,7 +167,7 @@ export function PlanPanel() {
                 ))}
               </ul>
               {!isCurrent && plan.id === 'business' ? (
-                <a href={mailto('Plan Business')} className="mt-5 block">
+                <a href={mailtoSales('Kuatia dedicado / on-prem')} className="mt-5 block">
                   <Button className="w-full" variant="secondary">
                     Contactar ventas
                   </Button>

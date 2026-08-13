@@ -39,21 +39,25 @@ X-API-Key: iss_live_…
   "vct": "MembershipCredential",
   "claims": {
     "name": "Ana Pérez",
-    "email": "ana@ejemplo.com",
     "role": "member",
     "organization": "Club Norte",
     "validFrom": "2026-08-01"
   },
   "disclosureFrame": {
-    "_sd": ["email", "role", "organization", "validFrom"]
+    "_sd": ["role", "organization", "validFrom"]
   },
   "claimsDisplay": {
     "name": { "name": "Nombre completo", "locale": "es" },
-    "email": { "name": "Correo", "locale": "es" }
+    "role": { "name": "Rol", "locale": "es" }
   }
 }
 
 → { "offerUri": "openid-credential-offer://…", "issuanceSessionId": "…" }`}</DocsCode>
+        <p>
+          Los claims son responsabilidad del emisor. Kuatia firma y entrega la credencial; no
+          comprueba el hecho de negocio detrás del claim (por ejemplo, que Ana sea miembro de Club
+          Norte). Eso lo valida tu organización al emitir.
+        </p>
         <p>
           <code className="text-sm">credentialConfigurationId</code> debe existir en el well-known.{' '}
           <code className="text-sm">disclosureFrame._sd</code> marca claims ocultables al presentar.

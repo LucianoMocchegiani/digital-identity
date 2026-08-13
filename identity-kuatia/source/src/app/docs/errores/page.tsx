@@ -34,9 +34,7 @@ export default function DocsErroresPage() {
         </li>
       </DocsUl>
 
-      <DocsP>
-        Fuera de alcance de esta guía: DIDComm, alta manual de tenants y APIs admin de billing.
-      </DocsP>
+      <DocsP>Altas de cuenta y administración de billing van por la consola.</DocsP>
     </>
   )
 }

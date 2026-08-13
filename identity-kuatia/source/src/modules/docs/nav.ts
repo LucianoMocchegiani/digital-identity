@@ -1,5 +1,6 @@
 /**
  * Navegación de la documentación (sidebar estilo Docusaurus).
+ * Orden: Empezar (intro → quickstart) → Conceptos → API.
  */
 export type DocsNavItem = {
   href: string
@@ -13,22 +14,25 @@ export type DocsNavSection = {
 
 export const DOCS_NAV: DocsNavSection[] = [
   {
-    title: 'Fundamentos',
-    items: [
-      { href: '/docs/introduccion', label: 'Introducción' },
-      { href: '/docs/glosario', label: 'Glosario' },
-      { href: '/docs/como-funciona', label: 'Cómo funciona' },
-      { href: '/docs/recomendaciones', label: 'Recomendaciones' },
-      { href: '/docs/seguridad', label: 'Seguridad y confianza' },
-    ],
-  },
-  {
     title: 'Empezar',
     items: [
-      { href: '/docs/empezar', label: 'Primeros pasos' },
+      { href: '/docs/introduccion', label: 'Introducción' },
+      { href: '/docs/empezar', label: 'Primera credencial' },
+      { href: '/docs/wallet', label: 'Wallet' },
       { href: '/docs/autenticacion', label: 'Autenticación' },
       { href: '/docs/versionado', label: 'Versionado' },
       { href: '/docs/changelog', label: 'Changelog' },
+    ],
+  },
+  {
+    title: 'Conceptos',
+    items: [
+      { href: '/docs/glosario', label: 'Glosario' },
+      { href: '/docs/como-funciona', label: 'Cómo funciona' },
+      { href: '/docs/issuer', label: 'Issuer' },
+      { href: '/docs/verifier', label: 'Verifier' },
+      { href: '/docs/recomendaciones', label: 'Recomendaciones' },
+      { href: '/docs/seguridad', label: 'Seguridad y confianza' },
     ],
   },
   {
@@ -40,6 +44,7 @@ export const DOCS_NAV: DocsNavSection[] = [
       { href: '/docs/branding', label: 'Branding' },
       { href: '/docs/emitir', label: 'Emitir' },
       { href: '/docs/verificar', label: 'Verificar' },
+      { href: '/docs/records', label: 'Records' },
       { href: '/docs/errores', label: 'Errores' },
     ],
   },

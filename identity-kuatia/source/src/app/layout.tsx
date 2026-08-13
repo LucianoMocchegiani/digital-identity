@@ -29,7 +29,7 @@ const display = Syne({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE_NAME} — Credenciales digitales`,
+    default: `${SITE_NAME} — Credenciales verificables`,
     template: `%s — ${SITE_NAME}`,
   },
   description: DEFAULT_DESCRIPTION,
@@ -37,6 +37,7 @@ export const metadata: Metadata = {
   keywords: [
     'Kuatia',
     'credenciales digitales',
+    'credenciales verificables',
     'OpenID4VC',
     'verifiable credentials',
     'issuer',
@@ -50,12 +51,12 @@ export const metadata: Metadata = {
     locale: 'es',
     url: SITE_URL,
     siteName: SITE_NAME,
-    title: `${SITE_NAME} — Credenciales digitales`,
+    title: `${SITE_NAME} — Credenciales verificables`,
     description: SOCIAL_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
-    title: `${SITE_NAME} — Credenciales digitales`,
+    title: `${SITE_NAME} — Credenciales verificables`,
     description: SOCIAL_DESCRIPTION,
   },
   robots: {
