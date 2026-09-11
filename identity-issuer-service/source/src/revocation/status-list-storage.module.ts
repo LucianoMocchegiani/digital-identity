@@ -1,5 +1,4 @@
 import { Global, Module } from '@nestjs/common'
-import { Pool } from 'pg'
 import {
   PostgresStatusListStorage,
   type StatusListStorage,
@@ -19,8 +18,9 @@ import { STATUS_LIST_STORAGE } from './status-list-storage.tokens'
     {
       provide: STATUS_LIST_STORAGE,
       inject: [DATABASE_POOL],
-      useFactory: (pool: Pool): StatusListStorage =>
-        new PostgresStatusListStorage(pool),
+      useFactory: (
+        pool: ConstructorParameters<typeof PostgresStatusListStorage>[0],
+      ): StatusListStorage => new PostgresStatusListStorage(pool),
     },
   ],
   exports: [STATUS_LIST_STORAGE],

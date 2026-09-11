@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common'
 import type { Request } from 'express'
+import type { BillingAuthContext } from '../auth/billing-auth.types'
 import { CreateVerifierDto } from './dto/create-verifier.dto'
 import { VerifiersService } from './verifiers.service'
+
+type AuthedRequest = Request & { billingAuth?: BillingAuthContext }
 
 /**
  * Alta de verifiers en `GET|POST /v1/verifiers`.
@@ -12,7 +15,7 @@ export class VerifiersController {
   constructor(private readonly verifiersService: VerifiersService) {}
 
   @Get()
-  async list(@Req() req: Request) {
+  async list(@Req() req: AuthedRequest) {
     const result = await this.verifiersService.list()
     const walletId = req.billingAuth?.walletId
     if (!walletId) return result

@@ -1,5 +1,4 @@
 import { Global, Module } from '@nestjs/common'
-import { Pool } from 'pg'
 import {
   AskarDomainKeyManagementService,
   AskarKeyManagementService,
@@ -28,7 +27,9 @@ import {
     {
       provide: ADDITIONAL_KEY_MANAGEMENT_SERVICES,
       inject: [DATABASE_POOL],
-      useFactory: (pool: Pool): KeyManagementService[] => [
+      useFactory: (
+        pool: ConstructorParameters<typeof BbsKeyManagementService>[0],
+      ): KeyManagementService[] => [
         new AskarDomainKeyManagementService(),
         new BbsKeyManagementService(pool),
       ],

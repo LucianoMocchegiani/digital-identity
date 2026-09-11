@@ -1,7 +1,10 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common'
 import type { Request } from 'express'
+import type { BillingAuthContext } from '../auth/billing-auth.types'
 import { CreateIssuerDto } from './dto/create-issuer.dto'
 import { IssuersService } from './issuers.service'
+
+type AuthedRequest = Request & { billingAuth?: BillingAuthContext }
 
 /**
  * Alta y listado de issuers bajo `/v1/issuers`.
@@ -15,7 +18,7 @@ export class IssuersController {
    * Lista solo el issuer bound a la API key (no el catálogo global).
    */
   @Get()
-  async list(@Req() req: Request) {
+  async list(@Req() req: AuthedRequest) {
     const result = await this.issuersService.list()
     const walletId = req.billingAuth?.walletId
     if (!walletId) return result
