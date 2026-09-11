@@ -1,5 +1,5 @@
 import { Button, IconArrowRight, IconCalendar, PhoneFrame } from '@/design-system'
-import { mailto } from '@/shared/config/site'
+import { siteConfig } from '@/shared/config/site'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 import { WalletHomeMock } from './WalletHomeMock'
@@ -30,7 +30,7 @@ export function Hero() {
               <IconArrowRight size={18} />
             </Button>
           </Link>
-          <a href={mailto('Demo Kuatia')}>
+          <a href={siteConfig.demoCalendarUrl} target="_blank" rel="noopener noreferrer">
             <Button size="lg" variant="secondary">
               <IconCalendar size={18} />
               Reservar demo

@@ -175,7 +175,10 @@ services:
         ISSUER_URL: http://identity-issuer-service:9001
         VERIFIER_URL: http://identity-verifier-service:9002
         NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://kuatia.xyz}
-        NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-hola@kuatia.xyz}
+        NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-faciliterapps@gmail.com}
+        NEXT_PUBLIC_SALES_EMAIL: ${NEXT_PUBLIC_SALES_EMAIL:-faciliterapps@gmail.com}
+        NEXT_PUBLIC_DEMO_CALENDAR_URL: ${NEXT_PUBLIC_DEMO_CALENDAR_URL:-https://calendar.app.google/dcTzccnNjB6tTLXR8}
+        NEXT_PUBLIC_COMPANY_NAME: ${NEXT_PUBLIC_COMPANY_NAME:-Faciliter}
     restart: unless-stopped
     environment:
       NODE_ENV: production
@@ -186,7 +189,10 @@ services:
       VERIFIER_URL: http://identity-verifier-service:9002
       # Sitio público (bakeado en build + runtime)
       NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://kuatia.xyz}
-      NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-hola@kuatia.xyz}
+      NEXT_PUBLIC_CONTACT_EMAIL: ${NEXT_PUBLIC_CONTACT_EMAIL:-faciliterapps@gmail.com}
+      NEXT_PUBLIC_SALES_EMAIL: ${NEXT_PUBLIC_SALES_EMAIL:-faciliterapps@gmail.com}
+      NEXT_PUBLIC_DEMO_CALENDAR_URL: ${NEXT_PUBLIC_DEMO_CALENDAR_URL:-https://calendar.app.google/dcTzccnNjB6tTLXR8}
+      NEXT_PUBLIC_COMPANY_NAME: ${NEXT_PUBLIC_COMPANY_NAME:-Faciliter}
     ports:
       - "3000:3000"
     networks:

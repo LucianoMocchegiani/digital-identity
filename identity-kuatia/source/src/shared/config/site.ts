@@ -15,12 +15,22 @@ function hostFromUrl(url: string): string {
   }
 }
 
+const DEFAULT_DEMO_EMAIL = 'faciliterapps@gmail.com'
+const DEFAULT_DEMO_CALENDAR = 'https://calendar.app.google/dcTzccnNjB6tTLXR8'
+
 export const siteConfig = {
   name: 'Kuatia',
+  /** Empresa que desarrolla Kuatia. */
+  companyName: process.env.NEXT_PUBLIC_COMPANY_NAME ?? 'Faciliter',
   url: trimSlash(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://kuatia.xyz'),
-  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? 'hola@kuatia.xyz',
-  /** Consultas comerciales / integración / Business. */
-  salesEmail: process.env.NEXT_PUBLIC_SALES_EMAIL ?? 'ventas@kuatia.xyz',
+  contactEmail: process.env.NEXT_PUBLIC_CONTACT_EMAIL ?? DEFAULT_DEMO_EMAIL,
+  /** Consultas comerciales / integración / dedicado. */
+  salesEmail: process.env.NEXT_PUBLIC_SALES_EMAIL ?? DEFAULT_DEMO_EMAIL,
+  /**
+   * Agenda de demos (Google Calendar appointment).
+   * @see https://calendar.app.google/dcTzccnNjB6tTLXR8
+   */
+  demoCalendarUrl: process.env.NEXT_PUBLIC_DEMO_CALENDAR_URL?.trim() || DEFAULT_DEMO_CALENDAR,
   /** Meta description (SEO / Google). */
   description:
     process.env.NEXT_PUBLIC_SITE_DESCRIPTION ??
@@ -49,7 +59,7 @@ export function mailto(subject?: string): string {
   return `mailto:${siteConfig.contactEmail}?subject=${encodeURIComponent(subject)}`
 }
 
-/** `mailto:` comercial (ventas / integración / Business). */
+/** `mailto:` comercial (ventas / integración / dedicado). */
 export function mailtoSales(subject?: string): string {
   if (!subject) return `mailto:${siteConfig.salesEmail}`
   return `mailto:${siteConfig.salesEmail}?subject=${encodeURIComponent(subject)}`

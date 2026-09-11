@@ -12,6 +12,7 @@ export function SiteFooter() {
           <BrandMark size="sm" />
           <p className="mt-3 max-w-xs text-base text-[var(--kuatia-muted)]">
             Infraestructura para emitir y verificar credenciales digitales con estándares abiertos.
+            Un producto de {siteConfig.companyName}.
           </p>
         </div>
         <div>
@@ -75,11 +76,21 @@ export function SiteFooter() {
                 {siteConfig.contactEmail}
               </a>
             </li>
+            <li>
+              <a
+                href={siteConfig.demoCalendarUrl}
+                className="hover:text-[var(--kuatia-accent)]"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Reservar demo
+              </a>
+            </li>
           </ul>
         </div>
       </MarketingShell>
       <div className="border-t border-[var(--kuatia-border-subtle)] py-4 text-center text-sm text-[var(--kuatia-muted)]">
-        © {new Date().getFullYear()} Kuatia
+        © {new Date().getFullYear()} {siteConfig.name} · Desarrollado por {siteConfig.companyName}
       </div>
     </footer>
   )

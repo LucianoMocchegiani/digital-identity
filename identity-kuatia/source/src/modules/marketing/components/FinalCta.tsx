@@ -1,4 +1,5 @@
-﻿import { Button, IconArrowRight, IconBolt, IconCode } from '@/design-system'
+﻿import { Button, IconArrowRight, IconBolt, IconCalendar, IconCode } from '@/design-system'
+import { siteConfig } from '@/shared/config/site'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 
@@ -25,7 +26,8 @@ export function FinalCta() {
                 Empezá a emitir hoy
               </h2>
               <p className="mt-3 max-w-xl text-base text-[var(--kuatia-muted)] sm:text-lg">
-                Creá una cuenta Free, provisioná un issuer o verifier y obtené tu API key.
+                Creá una cuenta Free, provisioná un issuer o verifier y obtené tu API key. O
+                reservá una demo con el equipo de {siteConfig.companyName}.
               </p>
             </div>
           </div>
@@ -36,8 +38,14 @@ export function FinalCta() {
                 <IconArrowRight size={18} />
               </Button>
             </Link>
-            <Link href="/docs">
+            <a href={siteConfig.demoCalendarUrl} target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="secondary">
+                <IconCalendar size={18} />
+                Reservar demo
+              </Button>
+            </a>
+            <Link href="/docs">
+              <Button size="lg" variant="ghost">
                 <IconCode size={18} />
                 Ver docs
               </Button>

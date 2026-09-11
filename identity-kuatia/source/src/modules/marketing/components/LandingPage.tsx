@@ -23,6 +23,11 @@ const landingJsonLd = [
     url: siteConfig.url,
     email: siteConfig.contactEmail,
     description: siteConfig.description,
+    parentOrganization: {
+      '@type': 'Organization',
+      name: siteConfig.companyName,
+      email: siteConfig.contactEmail,
+    },
   },
   {
     '@context': 'https://schema.org',
