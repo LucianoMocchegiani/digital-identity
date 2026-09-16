@@ -8,7 +8,6 @@
 import { BrandMark, Button, IconDoc, IconPlan, IconProducts, ThemeToggle } from '@/design-system'
 import { useAuth } from '@/shared/auth/AuthProvider'
 import Link from 'next/link'
-import { MarketingShell } from './MarketingShell'
 
 type Props = {
   /** En auth, los anclas `#` apuntan a la home. */
@@ -23,11 +22,8 @@ export function MarketingHeader({ homeAnchors = false }: Props) {
   const prefix = homeAnchors ? '/' : ''
 
   return (
-    <MarketingShell
-      as="header"
-      className="relative z-20 flex flex-wrap items-center justify-between gap-3 py-4 sm:gap-y-2 sm:py-5"
-    >
-      <BrandMark />
+    <header className="relative z-20 flex w-full flex-wrap items-center justify-between gap-3 px-6 py-4 sm:gap-y-2 sm:py-5 md:px-10 lg:px-12">
+      <BrandMark href="/" size="sm" />
       <nav className="order-3 hidden w-full items-center justify-center gap-6 text-base text-[var(--kuatia-muted)] sm:order-none sm:flex sm:w-auto md:gap-8 lg:gap-10">
         <Link href={`${prefix}#producto`} className={navLinkClass}>
           <IconProducts size={18} />
@@ -69,6 +65,6 @@ export function MarketingHeader({ homeAnchors = false }: Props) {
           </>
         )}
       </div>
-    </MarketingShell>
+    </header>
   )
 }

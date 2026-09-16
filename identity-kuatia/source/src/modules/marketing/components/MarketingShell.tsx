@@ -10,16 +10,13 @@ type Props = {
 } & Omit<HTMLAttributes<HTMLElement>, 'className' | 'children'>
 
 /**
- * Contenedor de marketing: en mobile/tablet se ve compacto;
- * en pantallas grandes ocupa casi todo el ancho (no un “columnita” al centro).
+ * Contenedor de marketing: ancho estable (alineado a la escala de tipografía).
  */
 export function MarketingShell({ children, className, as: Tag = 'div', ...rest }: Props) {
   return (
     <Tag
       className={cn(
-        'mx-auto w-full max-w-6xl px-6 md:px-10',
-        'xl:max-w-[88rem] xl:px-14',
-        '2xl:max-w-[100rem] 2xl:px-20',
+        'mx-auto w-full max-w-6xl px-6 md:px-10 lg:px-12',
         className,
       )}
       {...rest}

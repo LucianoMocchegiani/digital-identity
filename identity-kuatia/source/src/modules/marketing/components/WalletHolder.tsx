@@ -13,10 +13,10 @@ export function WalletHolder() {
   return (
     <MarketingShell as="section" id="wallet" className="py-20">
       <SectionEyebrow>Wallet</SectionEyebrow>
-      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl xl:text-6xl">
+      <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
         Wallet Kuatia
       </h2>
-      <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:text-lg lg:text-xl">
+      <p className="mt-4 max-w-3xl text-base leading-relaxed text-[var(--kuatia-muted)] sm:text-lg">
         App para que los titulares acepten, guarden y presenten credenciales.
       </p>
 
@@ -24,8 +24,8 @@ export function WalletHolder() {
         <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg border border-[var(--kuatia-accent)]/40 text-[var(--kuatia-accent)]">
           <IconCredentials size={20} />
         </div>
-        <h3 className="font-display text-2xl font-semibold lg:text-3xl">Descargar</h3>
-        <p className="mt-2 max-w-xl text-base leading-relaxed text-[var(--kuatia-muted)] lg:text-lg">
+        <h3 className="font-display text-xl font-semibold sm:text-2xl">Descargar</h3>
+        <p className="mt-2 max-w-xl text-base leading-relaxed text-[var(--kuatia-muted)]">
           Aplicación lista para ofertas, guardado y presentación de credenciales.
         </p>
         <div className="mt-6 flex flex-wrap gap-3">

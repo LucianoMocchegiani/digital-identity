@@ -32,8 +32,8 @@ export function FeatureStrip() {
             <div className="mb-3 grid h-10 w-10 place-items-center rounded-lg bg-[var(--kuatia-accent)]/15 text-[var(--kuatia-accent)]">
               <Icon size={20} />
             </div>
-            <h2 className="font-display text-xl font-semibold lg:text-2xl">{title}</h2>
-            <p className="mt-2 max-w-md text-base leading-relaxed text-[var(--kuatia-muted)] lg:text-lg">
+            <h2 className="font-display text-xl font-semibold">{title}</h2>
+            <p className="mt-2 max-w-md text-base leading-relaxed text-[var(--kuatia-muted)]">
               {body}
             </p>
           </div>

@@ -22,10 +22,10 @@ export function FinalCta() {
               <IconBolt size={26} />
             </span>
             <div>
-              <h2 className="font-display text-2xl font-semibold sm:text-3xl md:text-4xl xl:text-5xl">
+              <h2 className="font-display text-2xl font-semibold sm:text-3xl">
                 Empezá a emitir hoy
               </h2>
-              <p className="mt-3 max-w-xl text-base text-[var(--kuatia-muted)] sm:text-lg">
+              <p className="mt-3 max-w-xl text-base text-[var(--kuatia-muted)]">
                 Creá una cuenta Free, provisioná un issuer o verifier y obtené tu API key. O
                 reservá una demo con el equipo de {siteConfig.companyName}.
               </p>

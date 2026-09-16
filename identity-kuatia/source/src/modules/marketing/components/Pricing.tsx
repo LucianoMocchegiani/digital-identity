@@ -106,7 +106,7 @@ export function Pricing() {
     <MarketingShell as="section" id="precios" className="py-20">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl md:text-5xl xl:text-6xl">
+          <h2 className="font-display text-3xl font-semibold tracking-tight sm:text-4xl">
             Planes
           </h2>
           <p className="mt-3 max-w-2xl text-base text-[var(--kuatia-muted)] sm:text-lg">
@@ -130,8 +130,8 @@ export function Pricing() {
             key={plan.id}
             className={
               plan.highlight
-                ? 'relative rounded-2xl border border-[var(--kuatia-accent)]/60 bg-[var(--kuatia-panel)] p-6 lg:p-7'
-                : 'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/50 p-6 lg:p-7'
+                ? 'relative rounded-2xl border border-[var(--kuatia-accent)]/60 bg-[var(--kuatia-panel)] p-6'
+                : 'rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)]/50 p-6'
             }
           >
             {plan.highlight ? (
@@ -140,13 +140,13 @@ export function Pricing() {
               </p>
             ) : null}
             <div className="text-[var(--kuatia-accent)]">
-              <plan.Icon size={28} />
+              <plan.Icon size={24} />
             </div>
-            <h3 className="mt-3 font-display text-2xl xl:text-3xl">{plan.name}</h3>
-            <p className="mt-1 text-lg font-semibold text-[var(--kuatia-accent)] xl:text-xl">
+            <h3 className="mt-3 font-display text-xl sm:text-2xl">{plan.name}</h3>
+            <p className="mt-1 text-base font-semibold text-[var(--kuatia-accent)] sm:text-lg">
               {plan.price}
             </p>
-            <p className="mt-3 text-sm leading-relaxed text-[var(--kuatia-muted)] lg:text-base">
+            <p className="mt-3 text-sm leading-relaxed text-[var(--kuatia-muted)]">
               {plan.blurb}
             </p>
             <CheckList items={plan.features} />
