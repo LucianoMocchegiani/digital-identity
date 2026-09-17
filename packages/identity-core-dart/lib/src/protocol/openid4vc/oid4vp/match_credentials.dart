@@ -53,10 +53,13 @@ Future<FormattedSubmission> matchPex({
 
 /// Evalúa las credenciales locales contra una [DcqlQuery].
 ///
-/// Para cada [DcqlCredentialQuery] filtra por formato y metadatos (vct, doctype).
+/// Por cada [DcqlCredentialQuery] filtra formato y `vct_values`.
+/// [credentialSets] (`credential_sets`): OR entre options; sin sets, AND de todas
+/// las queries (OpenID4VP §6.2 / Credo `DcqlService`).
 Future<FormattedSubmission> matchDcql({
   required DcqlQuery query,
   required List<CredentialRecord> credentials,
+  List<DcqlCredentialSet>? credentialSets,
 }) async {
   final entries = <FormattedSubmissionEntry>[];
 
@@ -92,9 +95,34 @@ Future<FormattedSubmission> matchDcql({
   }
 
   return FormattedSubmission(
-    areAllSatisfied: entries.every((e) => e.isSatisfied),
+    areAllSatisfied: dcqlAreAllSatisfied(entries, credentialSets),
     entries: entries,
   );
+}
+
+/// `true` si se cumple el DCQL: AND de entries, o cada set required tiene una option completa.
+bool dcqlAreAllSatisfied(
+  List<FormattedSubmissionEntry> entries,
+  List<DcqlCredentialSet>? credentialSets,
+) {
+  if (credentialSets == null || credentialSets.isEmpty) {
+    return entries.every((e) => e.isSatisfied);
+  }
+
+  final satisfiedIds = {
+    for (final entry in entries)
+      if (entry.isSatisfied) entry.inputDescriptorId,
+  };
+
+  for (final set in credentialSets) {
+    if (!set.required) continue;
+    final ok = set.options.any(
+      (option) =>
+          option.isNotEmpty && option.every(satisfiedIds.contains),
+    );
+    if (!ok) return false;
+  }
+  return true;
 }
 
 // — PEX helpers —

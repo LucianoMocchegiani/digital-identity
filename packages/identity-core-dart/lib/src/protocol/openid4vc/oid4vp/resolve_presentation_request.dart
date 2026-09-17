@@ -184,8 +184,13 @@ Future<FormattedSubmission> _matchCredentials(
   List<CredentialRecord> credentials,
 ) async {
   if (queryType == QueryType.dcql && request.dcqlQuery != null) {
-    final query = DcqlQuery.fromJson(request.dcqlQuery!);
-    return matchDcql(query: query, credentials: credentials);
+    final raw = request.dcqlQuery!;
+    final query = DcqlQuery.fromJson(raw);
+    return matchDcql(
+      query: query,
+      credentials: credentials,
+      credentialSets: parseDcqlCredentialSets(raw),
+    );
   }
 
   if (request.presentationDefinition != null) {
