@@ -30,6 +30,7 @@ Ver detalles completos en [Limitaciones](docs/07-limitations.md).
 
 ## Requisitos
 
+- FVM — Flutter **3.41.9** (`.fvmrc` en la raíz del monorepo)
 - Dart ≥ 3.0.0 < 4.0.0
 - Flutter ≥ 3.10.0
 - Android `minSdk` 23

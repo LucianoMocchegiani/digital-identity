@@ -13,7 +13,7 @@ Copia limpia (sin historial Git de los repos originales) de librerías, servicio
 | `identity-issuer-service` | Emisión (OID4VCI, DIDComm) — `:9001` |
 | `identity-verifier-service` | Verificación (OID4VP, DIDComm) — `:9002` |
 | `identity-holder-service` | Custodia (lab; fuera del compose) |
-| `identity-wallet` | App Flutter |
+| `identity-wallet` | App Flutter (FVM: Flutter **3.41.9**, `.fvmrc`) |
 | `docs/` | Documentación del ecosistema |
 | `docs/deploy-contabo-phase1.md` | Deploy Contabo + onboarding |
 | `postman/` | Colecciones de identidad |

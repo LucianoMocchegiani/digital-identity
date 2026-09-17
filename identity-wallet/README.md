@@ -15,8 +15,7 @@ Construido sobre [`identity_core_dart`](../packages/identity-core-dart) — el S
 
 ## Requisitos
 
-- Flutter ≥ 3.19.0
-- Dart ≥ 3.3.0
+- [FVM](https://fvm.app/) — el repo pinnea Flutter **3.41.9** en `.fvmrc` (mismo SDK que Faciliter)
 - Android ≥ 6.0 (API 23) o iOS ≥ 13
 
 ## Inicio
@@ -26,25 +25,33 @@ Construido sobre [`identity_core_dart`](../packages/identity-core-dart) — el S
 ```sh
 git clone --recurse-submodules <repo-url>
 cd digital-identity
+fvm use
 ```
 
 ### 2. Instalar dependencias Flutter
 
 ```sh
 cd identity-wallet
-flutter pub get
+fvm flutter pub get
 ```
 
 ### 3. Ejecutar
 
 ```sh
-flutter run
+fvm flutter run
 ```
 
 Para un dispositivo específico:
 
 ```sh
-flutter run -d <device-id>
+fvm flutter run -d <device-id>
+```
+
+Tests del SDK Dart:
+
+```sh
+cd packages/identity-core-dart
+fvm flutter test
 ```
 
 ## Deep linking

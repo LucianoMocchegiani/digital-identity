@@ -6,6 +6,9 @@ dist/
 coverage/
 .idea/
 .vscode/
+
+# FVM (pin in .fvmrc; SDK cache is local)
+.fvm/
 *.log
 .env
 .env.*
