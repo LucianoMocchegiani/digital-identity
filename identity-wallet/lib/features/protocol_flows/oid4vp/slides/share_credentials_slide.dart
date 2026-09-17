@@ -38,15 +38,19 @@ class ShareCredentialsSlide extends StatelessWidget {
   final VoidCallback onCancel;
 
   /// Mapea cada entrada de la submission a su view-model de UI.
+  ///
+  /// Con `credential_sets` (OR), hay entries insatisfechas a propósito.
+  /// Si el request ya está satisfecho, no se listan: no se van a compartir.
+  /// Si falta algo de verdad (`areAllSatisfied` false), sí se muestra el aviso.
   List<ShareEntryUi> _buildEntries() {
     return [
       for (final entry in request.submission.entries)
-        if (!entry.isSatisfied)
+        if (entry.isSatisfied)
+          _satisfiedEntry(entry)
+        else if (!request.submission.areAllSatisfied)
           ShareEntryUi(
             missingName: entry.name ?? 'Credencial requerida no disponible',
-          )
-        else
-          _satisfiedEntry(entry),
+          ),
     ];
   }
 
