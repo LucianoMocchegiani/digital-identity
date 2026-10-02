@@ -21,5 +21,12 @@ native/bbs/target/
 native/bbs/Cargo.lock
 native/bbs/testdata/last_created_proof.json
 
+# Spikes: binarios y artefactos locales
+spike/**/native/*.dll
+spike/**/.dart_tool/
+spike/**/.flutter-plugins*
+spike/**/pubspec.lock
+spike/**/build/
+
 # Generado por test/credential/bbs/bbs_dart_mattr_roundtrip_test.dart
 test/fixtures/bbs_ld_dart_messages.json

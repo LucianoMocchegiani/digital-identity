@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../crypto/wallet_crypto_context.dart';
 import 'isar/activity_isar.dart';

@@ -27,11 +27,7 @@ const MdocIsarSchema = CollectionSchema(
       name: r'displayMetadataJson',
       type: IsarType.string,
     ),
-    r'docType': PropertySchema(
-      id: 2,
-      name: r'docType',
-      type: IsarType.string,
-    ),
+    r'docType': PropertySchema(id: 2, name: r'docType', type: IsarType.string),
     r'issuerSignedBase64': PropertySchema(
       id: 3,
       name: r'issuerSignedBase64',
@@ -46,8 +42,9 @@ const MdocIsarSchema = CollectionSchema(
       id: 5,
       name: r'recordId',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _mdocIsarEstimateSize,
   serialize: _mdocIsarSerialize,
   deserialize: _mdocIsarDeserialize,
@@ -64,16 +61,17 @@ const MdocIsarSchema = CollectionSchema(
           name: r'recordId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _mdocIsarGetId,
   getLinks: _mdocIsarGetLinks,
   attach: _mdocIsarAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _mdocIsarEstimateSize(
@@ -211,8 +209,10 @@ extension MdocIsarByIndex on IsarCollection<MdocIsar> {
     return putAllByIndex(r'recordId', objects);
   }
 
-  List<Id> putAllByRecordIdSync(List<MdocIsar> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByRecordIdSync(
+    List<MdocIsar> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'recordId', objects, saveLinks: saveLinks);
   }
 }
@@ -228,10 +228,7 @@ extension MdocIsarQueryWhereSort on QueryBuilder<MdocIsar, MdocIsar, QWhere> {
 extension MdocIsarQueryWhere on QueryBuilder<MdocIsar, MdocIsar, QWhereClause> {
   QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
@@ -257,8 +254,10 @@ extension MdocIsarQueryWhere on QueryBuilder<MdocIsar, MdocIsar, QWhereClause> {
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> idGreaterThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> idGreaterThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -266,8 +265,10 @@ extension MdocIsarQueryWhere on QueryBuilder<MdocIsar, MdocIsar, QWhereClause> {
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> idLessThan(Id id,
-      {bool include = false}) {
+  QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> idLessThan(
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -282,56 +283,67 @@ extension MdocIsarQueryWhere on QueryBuilder<MdocIsar, MdocIsar, QWhereClause> {
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> recordIdEqualTo(
-      String recordId) {
+    String recordId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'recordId',
-        value: [recordId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'recordId', value: [recordId]),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterWhereClause> recordIdNotEqualTo(
-      String recordId) {
+    String recordId,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -340,12 +352,12 @@ extension MdocIsarQueryWhere on QueryBuilder<MdocIsar, MdocIsar, QWhereClause> {
 extension MdocIsarQueryFilter
     on QueryBuilder<MdocIsar, MdocIsar, QFilterCondition> {
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> createdAtEqualTo(
-      DateTime value) {
+    DateTime value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'createdAt', value: value),
+      );
     });
   }
 
@@ -354,11 +366,13 @@ extension MdocIsarQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -367,11 +381,13 @@ extension MdocIsarQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -382,82 +398,87 @@ extension MdocIsarQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'createdAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonIsNull() {
+  displayMetadataJsonIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'displayMetadataJson',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'displayMetadataJson'),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonIsNotNull() {
+  displayMetadataJsonIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'displayMetadataJson',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'displayMetadataJson'),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  displayMetadataJsonEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonLessThan(
+  displayMetadataJsonGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonBetween(
+  displayMetadataJsonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
+  displayMetadataJsonBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -465,84 +486,89 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'displayMetadataJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'displayMetadataJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  displayMetadataJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  displayMetadataJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonContains(String value, {bool caseSensitive = true}) {
+  displayMetadataJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'displayMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'displayMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonMatches(String pattern, {bool caseSensitive = true}) {
+  displayMetadataJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'displayMetadataJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'displayMetadataJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonIsEmpty() {
+  displayMetadataJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'displayMetadataJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'displayMetadataJson', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      displayMetadataJsonIsNotEmpty() {
+  displayMetadataJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'displayMetadataJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          property: r'displayMetadataJson',
+          value: '',
+        ),
+      );
     });
   }
 
@@ -551,11 +577,13 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -565,12 +593,14 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -580,12 +610,14 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -597,14 +629,16 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'docType',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'docType',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -613,11 +647,13 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -626,62 +662,67 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> docTypeContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'docType',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'docType',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> docTypeMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'docType',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'docType',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> docTypeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'docType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'docType', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> docTypeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'docType',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'docType', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
@@ -690,11 +731,13 @@ extension MdocIsarQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -703,11 +746,13 @@ extension MdocIsarQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -718,64 +763,69 @@ extension MdocIsarQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64EqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  issuerSignedBase64EqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64GreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64LessThan(
+  issuerSignedBase64GreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64Between(
+  issuerSignedBase64LessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
+  issuerSignedBase64Between(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -783,84 +833,86 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'issuerSignedBase64',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'issuerSignedBase64',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64StartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  issuerSignedBase64StartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64EndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  issuerSignedBase64EndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64Contains(String value, {bool caseSensitive = true}) {
+  issuerSignedBase64Contains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'issuerSignedBase64',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'issuerSignedBase64',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64Matches(String pattern, {bool caseSensitive = true}) {
+  issuerSignedBase64Matches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'issuerSignedBase64',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'issuerSignedBase64',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64IsEmpty() {
+  issuerSignedBase64IsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'issuerSignedBase64',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'issuerSignedBase64', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      issuerSignedBase64IsNotEmpty() {
+  issuerSignedBase64IsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'issuerSignedBase64',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'issuerSignedBase64', value: ''),
+      );
     });
   }
 
@@ -869,43 +921,49 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonGreaterThan(
+  namespacesJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonLessThan(
+  namespacesJsonLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -917,85 +975,88 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'namespacesJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'namespacesJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  namespacesJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  namespacesJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonContains(String value, {bool caseSensitive = true}) {
+  namespacesJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'namespacesJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'namespacesJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> namespacesJsonMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'namespacesJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'namespacesJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonIsEmpty() {
+  namespacesJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'namespacesJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'namespacesJson', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition>
-      namespacesJsonIsNotEmpty() {
+  namespacesJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'namespacesJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'namespacesJson', value: ''),
+      );
     });
   }
 
@@ -1004,11 +1065,13 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1018,12 +1081,14 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1033,12 +1098,14 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1050,14 +1117,16 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'recordId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'recordId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1066,11 +1135,13 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1079,53 +1150,59 @@ extension MdocIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> recordIdContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> recordIdMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'recordId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'recordId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> recordIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'recordId', value: ''),
+      );
     });
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterFilterCondition> recordIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'recordId', value: ''),
+      );
     });
   }
 }
@@ -1156,7 +1233,7 @@ extension MdocIsarQuerySortBy on QueryBuilder<MdocIsar, MdocIsar, QSortBy> {
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterSortBy>
-      sortByDisplayMetadataJsonDesc() {
+  sortByDisplayMetadataJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'displayMetadataJson', Sort.desc);
     });
@@ -1181,7 +1258,7 @@ extension MdocIsarQuerySortBy on QueryBuilder<MdocIsar, MdocIsar, QSortBy> {
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterSortBy>
-      sortByIssuerSignedBase64Desc() {
+  sortByIssuerSignedBase64Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerSignedBase64', Sort.desc);
     });
@@ -1233,7 +1310,7 @@ extension MdocIsarQuerySortThenBy
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterSortBy>
-      thenByDisplayMetadataJsonDesc() {
+  thenByDisplayMetadataJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'displayMetadataJson', Sort.desc);
     });
@@ -1270,7 +1347,7 @@ extension MdocIsarQuerySortThenBy
   }
 
   QueryBuilder<MdocIsar, MdocIsar, QAfterSortBy>
-      thenByIssuerSignedBase64Desc() {
+  thenByIssuerSignedBase64Desc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerSignedBase64', Sort.desc);
     });
@@ -1309,39 +1386,50 @@ extension MdocIsarQueryWhereDistinct
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByDisplayMetadataJson(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByDisplayMetadataJson({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'displayMetadataJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'displayMetadataJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByDocType(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByDocType({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'docType', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByIssuerSignedBase64(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByIssuerSignedBase64({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'issuerSignedBase64',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'issuerSignedBase64',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByNamespacesJson(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByNamespacesJson({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'namespacesJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'namespacesJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByRecordId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<MdocIsar, MdocIsar, QDistinct> distinctByRecordId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'recordId', caseSensitive: caseSensitive);
     });
@@ -1363,7 +1451,7 @@ extension MdocIsarQueryProperty
   }
 
   QueryBuilder<MdocIsar, String?, QQueryOperations>
-      displayMetadataJsonProperty() {
+  displayMetadataJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'displayMetadataJson');
     });
@@ -1376,7 +1464,7 @@ extension MdocIsarQueryProperty
   }
 
   QueryBuilder<MdocIsar, String, QQueryOperations>
-      issuerSignedBase64Property() {
+  issuerSignedBase64Property() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'issuerSignedBase64');
     });

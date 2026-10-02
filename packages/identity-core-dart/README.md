@@ -129,12 +129,18 @@ final result = await session.openid4vp.shareCredentials(
 
 ## Generación de código
 
-El paquete usa `build_runner` para los esquemas Isar y los modelos Freezed. Los archivos generados (`.g.dart`, `.freezed.dart`) se commitean al repositorio para que los consumidores no necesiten ejecutar la generación de código.
+Los archivos generados (`.g.dart`, `.freezed.dart`) se commitean al repositorio para que los consumidores no necesiten ejecutar la generación de código.
 
-Para regenerar después de modificar modelos (solo mantenedores del paquete):
+Modelos Freezed / json (solo mantenedores del paquete):
 
 ```sh
 dart run build_runner build --delete-conflicting-outputs
+```
+
+Esquemas Isar (`lib/src/record/isar/`): `isar_community_generator` 3.3 no convive con freezed 2, así que se generan en un paquete aparte:
+
+```powershell
+.\tool\isar_codegen\generate.ps1
 ```
 
 ---

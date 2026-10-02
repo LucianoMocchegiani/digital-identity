@@ -52,8 +52,9 @@ const DeferredCredentialIsarSchema = CollectionSchema(
       id: 6,
       name: r'responseJson',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _deferredCredentialIsarEstimateSize,
   serialize: _deferredCredentialIsarSerialize,
   deserialize: _deferredCredentialIsarDeserialize,
@@ -70,16 +71,17 @@ const DeferredCredentialIsarSchema = CollectionSchema(
           name: r'recordId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _deferredCredentialIsarGetId,
   getLinks: _deferredCredentialIsarGetLinks,
   attach: _deferredCredentialIsarAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _deferredCredentialIsarEstimateSize(
@@ -159,12 +161,16 @@ Id _deferredCredentialIsarGetId(DeferredCredentialIsar object) {
 }
 
 List<IsarLinkBase<dynamic>> _deferredCredentialIsarGetLinks(
-    DeferredCredentialIsar object) {
+  DeferredCredentialIsar object,
+) {
   return [];
 }
 
 void _deferredCredentialIsarAttach(
-    IsarCollection<dynamic> col, Id id, DeferredCredentialIsar object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  DeferredCredentialIsar object,
+) {
   object.id = id;
 }
 
@@ -187,13 +193,15 @@ extension DeferredCredentialIsarByIndex
   }
 
   Future<List<DeferredCredentialIsar?>> getAllByRecordId(
-      List<String> recordIdValues) {
+    List<String> recordIdValues,
+  ) {
     final values = recordIdValues.map((e) => [e]).toList();
     return getAllByIndex(r'recordId', values);
   }
 
   List<DeferredCredentialIsar?> getAllByRecordIdSync(
-      List<String> recordIdValues) {
+    List<String> recordIdValues,
+  ) {
     final values = recordIdValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'recordId', values);
   }
@@ -220,8 +228,10 @@ extension DeferredCredentialIsarByIndex
     return putAllByIndex(r'recordId', objects);
   }
 
-  List<Id> putAllByRecordIdSync(List<DeferredCredentialIsar> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByRecordIdSync(
+    List<DeferredCredentialIsar> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'recordId', objects, saveLinks: saveLinks);
   }
 }
@@ -229,27 +239,37 @@ extension DeferredCredentialIsarByIndex
 extension DeferredCredentialIsarQueryWhereSort
     on QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QWhere> {
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterWhere>
-      anyId() {
+  anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension DeferredCredentialIsarQueryWhere on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QWhereClause> {
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> idEqualTo(Id id) {
+extension DeferredCredentialIsarQueryWhere
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QWhereClause
+        > {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  idNotEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -271,8 +291,12 @@ extension DeferredCredentialIsarQueryWhere on QueryBuilder<
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> idGreaterThan(Id id, {bool include = false}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  idGreaterThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -280,8 +304,12 @@ extension DeferredCredentialIsarQueryWhere on QueryBuilder<
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> idLessThan(Id id, {bool include = false}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  idLessThan(Id id, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -289,119 +317,164 @@ extension DeferredCredentialIsarQueryWhere on QueryBuilder<
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> idBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> recordIdEqualTo(String recordId) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  recordIdEqualTo(String recordId) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'recordId',
-        value: [recordId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'recordId', value: [recordId]),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterWhereClause> recordIdNotEqualTo(String recordId) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterWhereClause
+  >
+  recordIdNotEqualTo(String recordId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [recordId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'recordId',
-              lower: [],
-              upper: [recordId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [recordId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'recordId',
+                lower: [],
+                upper: [recordId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
 }
 
-extension DeferredCredentialIsarQueryFilter on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QFilterCondition> {
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+extension DeferredCredentialIsarQueryFilter
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QFilterCondition
+        > {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonLessThan(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -409,249 +482,322 @@ extension DeferredCredentialIsarQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'accessTokenJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'accessTokenJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      accessTokenJsonContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'accessTokenJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'accessTokenJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      accessTokenJsonMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'accessTokenJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'accessTokenJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonIsEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'accessTokenJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'accessTokenJson', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> accessTokenJsonIsNotEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  accessTokenJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'accessTokenJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'accessTokenJson', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> createdAtEqualTo(DateTime value) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'createdAt', value: value),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> createdAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  createdAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> createdAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  createdAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> createdAtBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'createdAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  idEqualTo(Id value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> idBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonLessThan(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -659,267 +805,348 @@ extension DeferredCredentialIsarQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'issuerMetadataJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'issuerMetadataJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      issuerMetadataJsonContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'issuerMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'issuerMetadataJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      issuerMetadataJsonMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'issuerMetadataJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'issuerMetadataJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonIsEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'issuerMetadataJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'issuerMetadataJson', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> issuerMetadataJsonIsNotEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  issuerMetadataJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'issuerMetadataJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'issuerMetadataJson', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastCheckedAtEqualTo(DateTime value) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastCheckedAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastCheckedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lastCheckedAt', value: value),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastCheckedAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastCheckedAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastCheckedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lastCheckedAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastCheckedAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastCheckedAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastCheckedAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lastCheckedAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastCheckedAtBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastCheckedAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastCheckedAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'lastCheckedAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtIsNull() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'lastErroredAt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lastErroredAt'),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtIsNotNull() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'lastErroredAt',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lastErroredAt'),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtEqualTo(DateTime? value) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'lastErroredAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'lastErroredAt', value: value),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtGreaterThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'lastErroredAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'lastErroredAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtLessThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'lastErroredAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'lastErroredAt',
+          value: value,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> lastErroredAtBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  lastErroredAtBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'lastErroredAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'lastErroredAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdLessThan(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -927,137 +1154,180 @@ extension DeferredCredentialIsarQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'recordId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'recordId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      recordIdContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'recordId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'recordId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      recordIdMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'recordId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'recordId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdIsEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'recordId', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> recordIdIsNotEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  recordIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'recordId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'recordId', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonGreaterThan(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonLessThan(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonBetween(
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1065,306 +1335,345 @@ extension DeferredCredentialIsarQueryFilter on QueryBuilder<
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'responseJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'responseJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      responseJsonContains(String value, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'responseJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'responseJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-          QAfterFilterCondition>
-      responseJsonMatches(String pattern, {bool caseSensitive = true}) {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'responseJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'responseJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonIsEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'responseJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'responseJson', value: ''),
+      );
     });
   }
 
-  QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar,
-      QAfterFilterCondition> responseJsonIsNotEmpty() {
+  QueryBuilder<
+    DeferredCredentialIsar,
+    DeferredCredentialIsar,
+    QAfterFilterCondition
+  >
+  responseJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'responseJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'responseJson', value: ''),
+      );
     });
   }
 }
 
-extension DeferredCredentialIsarQueryObject on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QFilterCondition> {}
+extension DeferredCredentialIsarQueryObject
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QFilterCondition
+        > {}
 
-extension DeferredCredentialIsarQueryLinks on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QFilterCondition> {}
+extension DeferredCredentialIsarQueryLinks
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QFilterCondition
+        > {}
 
 extension DeferredCredentialIsarQuerySortBy
     on QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QSortBy> {
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByAccessTokenJson() {
+  sortByAccessTokenJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'accessTokenJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByAccessTokenJsonDesc() {
+  sortByAccessTokenJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'accessTokenJson', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByCreatedAt() {
+  sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByCreatedAtDesc() {
+  sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByIssuerMetadataJson() {
+  sortByIssuerMetadataJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerMetadataJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByIssuerMetadataJsonDesc() {
+  sortByIssuerMetadataJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerMetadataJson', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByLastCheckedAt() {
+  sortByLastCheckedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastCheckedAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByLastCheckedAtDesc() {
+  sortByLastCheckedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastCheckedAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByLastErroredAt() {
+  sortByLastErroredAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastErroredAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByLastErroredAtDesc() {
+  sortByLastErroredAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastErroredAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByRecordId() {
+  sortByRecordId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByRecordIdDesc() {
+  sortByRecordIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByResponseJson() {
+  sortByResponseJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'responseJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      sortByResponseJsonDesc() {
+  sortByResponseJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'responseJson', Sort.desc);
     });
   }
 }
 
-extension DeferredCredentialIsarQuerySortThenBy on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QSortThenBy> {
+extension DeferredCredentialIsarQuerySortThenBy
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QSortThenBy
+        > {
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByAccessTokenJson() {
+  thenByAccessTokenJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'accessTokenJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByAccessTokenJsonDesc() {
+  thenByAccessTokenJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'accessTokenJson', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByCreatedAt() {
+  thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByCreatedAtDesc() {
+  thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenById() {
+  thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByIdDesc() {
+  thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByIssuerMetadataJson() {
+  thenByIssuerMetadataJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerMetadataJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByIssuerMetadataJsonDesc() {
+  thenByIssuerMetadataJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'issuerMetadataJson', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByLastCheckedAt() {
+  thenByLastCheckedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastCheckedAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByLastCheckedAtDesc() {
+  thenByLastCheckedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastCheckedAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByLastErroredAt() {
+  thenByLastErroredAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastErroredAt', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByLastErroredAtDesc() {
+  thenByLastErroredAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastErroredAt', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByRecordId() {
+  thenByRecordId() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByRecordIdDesc() {
+  thenByRecordIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'recordId', Sort.desc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByResponseJson() {
+  thenByResponseJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'responseJson', Sort.asc);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QAfterSortBy>
-      thenByResponseJsonDesc() {
+  thenByResponseJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'responseJson', Sort.desc);
     });
@@ -1374,59 +1683,68 @@ extension DeferredCredentialIsarQuerySortThenBy on QueryBuilder<
 extension DeferredCredentialIsarQueryWhereDistinct
     on QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct> {
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByAccessTokenJson({bool caseSensitive = true}) {
+  distinctByAccessTokenJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'accessTokenJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'accessTokenJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByCreatedAt() {
+  distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByIssuerMetadataJson({bool caseSensitive = true}) {
+  distinctByIssuerMetadataJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'issuerMetadataJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'issuerMetadataJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByLastCheckedAt() {
+  distinctByLastCheckedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastCheckedAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByLastErroredAt() {
+  distinctByLastErroredAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastErroredAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByRecordId({bool caseSensitive = true}) {
+  distinctByRecordId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'recordId', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DeferredCredentialIsar, QDistinct>
-      distinctByResponseJson({bool caseSensitive = true}) {
+  distinctByResponseJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'responseJson', caseSensitive: caseSensitive);
     });
   }
 }
 
-extension DeferredCredentialIsarQueryProperty on QueryBuilder<
-    DeferredCredentialIsar, DeferredCredentialIsar, QQueryProperty> {
+extension DeferredCredentialIsarQueryProperty
+    on
+        QueryBuilder<
+          DeferredCredentialIsar,
+          DeferredCredentialIsar,
+          QQueryProperty
+        > {
   QueryBuilder<DeferredCredentialIsar, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
@@ -1434,49 +1752,49 @@ extension DeferredCredentialIsarQueryProperty on QueryBuilder<
   }
 
   QueryBuilder<DeferredCredentialIsar, String, QQueryOperations>
-      accessTokenJsonProperty() {
+  accessTokenJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'accessTokenJson');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DateTime, QQueryOperations>
-      createdAtProperty() {
+  createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, String, QQueryOperations>
-      issuerMetadataJsonProperty() {
+  issuerMetadataJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'issuerMetadataJson');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DateTime, QQueryOperations>
-      lastCheckedAtProperty() {
+  lastCheckedAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastCheckedAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, DateTime?, QQueryOperations>
-      lastErroredAtProperty() {
+  lastErroredAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastErroredAt');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, String, QQueryOperations>
-      recordIdProperty() {
+  recordIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'recordId');
     });
   }
 
   QueryBuilder<DeferredCredentialIsar, String, QQueryOperations>
-      responseJsonProperty() {
+  responseJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'responseJson');
     });

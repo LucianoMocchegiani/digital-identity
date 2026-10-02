@@ -40,6 +40,5 @@ android {
     }
 }
 
-dependencies {
-    compileOnly 'io.flutter:flutter_embedding_debug:1.0.0-3.10.0'
-}
+// El embedding de Flutter lo agrega flutter-gradle-plugin a cada plugin
+// (versión del engine en uso). Fijarlo acá rompe `flutter build apk --release`.

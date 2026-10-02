@@ -22,21 +22,13 @@ const KeyRecordIsarSchema = CollectionSchema(
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
-    r'did': PropertySchema(
-      id: 1,
-      name: r'did',
-      type: IsarType.string,
-    ),
+    r'did': PropertySchema(id: 1, name: r'did', type: IsarType.string),
     r'isHardwareBacked': PropertySchema(
       id: 2,
       name: r'isHardwareBacked',
       type: IsarType.bool,
     ),
-    r'keyId': PropertySchema(
-      id: 3,
-      name: r'keyId',
-      type: IsarType.string,
-    ),
+    r'keyId': PropertySchema(id: 3, name: r'keyId', type: IsarType.string),
     r'keyTypeIndex': PropertySchema(
       id: 4,
       name: r'keyTypeIndex',
@@ -51,8 +43,9 @@ const KeyRecordIsarSchema = CollectionSchema(
       id: 6,
       name: r'publicJwkJson',
       type: IsarType.string,
-    )
+    ),
   },
+
   estimateSize: _keyRecordIsarEstimateSize,
   serialize: _keyRecordIsarSerialize,
   deserialize: _keyRecordIsarDeserialize,
@@ -69,16 +62,17 @@ const KeyRecordIsarSchema = CollectionSchema(
           name: r'keyId',
           type: IndexType.hash,
           caseSensitive: true,
-        )
+        ),
       ],
-    )
+    ),
   },
   links: {},
   embeddedSchemas: {},
+
   getId: _keyRecordIsarGetId,
   getLinks: _keyRecordIsarGetLinks,
   attach: _keyRecordIsarAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _keyRecordIsarEstimateSize(
@@ -172,7 +166,10 @@ List<IsarLinkBase<dynamic>> _keyRecordIsarGetLinks(KeyRecordIsar object) {
 }
 
 void _keyRecordIsarAttach(
-    IsarCollection<dynamic> col, Id id, KeyRecordIsar object) {
+  IsarCollection<dynamic> col,
+  Id id,
+  KeyRecordIsar object,
+) {
   object.id = id;
 }
 
@@ -225,8 +222,10 @@ extension KeyRecordIsarByIndex on IsarCollection<KeyRecordIsar> {
     return putAllByIndex(r'keyId', objects);
   }
 
-  List<Id> putAllByKeyIdSync(List<KeyRecordIsar> objects,
-      {bool saveLinks = true}) {
+  List<Id> putAllByKeyIdSync(
+    List<KeyRecordIsar> objects, {
+    bool saveLinks = true,
+  }) {
     return putAllByIndexSync(r'keyId', objects, saveLinks: saveLinks);
   }
 }
@@ -243,17 +242,16 @@ extension KeyRecordIsarQueryWhereSort
 extension KeyRecordIsarQueryWhere
     on QueryBuilder<KeyRecordIsar, KeyRecordIsar, QWhereClause> {
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -276,8 +274,9 @@ extension KeyRecordIsarQueryWhere
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -286,8 +285,9 @@ extension KeyRecordIsarQueryWhere
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -302,56 +302,67 @@ extension KeyRecordIsarQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> keyIdEqualTo(
-      String keyId) {
+    String keyId,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'keyId',
-        value: [keyId],
-      ));
+      return query.addWhereClause(
+        IndexWhereClause.equalTo(indexName: r'keyId', value: [keyId]),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterWhereClause> keyIdNotEqualTo(
-      String keyId) {
+    String keyId,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'keyId',
-              lower: [],
-              upper: [keyId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'keyId',
-              lower: [keyId],
-              includeLower: false,
-              upper: [],
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'keyId',
+                lower: [],
+                upper: [keyId],
+                includeUpper: false,
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'keyId',
+                lower: [keyId],
+                includeLower: false,
+                upper: [],
+              ),
+            );
       } else {
         return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'keyId',
-              lower: [keyId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'keyId',
-              lower: [],
-              upper: [keyId],
-              includeUpper: false,
-            ));
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'keyId',
+                lower: [keyId],
+                includeLower: false,
+                upper: [],
+              ),
+            )
+            .addWhereClause(
+              IndexWhereClause.between(
+                indexName: r'keyId',
+                lower: [],
+                upper: [keyId],
+                includeUpper: false,
+              ),
+            );
       }
     });
   }
@@ -360,76 +371,75 @@ extension KeyRecordIsarQueryWhere
 extension KeyRecordIsarQueryFilter
     on QueryBuilder<KeyRecordIsar, KeyRecordIsar, QFilterCondition> {
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      createdAtEqualTo(DateTime value) {
+  createdAtEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'createdAt', value: value),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      createdAtGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  createdAtGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      createdAtLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  createdAtLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'createdAt',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      createdAtBetween(
+  createdAtBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'createdAt',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didIsNull() {
+  didIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'did',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'did'),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didIsNotNull() {
+  didIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'did',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'did'),
+      );
     });
   }
 
@@ -438,27 +448,31 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didGreaterThan(
+  didGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -468,12 +482,14 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -485,28 +501,29 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'did',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'did',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  didStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -515,79 +532,84 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition> didContains(
-      String value,
-      {bool caseSensitive = true}) {
+    String value, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'did',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'did',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition> didMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'did',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'did',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didIsEmpty() {
+  didIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'did',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'did', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      didIsNotEmpty() {
+  didIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'did',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'did', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -596,11 +618,13 @@ extension KeyRecordIsarQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -611,74 +635,78 @@ extension KeyRecordIsarQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      isHardwareBackedEqualTo(bool value) {
+  isHardwareBackedEqualTo(bool value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isHardwareBacked',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isHardwareBacked', value: value),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  keyIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdLessThan(
+  keyIdGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdBetween(
+  keyIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
+  keyIdBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -686,209 +714,213 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'keyId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'keyId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  keyIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  keyIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdContains(String value, {bool caseSensitive = true}) {
+  keyIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'keyId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'keyId',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdMatches(String pattern, {bool caseSensitive = true}) {
+  keyIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'keyId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'keyId',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdIsEmpty() {
+  keyIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'keyId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'keyId', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyIdIsNotEmpty() {
+  keyIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'keyId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'keyId', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyTypeIndexEqualTo(int value) {
+  keyTypeIndexEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'keyTypeIndex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'keyTypeIndex', value: value),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyTypeIndexGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  keyTypeIndexGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'keyTypeIndex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'keyTypeIndex',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyTypeIndexLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  keyTypeIndexLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'keyTypeIndex',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'keyTypeIndex',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      keyTypeIndexBetween(
+  keyTypeIndexBetween(
     int lower,
     int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'keyTypeIndex',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'keyTypeIndex',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonIsNull() {
+  privateJwkJsonIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'privateJwkJson',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'privateJwkJson'),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonIsNotNull() {
+  privateJwkJsonIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'privateJwkJson',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'privateJwkJson'),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+  privateJwkJsonEqualTo(String? value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonLessThan(
+  privateJwkJsonGreaterThan(
     String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonBetween(
+  privateJwkJsonLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
+  privateJwkJsonBetween(
     String? lower,
     String? upper, {
     bool includeLower = true,
@@ -896,135 +928,140 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'privateJwkJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'privateJwkJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  privateJwkJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  privateJwkJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonContains(String value, {bool caseSensitive = true}) {
+  privateJwkJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'privateJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'privateJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonMatches(String pattern, {bool caseSensitive = true}) {
+  privateJwkJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'privateJwkJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'privateJwkJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonIsEmpty() {
+  privateJwkJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'privateJwkJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'privateJwkJson', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      privateJwkJsonIsNotEmpty() {
+  privateJwkJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'privateJwkJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'privateJwkJson', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  publicJwkJsonEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonLessThan(
+  publicJwkJsonGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonBetween(
+  publicJwkJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
+  publicJwkJsonBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1032,84 +1069,86 @@ extension KeyRecordIsarQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'publicJwkJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'publicJwkJson',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  publicJwkJsonStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  publicJwkJsonEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonContains(String value, {bool caseSensitive = true}) {
+  publicJwkJsonContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'publicJwkJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'publicJwkJson',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonMatches(String pattern, {bool caseSensitive = true}) {
+  publicJwkJsonMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'publicJwkJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'publicJwkJson',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonIsEmpty() {
+  publicJwkJsonIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'publicJwkJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'publicJwkJson', value: ''),
+      );
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterFilterCondition>
-      publicJwkJsonIsNotEmpty() {
+  publicJwkJsonIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'publicJwkJson',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'publicJwkJson', value: ''),
+      );
     });
   }
 }
@@ -1129,7 +1168,7 @@ extension KeyRecordIsarQuerySortBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByCreatedAtDesc() {
+  sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1148,14 +1187,14 @@ extension KeyRecordIsarQuerySortBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByIsHardwareBacked() {
+  sortByIsHardwareBacked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isHardwareBacked', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByIsHardwareBackedDesc() {
+  sortByIsHardwareBackedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isHardwareBacked', Sort.desc);
     });
@@ -1174,42 +1213,42 @@ extension KeyRecordIsarQuerySortBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByKeyTypeIndex() {
+  sortByKeyTypeIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'keyTypeIndex', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByKeyTypeIndexDesc() {
+  sortByKeyTypeIndexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'keyTypeIndex', Sort.desc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByPrivateJwkJson() {
+  sortByPrivateJwkJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'privateJwkJson', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByPrivateJwkJsonDesc() {
+  sortByPrivateJwkJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'privateJwkJson', Sort.desc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByPublicJwkJson() {
+  sortByPublicJwkJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'publicJwkJson', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      sortByPublicJwkJsonDesc() {
+  sortByPublicJwkJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'publicJwkJson', Sort.desc);
     });
@@ -1225,7 +1264,7 @@ extension KeyRecordIsarQuerySortThenBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByCreatedAtDesc() {
+  thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.desc);
     });
@@ -1256,14 +1295,14 @@ extension KeyRecordIsarQuerySortThenBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByIsHardwareBacked() {
+  thenByIsHardwareBacked() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isHardwareBacked', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByIsHardwareBackedDesc() {
+  thenByIsHardwareBackedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'isHardwareBacked', Sort.desc);
     });
@@ -1282,42 +1321,42 @@ extension KeyRecordIsarQuerySortThenBy
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByKeyTypeIndex() {
+  thenByKeyTypeIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'keyTypeIndex', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByKeyTypeIndexDesc() {
+  thenByKeyTypeIndexDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'keyTypeIndex', Sort.desc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByPrivateJwkJson() {
+  thenByPrivateJwkJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'privateJwkJson', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByPrivateJwkJsonDesc() {
+  thenByPrivateJwkJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'privateJwkJson', Sort.desc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByPublicJwkJson() {
+  thenByPublicJwkJson() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'publicJwkJson', Sort.asc);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QAfterSortBy>
-      thenByPublicJwkJsonDesc() {
+  thenByPublicJwkJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'publicJwkJson', Sort.desc);
     });
@@ -1332,47 +1371,53 @@ extension KeyRecordIsarQueryWhereDistinct
     });
   }
 
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct> distinctByDid(
-      {bool caseSensitive = true}) {
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct> distinctByDid({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'did', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct>
-      distinctByIsHardwareBacked() {
+  distinctByIsHardwareBacked() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'isHardwareBacked');
     });
   }
 
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct> distinctByKeyId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct> distinctByKeyId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'keyId', caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct>
-      distinctByKeyTypeIndex() {
+  distinctByKeyTypeIndex() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'keyTypeIndex');
     });
   }
 
   QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct>
-      distinctByPrivateJwkJson({bool caseSensitive = true}) {
+  distinctByPrivateJwkJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'privateJwkJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'privateJwkJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct> distinctByPublicJwkJson(
-      {bool caseSensitive = true}) {
+  QueryBuilder<KeyRecordIsar, KeyRecordIsar, QDistinct>
+  distinctByPublicJwkJson({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'publicJwkJson',
-          caseSensitive: caseSensitive);
+      return query.addDistinctBy(
+        r'publicJwkJson',
+        caseSensitive: caseSensitive,
+      );
     });
   }
 }
@@ -1398,7 +1443,7 @@ extension KeyRecordIsarQueryProperty
   }
 
   QueryBuilder<KeyRecordIsar, bool, QQueryOperations>
-      isHardwareBackedProperty() {
+  isHardwareBackedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'isHardwareBacked');
     });
@@ -1417,14 +1462,14 @@ extension KeyRecordIsarQueryProperty
   }
 
   QueryBuilder<KeyRecordIsar, String?, QQueryOperations>
-      privateJwkJsonProperty() {
+  privateJwkJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'privateJwkJson');
     });
   }
 
   QueryBuilder<KeyRecordIsar, String, QQueryOperations>
-      publicJwkJsonProperty() {
+  publicJwkJsonProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'publicJwkJson');
     });

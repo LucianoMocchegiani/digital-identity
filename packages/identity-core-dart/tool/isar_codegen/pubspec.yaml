@@ -1,0 +1,15 @@
+name: isar_codegen
+description: >-
+  Genera los .g.dart de los modelos Isar de identity_core_dart aislado del
+  resto del codegen (isar_community_generator 3.3 usa build 4; freezed 2 usa build 2).
+publish_to: none
+
+environment:
+  sdk: '>=3.9.0 <4.0.0'
+
+dependencies:
+  isar_community: 3.3.2
+
+dev_dependencies:
+  build_runner: ^2.7.0
+  isar_community_generator: 3.3.2

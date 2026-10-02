@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../crypto/wallet_crypto_context.dart';
 import 'isar/deferred_credential_isar.dart';
