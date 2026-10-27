@@ -12,8 +12,9 @@ dependencies:
 
   # Almacenamiento encriptado (equivalente a Askar en paradym-wallet).
   # Fork comunitario de Isar 3: binarios a 16 KB (Google Play) y namespace AGP 8.
-  isar_community: ^3.3.2
-  isar_community_flutter_libs: ^3.3.2
+  # Mantener alineado con el código generado en versión 3.3.2.
+  isar_community: 3.3.2
+  isar_community_flutter_libs: 3.3.2
 
   # Wallet key — solo este secreto vive fuera de isar (para unlock biométrico)
   flutter_secure_storage: ^9.0.0
