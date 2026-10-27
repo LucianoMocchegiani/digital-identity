@@ -63,7 +63,7 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
   Widget build(BuildContext context) {
     final colors = context.kuatia;
     return LayoutBuilder(builder: (context, constraints) {
-      final maxCredentialsHeight = (constraints.maxHeight * .6).clamp(160.0, 420.0);
+      final maxCredentialsHeight = (constraints.maxHeight * .6).clamp(160.0, 420.0).toDouble();
       return SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
