@@ -7,68 +7,39 @@ import '../models/wallet_category.dart';
 import 'category_creation_modal.dart';
 import 'category_icon.dart';
 
-/// Contenedor expandible de categoría del panel.
+/// Contenedor expandible de categoría.
 class CategoryAccordion extends StatefulWidget {
   const CategoryAccordion({
     super.key,
     required this.category,
     this.onCredentialTap,
-    this.onCategoryTap,
-    this.initiallyExpanded = false,
-    this.onClose,
-    this.minimumHeight,
+    this.maxCredentialsHeight,
   });
 
   final WalletCategory category;
   final void Function(WalletCredential credential)? onCredentialTap;
-  final VoidCallback? onCategoryTap;
-  final bool initiallyExpanded;
-  final VoidCallback? onClose;
-  final double? minimumHeight;
+  final double? maxCredentialsHeight;
 
   @override
   State<CategoryAccordion> createState() => _CategoryAccordionState();
 }
 
 class _CategoryAccordionState extends State<CategoryAccordion> {
-  late bool _expanded = widget.initiallyExpanded;
-
-  void _openCategory() {
-    if (widget.onCategoryTap != null) {
-      widget.onCategoryTap!();
-    } else {
-      setState(() => _expanded = true);
-    }
-  }
-
-  void _closeCategory() {
-    if (widget.onClose != null) {
-      widget.onClose!();
-    } else {
-      setState(() => _expanded = false);
-    }
-  }
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final colors = context.kuatia;
     final radius = BorderRadius.circular(12);
-
     return Material(
       color: widget.category.rowColor,
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        onTap: _expanded ? null : _openCategory,
+        onTap: _expanded ? null : () => setState(() => _expanded = true),
         borderRadius: radius,
         child: Container(
-          constraints: BoxConstraints(
-            minHeight: _expanded ? widget.minimumHeight ?? 0 : 0,
-          ),
-          decoration: BoxDecoration(
-            borderRadius: radius,
-            border: Border.all(color: colors.border),
-          ),
+          decoration: BoxDecoration(borderRadius: radius, border: Border.all(color: colors.border)),
           child: AnimatedSize(
             duration: const Duration(milliseconds: 200),
             alignment: Alignment.topCenter,
@@ -83,173 +54,97 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     final category = widget.category;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          CategoryIcon(
-            asset: category.iconAsset,
-            colorArgb: category.colorArgb,
-            size: 35,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(category.label, style: _titleStyle(colors)),
-                const SizedBox(height: 2),
-                Text(
-                  category.subtitle,
-                  style: TextStyle(
-                    fontSize: 14,
-                    height: 18 / 14,
-                    fontWeight: FontWeight.w500,
-                    color: colors.muted,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(width: 12),
-          IdentityEyeToggle(expanded: false, onTap: _openCategory),
-        ],
-      ),
+      child: Row(children: [
+        CategoryIcon(asset: category.iconAsset, colorArgb: category.colorArgb, size: 35),
+        const SizedBox(width: 12),
+        Expanded(child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(category.label, style: _titleStyle(colors)),
+            const SizedBox(height: 2),
+            Text(category.subtitle, style: TextStyle(fontSize: 14, height: 18 / 14,
+              fontWeight: FontWeight.w500, color: colors.muted)),
+          ],
+        )),
+        const SizedBox(width: 12),
+        IdentityEyeToggle(expanded: false, onTap: () => setState(() => _expanded = true)),
+      ]),
     );
   }
 
   Widget _buildExpanded(KuatiaColors colors) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Text(
-                  widget.category.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: _titleStyle(colors),
-                ),
-              ),
+          child: Row(children: [
+            Expanded(child: Text(widget.category.label, maxLines: 1,
+              overflow: TextOverflow.ellipsis, style: _titleStyle(colors))),
+            const SizedBox(width: 8),
+            if (!widget.category.isSystem) ...[
+              _HeadIcon(asset: 'public/images/icons/Pen.png', color: colors.muted,
+                onTap: () => CategoryCreationModal.showEdit(context, category: widget.category)),
               const SizedBox(width: 8),
-              if (!widget.category.isSystem) ...[
-                _HeadIcon(
-                  asset: 'public/images/icons/Pen.png',
-                  color: colors.muted,
-                  onTap: () => CategoryCreationModal.showEdit(
-                    context,
-                    category: widget.category,
-                  ),
-                ),
-                const SizedBox(width: 8),
-              ],
-              IdentityEyeToggle(expanded: true, onTap: _closeCategory),
             ],
-          ),
+            IdentityEyeToggle(expanded: true, onTap: () => setState(() => _expanded = false)),
+          ]),
         ),
         const SizedBox(height: 12),
         if (widget.category.credentials.isEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-            child: _buildEmptyState(colors),
-          )
+          Padding(padding: const EdgeInsets.fromLTRB(16, 0, 16, 12), child: _buildEmptyState(colors))
         else
-          Padding(
-            padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
-            child: _buildCredentialCards(),
-          ),
+          Padding(padding: const EdgeInsets.fromLTRB(2, 0, 2, 12), child: _buildCredentialCards()),
       ],
     );
   }
 
   Widget _buildCredentialCards() {
     final credentials = widget.category.credentials;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        for (var i = 0; i < credentials.length; i++)
-          Padding(
-            padding: EdgeInsets.only(top: i == 0 ? 0 : 12),
-            child: CredentialCard(
-              key: ValueKey('credential-card-${credentials[i].id}'),
-              credential: credentials[i],
-              onTap: () => widget.onCredentialTap?.call(credentials[i]),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _buildEmptyState(KuatiaColors colors) {
-    return SizedBox(
-      width: double.infinity,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Image.asset(
-            'public/images/icons/empty-cred.png',
-            width: 124.53,
-            height: 74.53,
-            fit: BoxFit.contain,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'Esta categoría está vacía',
-            style: TextStyle(
-              fontSize: 14,
-              height: 18 / 14,
-              fontWeight: FontWeight.w600,
-              color: colors.muted,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Todavía no hay credenciales asignadas.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 12,
-              height: 16 / 12,
-              fontWeight: FontWeight.w400,
-              color: colors.muted,
-            ),
-          ),
-        ],
+    final cards = ListView.separated(
+      shrinkWrap: true,
+      primary: false,
+      itemCount: credentials.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) => CredentialCard(
+        key: ValueKey('credential-card-${credentials[index].id}'),
+        credential: credentials[index],
+        onTap: () => widget.onCredentialTap?.call(credentials[index]),
       ),
     );
+    final maxHeight = widget.maxCredentialsHeight;
+    return maxHeight == null ? cards : ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight), child: cards);
   }
 
-  TextStyle _titleStyle(KuatiaColors colors) => TextStyle(
-        fontSize: 16,
-        height: 22 / 16,
-        fontWeight: FontWeight.w600,
-        color: colors.text,
-      );
+  Widget _buildEmptyState(KuatiaColors colors) => SizedBox(
+    width: double.infinity,
+    child: Column(mainAxisSize: MainAxisSize.min, children: [
+      Image.asset('public/images/icons/empty-cred.png', width: 124.53, height: 74.53, fit: BoxFit.contain),
+      const SizedBox(height: 16),
+      Text('Esta categoría está vacía', style: TextStyle(fontSize: 14, height: 18 / 14,
+        fontWeight: FontWeight.w600, color: colors.muted)),
+      const SizedBox(height: 4),
+      Text('Todavía no hay credenciales asignadas.', textAlign: TextAlign.center,
+        style: TextStyle(fontSize: 12, height: 16 / 12, color: colors.muted)),
+    ]),
+  );
+
+  TextStyle _titleStyle(KuatiaColors colors) => TextStyle(fontSize: 16, height: 22 / 16,
+    fontWeight: FontWeight.w600, color: colors.text);
 }
 
-/// Ícono de acción del head (lápiz): 24px, color del tema.
+/// Ícono de acción del encabezado (lápiz).
 class _HeadIcon extends StatelessWidget {
   const _HeadIcon({required this.asset, required this.color, this.onTap});
-
   final String asset;
   final Color color;
   final VoidCallback? onTap;
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Image.asset(
-        asset,
-        width: 24,
-        height: 24,
-        color: color,
-        colorBlendMode: BlendMode.srcIn,
-      ),
-    );
-  }
+  Widget build(BuildContext context) => GestureDetector(
+    onTap: onTap,
+    behavior: HitTestBehavior.opaque,
+    child: Image.asset(asset, width: 24, height: 24, color: color, colorBlendMode: BlendMode.srcIn),
+  );
 }
