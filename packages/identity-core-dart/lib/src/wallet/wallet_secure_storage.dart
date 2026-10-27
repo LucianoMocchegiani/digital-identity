@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Abstrae el almacenamiento de secretos del wallet fuera de Isar.
@@ -15,6 +16,27 @@ abstract class WalletSecureStorage {
   Future<void> delete({required String key});
 }
 
+/// Recupera una lectura del salt cuando Android no puede descifrar esa entrada.
+/// Solo se elimina el salt ilegible; otras claves y otros errores se conservan.
+Future<String?> readWalletSaltWithRecovery({
+  required Future<String?> Function() read,
+  required Future<void> Function() delete,
+}) async {
+  try {
+    return await read();
+  } on PlatformException catch (error) {
+    final message =
+        '${error.code} ${error.message} ${error.details}'.toLowerCase();
+    if (!message.contains('badpaddingexception') &&
+        !message.contains('illegalblocksizeexception') &&
+        !message.contains('bad_decrypt')) {
+      rethrow;
+    }
+    await delete();
+    return null;
+  }
+}
+
 /// Implementación de [WalletSecureStorage] sobre [FlutterSecureStorage].
 ///
 /// Es el backend por defecto de [WalletService] en apps Flutter.
@@ -26,7 +48,14 @@ class FlutterWalletSecureStorage implements WalletSecureStorage {
   final FlutterSecureStorage _storage;
 
   @override
-  Future<String?> read({required String key}) => _storage.read(key: key);
+  Future<String?> read({required String key}) {
+    final read = () => _storage.read(key: key);
+    if (!key.startsWith('wallet_salt_')) return read();
+    return readWalletSaltWithRecovery(
+      read: read,
+      delete: () => _storage.delete(key: key),
+    );
+  }
 
   @override
   Future<void> write({required String key, required String value}) =>
