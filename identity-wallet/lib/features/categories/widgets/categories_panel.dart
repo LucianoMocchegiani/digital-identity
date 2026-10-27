@@ -183,18 +183,21 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
     );
   }
 
-  Widget _buildCategoryDetail(WalletCategory category) => ListView(
-        key: ValueKey('credential-category-${category.id}'),
-        padding: const EdgeInsets.only(bottom: 12),
-        children: [
-          CategoryAccordion(
-            key: ValueKey('selected-category-${category.id}'),
-            category: category,
-            initiallyExpanded: true,
-            onClose: _backToCategories,
-            onCredentialTap: widget.onCredentialTap,
-          ),
-        ],
+  Widget _buildCategoryDetail(WalletCategory category) => LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          key: ValueKey('credential-category-${category.id}'),
+          padding: const EdgeInsets.only(bottom: 12),
+          children: [
+            CategoryAccordion(
+              key: ValueKey('selected-category-${category.id}'),
+              category: category,
+              initiallyExpanded: true,
+              minimumHeight: constraints.maxHeight - 12,
+              onClose: _backToCategories,
+              onCredentialTap: widget.onCredentialTap,
+            ),
+          ],
+        ),
       );
 
   Widget _buildHeader(KuatiaColors colors) {
