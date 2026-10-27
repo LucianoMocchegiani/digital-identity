@@ -80,7 +80,11 @@ class _PinConfirmScreenState extends State<PinConfirmScreen> {
             'configuración de acceso a tu wallet.',
       );
       if (mounted) widget.onSuccess();
-    } catch (_) {
+    } catch (error, stackTrace) {
+      assert(() {
+        debugPrint('Wallet creation failed: $error\n$stackTrace');
+        return true;
+      }());
       if (!mounted) return;
       setState(() {
         _submitting = false;
