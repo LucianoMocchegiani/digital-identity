@@ -14,11 +14,8 @@ import '../credentials/models/credential_display_style.dart';
 import '../credentials/models/wallet_credential.dart';
 import '../credentials/providers/credentials_provider.dart';
 import '../credentials/widgets/credential_detail_drawer.dart';
-import 'widgets/home_feed.dart';
 
-/// Pantalla principal tras desbloquear la wallet (`/home`).
-///
-/// Arriba: feed de guías, novedades y eventos. Abajo: credenciales por categoría.
+/// Pantalla principal tras desbloquear la wallet (`/home`): credenciales por categoría.
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -54,20 +51,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             error: (_, __) => const SizedBox.shrink(),
             data: (allCredentials) {
               _precacheCredentialImages(allCredentials);
-              return Stack(
-                children: [
-                  const Positioned.fill(
-                    child: HomeFeed(bottomPadding: 140),
-                  ),
-                  CategoriesPanel(
-                    categories: categories,
-                    onCredentialTap: (credential) => _openDetail(
-                      context,
-                      credential: credential,
-                      allCredentials: allCredentials,
-                    ),
-                  ),
-                ],
+              return CategoriesPanel(
+                categories: categories,
+                onCredentialTap: (credential) => _openDetail(
+                  context,
+                  credential: credential,
+                  allCredentials: allCredentials,
+                ),
               );
             },
           ),
@@ -80,7 +70,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (!mounted) return;
     final width = MediaQuery.sizeOf(context).width;
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    // Ancho aproximado de la card en el panel (padding ~16+16+2+2).
+    // Ancho aproximado de la card del listado (padding ~16+16+2+2).
     final cardMemWidth = ((width - 36) * dpr).round().clamp(1, 4096);
 
     final providers = <ImageProvider>[];
