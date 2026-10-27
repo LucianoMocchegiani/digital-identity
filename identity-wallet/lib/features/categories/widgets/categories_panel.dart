@@ -7,10 +7,7 @@ import '../models/wallet_category.dart';
 import 'category_accordion.dart';
 import 'category_creation_modal.dart';
 
-/// Panel desplegable de credenciales por categoría.
-///
-/// Bottom sheet arrastrable: colapsado muestra handle + título "Credenciales";
-/// expandido permite buscar, crear categoría y ver los contenedores con cards.
+/// Pantalla de credenciales por categoría y detalle animado de cada categoría.
 class CategoriesPanel extends StatefulWidget {
   const CategoriesPanel({
     super.key,
@@ -18,10 +15,7 @@ class CategoriesPanel extends StatefulWidget {
     this.onCredentialTap,
   });
 
-  /// Categorías a listar.
   final List<WalletCategory> categories;
-
-  /// Callback al tocar una credencial (abre su detalle).
   final void Function(WalletCredential credential)? onCredentialTap;
 
   @override
@@ -29,13 +23,10 @@ class CategoriesPanel extends StatefulWidget {
 }
 
 class _CategoriesPanelState extends State<CategoriesPanel> {
-  /// Altura visible del panel colapsado: handle + encabezado.
-  static const double _peekHeight = 120;
-
-  bool _expanded = false;
   bool _searching = false;
   final _searchController = TextEditingController();
   String _searchQuery = '';
+  String? _selectedCategoryId;
 
   @override
   void dispose() {
@@ -51,28 +42,23 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
     for (final category in widget.categories) {
       for (final credential in category.credentials) {
         final id = credential.id;
-        if (id == null) continue;
-        byId.putIfAbsent(id, () => credential);
+        if (id != null) byId.putIfAbsent(id, () => credential);
       }
     }
     return byId.values.toList(growable: false);
   }
 
-  /// Resultados de búsqueda: solo credenciales (sin contenedores de categoría).
   List<WalletCredential> get _searchResults {
     final q = _searchQuery.trim().toLowerCase();
     if (q.isEmpty) return const [];
     return _allCredentials
-        .where(
-          (c) =>
-              c.title.toLowerCase().contains(q) ||
-              c.issuer.toLowerCase().contains(q),
-        )
+        .where((c) =>
+            c.title.toLowerCase().contains(q) ||
+            c.issuer.toLowerCase().contains(q))
         .toList(growable: false);
   }
 
-  bool get _isSearchActive =>
-      _searching && _searchQuery.trim().isNotEmpty;
+  bool get _isSearchActive => _searching && _searchQuery.trim().isNotEmpty;
 
   void _exitSearch() {
     _searchController.clear();
@@ -83,146 +69,139 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
     });
   }
 
+  void _backToCategories() => setState(() => _selectedCategoryId = null);
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final available = constraints.maxHeight;
-        final minFraction = (_peekHeight / available).clamp(0.08, 0.6);
+    final colors = context.kuatia;
+    final selectedCategory = widget.categories
+        .where((category) => category.id == _selectedCategoryId)
+        .firstOrNull;
 
-        return NotificationListener<DraggableScrollableNotification>(
-          onNotification: (notification) {
-            final expanded =
-                notification.extent > notification.minExtent + 0.02;
-            if (expanded != _expanded) {
-              setState(() {
-                _expanded = expanded;
-                if (!expanded) {
-                  _searching = false;
-                  _searchQuery = '';
-                  _searchController.clear();
-                }
-              });
-            }
-            return false;
-          },
-          child: DraggableScrollableSheet(
-            initialChildSize: minFraction,
-            minChildSize: minFraction,
-            maxChildSize: 1,
-            snap: true,
-            builder: (context, scrollController) {
-              final colors = context.kuatia;
-              return Container(
-                clipBehavior: Clip.antiAlias,
-                decoration: ShapeDecoration(
-                  color: colors.panel,
-                  shape: _CategoriesPanelShape(
-                    borderColor: colors.border,
-                    outerRadius: 16,
-                    tabWidth: 150,
-                    tabHeight: 18,
-                    tabRadius: 8,
-                    joinRadius: 8,
-                    borderWidth: 1,
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(14, 16, 14, 12),
+      child: Column(
+        children: [
+          if (selectedCategory == null)
+            _buildHeader(colors)
+          else
+            Row(
+              children: [
+                IconButton(
+                  tooltip: 'Volver a categorías',
+                  onPressed: _backToCategories,
+                  icon: Icon(Icons.arrow_back, color: colors.text),
+                ),
+                Expanded(
+                  child: Text(
+                    'Credenciales',
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 22 / 16,
+                      fontWeight: FontWeight.w600,
+                      color: colors.text,
+                    ),
                   ),
                 ),
-                child: ListView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.fromLTRB(14, 22, 14, 16),
-                  children: [
-                    Center(
-                      child: Container(
-                        width: 34,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: colors.border,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    _buildHeader(colors),
-                    const SizedBox(height: 12),
-                    ..._buildBody(colors),
-                  ],
+              ],
+            ),
+          const SizedBox(height: 12),
+          Expanded(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 280),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => SlideTransition(
+                position: animation.drive(
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).chain(CurveTween(curve: Curves.easeOutCubic)),
                 ),
-              );
-            },
+                child: child,
+              ),
+              child: selectedCategory == null
+                  ? _buildCategoryList(colors)
+                  : _buildCategoryDetail(selectedCategory),
+            ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryList(KuatiaColors colors) {
+    if (_isSearchActive) {
+      final results = _searchResults;
+      if (results.isEmpty) {
+        return Center(
+          key: const ValueKey('credential-search-results'),
+          child: Text(
+            'No se encontraron credenciales.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 14, height: 20 / 14, color: colors.muted),
+          ),
+        );
+      }
+      return ListView.separated(
+        key: const ValueKey('credential-search-results'),
+        padding: const EdgeInsets.only(bottom: 12),
+        itemCount: results.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
+        itemBuilder: (context, index) => CredentialCard(
+          key: ValueKey('credential-card-${results[index].id}'),
+          credential: results[index],
+          onTap: () => widget.onCredentialTap?.call(results[index]),
+        ),
+      );
+    }
+
+    if (widget.categories.isEmpty) {
+      return Center(
+        key: const ValueKey('credential-categories-empty'),
+        child: Text(
+          'Todavía no hay categorías. Creá una para organizar tus credenciales.',
+          textAlign: TextAlign.center,
+          style: TextStyle(fontSize: 14, height: 20 / 14, color: colors.muted),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      key: const ValueKey('credential-category-list'),
+      padding: const EdgeInsets.only(bottom: 12),
+      itemCount: widget.categories.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 12),
+      itemBuilder: (context, index) {
+        final category = widget.categories[index];
+        return CategoryAccordion(
+          category: category,
+          onCategoryTap: () => setState(() => _selectedCategoryId = category.id),
+          onCredentialTap: widget.onCredentialTap,
         );
       },
     );
   }
 
-  List<Widget> _buildBody(KuatiaColors colors) {
-    if (_isSearchActive) {
-      final results = _searchResults;
-      if (results.isEmpty) {
-        return [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 24),
-            child: Text(
-              'No se encontraron credenciales.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 14,
-                height: 20 / 14,
-                color: colors.muted,
-              ),
-            ),
-          ),
-        ];
-      }
-      return [
-        for (var i = 0; i < results.length; i++)
-          Padding(
-            padding: EdgeInsets.only(
-              left: 2,
-              right: 2,
-              bottom: i == results.length - 1 ? 0 : 12,
-            ),
-            child: CredentialCard(
-              key: ValueKey('credential-card-${results[i].id}'),
-              credential: results[i],
-              onTap: () => widget.onCredentialTap?.call(results[i]),
-            ),
-          ),
-      ];
-    }
-
-    final categories = widget.categories;
-    if (categories.isEmpty) {
-      return [
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
-          child: Text(
-            'Todavía no hay categorías. Creá una para organizar tus credenciales.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 14,
-              height: 20 / 14,
-              color: colors.muted,
-            ),
-          ),
-        ),
-      ];
-    }
-
-    return [
-      for (final category in categories)
-        Padding(
+  Widget _buildCategoryDetail(WalletCategory category) => LayoutBuilder(
+        builder: (context, constraints) => ListView(
+          key: ValueKey('credential-category-${category.id}'),
           padding: const EdgeInsets.only(bottom: 12),
-          child: CategoryAccordion(
-            category: category,
-            onCredentialTap: widget.onCredentialTap,
-          ),
+          children: [
+            CategoryAccordion(
+              key: ValueKey('selected-category-${category.id}'),
+              category: category,
+              initiallyExpanded: true,
+              minimumHeight: constraints.maxHeight - 12,
+              onClose: _backToCategories,
+              onCredentialTap: widget.onCredentialTap,
+            ),
+          ],
         ),
-    ];
-  }
+      );
 
   Widget _buildHeader(KuatiaColors colors) {
-    if (_expanded && _searching) {
+    if (_searching) {
       return Row(
         children: [
           Expanded(
@@ -248,14 +227,9 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
                     child: TextField(
                       controller: _searchController,
                       autofocus: true,
-                      onChanged: (value) =>
-                          setState(() => _searchQuery = value),
+                      onChanged: (value) => setState(() => _searchQuery = value),
                       cursorColor: colors.accent,
-                      style: TextStyle(
-                        fontSize: 16,
-                        height: 22 / 16,
-                        color: colors.text,
-                      ),
+                      style: TextStyle(fontSize: 16, height: 22 / 16, color: colors.text),
                       decoration: InputDecoration(
                         isCollapsed: true,
                         border: InputBorder.none,
@@ -276,6 +250,7 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
           const SizedBox(width: 8),
           _HeaderIconButton(
             asset: 'public/images/icons/Cross.png',
+            tooltip: 'Cerrar búsqueda',
             onTap: _exitSearch,
           ),
         ],
@@ -295,28 +270,28 @@ class _CategoriesPanelState extends State<CategoriesPanel> {
             ),
           ),
         ),
-        if (_expanded) ...[
-          _HeaderIconButton(
-            asset: 'public/images/icons/lupa.png',
-            onTap: () => setState(() => _searching = true),
+        _HeaderIconButton(
+          asset: 'public/images/icons/lupa.png',
+          tooltip: 'Buscar credencial',
+          onTap: () => setState(() => _searching = true),
+        ),
+        const SizedBox(width: 8),
+        Flexible(
+          child: IdentityOutlineButton(
+            label: 'Crear categoría',
+            onTap: () => CategoryCreationModal.show(context),
           ),
-          const SizedBox(width: 8),
-          Flexible(
-            child: IdentityOutlineButton(
-              label: 'Crear categoría',
-              onTap: () => CategoryCreationModal.show(context),
-            ),
-          ),
-        ],
+        ),
       ],
     );
   }
 }
 
 class _HeaderIconButton extends StatelessWidget {
-  const _HeaderIconButton({required this.asset, this.onTap});
+  const _HeaderIconButton({required this.asset, this.tooltip, this.onTap});
 
   final String asset;
+  final String? tooltip;
   final VoidCallback? onTap;
 
   @override
@@ -335,15 +310,18 @@ class _HeaderIconButton extends StatelessWidget {
         child: InkWell(
           onTap: onTap,
           child: SizedBox(
-            width: 34,
-            height: 34,
+            width: 38,
+            height: 38,
             child: Center(
-              child: Image.asset(
-                asset,
-                width: 18,
-                height: 18,
-                color: colors.text,
-                colorBlendMode: BlendMode.srcIn,
+              child: Tooltip(
+                message: tooltip ?? '',
+                child: Image.asset(
+                  asset,
+                  width: 18,
+                  height: 18,
+                  color: colors.text,
+                  colorBlendMode: BlendMode.srcIn,
+                ),
               ),
             ),
           ),
@@ -351,101 +329,4 @@ class _HeaderIconButton extends StatelessWidget {
       ),
     );
   }
-}
-
-/// Forma del panel de categorías: borde superior con una **lengüeta central
-/// elevada** (donde va el handle) y curvas cóncavas a cada lado (silueta `‾‾\__/‾‾`).
-class _CategoriesPanelShape extends ShapeBorder {
-  const _CategoriesPanelShape({
-    required this.borderColor,
-    this.outerRadius = 16,
-    this.tabWidth = 150,
-    this.tabHeight = 16,
-    this.tabRadius = 14,
-    this.joinRadius = 10,
-    this.borderWidth = 1,
-  });
-
-  final Color borderColor;
-  final double outerRadius;
-  final double tabWidth;
-  final double tabHeight;
-  final double tabRadius;
-  final double joinRadius;
-  final double borderWidth;
-
-  @override
-  EdgeInsetsGeometry get dimensions => EdgeInsets.all(borderWidth);
-
-  Path _buildPath(Rect rect, {bool closed = true}) {
-    final l = rect.left, r = rect.right, b = rect.bottom, t = rect.top;
-    final notch = t + tabHeight;
-    final cx = rect.center.dx;
-    final nL = cx - tabWidth / 2;
-    final nR = cx + tabWidth / 2;
-
-    final path = Path();
-    if (closed) {
-      path
-        ..moveTo(l, b)
-        ..lineTo(l, t + outerRadius);
-    } else {
-      path.moveTo(l, t + outerRadius);
-    }
-
-    path
-      ..arcToPoint(Offset(l + outerRadius, t),
-          radius: Radius.circular(outerRadius))
-      ..lineTo(nL - joinRadius, t)
-      ..arcToPoint(Offset(nL, t + joinRadius),
-          radius: Radius.circular(joinRadius))
-      ..lineTo(nL, notch - tabRadius)
-      ..arcToPoint(Offset(nL + tabRadius, notch),
-          radius: Radius.circular(tabRadius), clockwise: false)
-      ..lineTo(nR - tabRadius, notch)
-      ..arcToPoint(Offset(nR, notch - tabRadius),
-          radius: Radius.circular(tabRadius), clockwise: false)
-      ..lineTo(nR, t + joinRadius)
-      ..arcToPoint(Offset(nR + joinRadius, t),
-          radius: Radius.circular(joinRadius))
-      ..lineTo(r - outerRadius, t)
-      ..arcToPoint(Offset(r, t + outerRadius),
-          radius: Radius.circular(outerRadius));
-
-    if (closed) {
-      path
-        ..lineTo(r, b)
-        ..close();
-    }
-    return path;
-  }
-
-  @override
-  Path getInnerPath(Rect rect, {TextDirection? textDirection}) =>
-      _buildPath(rect);
-
-  @override
-  Path getOuterPath(Rect rect, {TextDirection? textDirection}) {
-    final extended = Rect.fromLTRB(
-      rect.left,
-      rect.top,
-      rect.right,
-      rect.bottom + 64,
-    );
-    return _buildPath(extended);
-  }
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    if (borderWidth <= 0) return;
-
-    final paint = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = borderWidth
-      ..color = borderColor;
-    canvas.drawPath(_buildPath(rect, closed: false), paint);
-  }
-
-  @override
-  ShapeBorder scale(double t) => this;
 }
