@@ -8,28 +8,46 @@ import 'category_creation_modal.dart';
 import 'category_icon.dart';
 
 /// Contenedor expandible de categoría del panel.
-///
-/// Colapsada: ícono, nombre, subtítulo y ojo. Expandida: editar (si no es
-/// sistema), colapsar, y las [CredentialCard] o estado vacío.
 class CategoryAccordion extends StatefulWidget {
   const CategoryAccordion({
     super.key,
     required this.category,
     this.onCredentialTap,
+    this.onCategoryTap,
+    this.initiallyExpanded = false,
+    this.onClose,
+    this.minimumHeight,
   });
 
-  /// Categoría a representar.
   final WalletCategory category;
-
-  /// Callback al tocar una credencial de la lista (abre su detalle).
   final void Function(WalletCredential credential)? onCredentialTap;
+  final VoidCallback? onCategoryTap;
+  final bool initiallyExpanded;
+  final VoidCallback? onClose;
+  final double? minimumHeight;
 
   @override
   State<CategoryAccordion> createState() => _CategoryAccordionState();
 }
 
 class _CategoryAccordionState extends State<CategoryAccordion> {
-  bool _expanded = false;
+  late bool _expanded = widget.initiallyExpanded;
+
+  void _openCategory() {
+    if (widget.onCategoryTap != null) {
+      widget.onCategoryTap!();
+    } else {
+      setState(() => _expanded = true);
+    }
+  }
+
+  void _closeCategory() {
+    if (widget.onClose != null) {
+      widget.onClose!();
+    } else {
+      setState(() => _expanded = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,10 +59,12 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
       borderRadius: radius,
       clipBehavior: Clip.antiAlias,
       child: InkWell(
-        // Colapsada: toca para expandir. Expandida: el cierre lo maneja el ojo.
-        onTap: _expanded ? null : () => setState(() => _expanded = true),
+        onTap: _expanded ? null : _openCategory,
         borderRadius: radius,
         child: Container(
+          constraints: BoxConstraints(
+            minHeight: _expanded ? widget.minimumHeight ?? 0 : 0,
+          ),
           decoration: BoxDecoration(
             borderRadius: radius,
             border: Border.all(color: colors.border),
@@ -59,7 +79,6 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     );
   }
 
-  /// Estado colapsado: badge + nombre + subtítulo + ojo.
   Widget _buildCollapsed(KuatiaColors colors) {
     final category = widget.category;
     return Padding(
@@ -92,19 +111,12 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
             ),
           ),
           const SizedBox(width: 12),
-          IdentityEyeToggle(
-            expanded: false,
-            onTap: () => setState(() => _expanded = true),
-          ),
+          IdentityEyeToggle(expanded: false, onTap: _openCategory),
         ],
       ),
     );
   }
 
-  /// Estado expandido: nombre + acciones e cards / vacío.
-  ///
-  /// El head lleva inset horizontal; las [CredentialCard] van a ancho del
-  /// accordion (mismo que búsqueda / detalle del panel).
   Widget _buildExpanded(KuatiaColors colors) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -135,10 +147,7 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
                 ),
                 const SizedBox(width: 8),
               ],
-              IdentityEyeToggle(
-                expanded: true,
-                onTap: () => setState(() => _expanded = false),
-              ),
+              IdentityEyeToggle(expanded: true, onTap: _closeCategory),
             ],
           ),
         ),
@@ -150,7 +159,6 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
           )
         else
           Padding(
-            // 2px por lado: panel en 14; card queda igual que con panel en 16.
             padding: const EdgeInsets.fromLTRB(2, 0, 2, 12),
             child: _buildCredentialCards(),
           ),
@@ -158,7 +166,6 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     );
   }
 
-  /// Cards de credencial dentro del contenedor de categoría.
   Widget _buildCredentialCards() {
     final credentials = widget.category.credentials;
     return Column(
@@ -177,7 +184,6 @@ class _CategoryAccordionState extends State<CategoryAccordion> {
     );
   }
 
-  /// Estado vacío: ilustración + mensaje.
   Widget _buildEmptyState(KuatiaColors colors) {
     return SizedBox(
       width: double.infinity,
