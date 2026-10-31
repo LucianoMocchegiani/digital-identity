@@ -29,7 +29,7 @@ async function signedCredential(payload: Record<string, unknown>, disclosures: s
 }
 
 function mockDidDocument() {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({
+  vi.stubGlobal('fetch', vi.fn().mockImplementation(() => new Response(JSON.stringify({
     id: did,
     verificationMethod: [{ id: kid, type: 'JsonWebKey2020', controller: did, publicKeyJwk: jwk }],
     assertionMethod: [kid],
@@ -63,7 +63,9 @@ describe('SD-JWT ES256 issuer signature and disclosures', () => {
     mockDidDocument()
     await expect(verifySdJwtSignature(await signedCredential({ iss: issuer, vct: 'OtherCredential' }), issuer, 'MembershipCredential')).rejects.toThrow('VCT')
     const credential = await signedCredential({ iss: issuer, vct: 'MembershipCredential' })
-    await expect(verifySdJwtSignature(`${credential.slice(0, -2)}A~`, issuer, 'MembershipCredential')).rejects.toThrow()
+    const [header, payload, signature] = credential.slice(0, -1).split('.')
+    const alteredSignature = `${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`
+    await expect(verifySdJwtSignature(`${header}.${payload}.${alteredSignature}~`, issuer, 'MembershipCredential')).rejects.toThrow()
   })
 
   it('rejects an issuer outside the expected Kuatia tenant', async () => {
