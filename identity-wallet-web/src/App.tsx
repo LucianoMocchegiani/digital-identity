@@ -12,9 +12,10 @@ export default function App() {
   useEffect(() => {
     try {
       setRequest(parseCurrentPage(window.location.pathname, window.location.search))
-      if (window.location.search) window.history.replaceState({}, '', window.location.pathname)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'El enlace no es válido.')
+    } finally {
+      if (window.location.search) window.history.replaceState({}, '', window.location.pathname)
     }
     void Promise.all([hasHolderKey(), listCredentials()]).then(([keyExists, credentials]) => {
       setHasKey(keyExists)

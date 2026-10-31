@@ -47,9 +47,14 @@ function requestResult<T>(request: IDBRequest<T>): Promise<T> {
 async function readKey(db: IDBDatabase, id: string): Promise<CryptoKey | undefined> {
   const transaction = db.transaction(keyStore, 'readonly')
   const done = transactionComplete(transaction)
-  const key = await requestResult(transaction.objectStore(keyStore).get(id)) as CryptoKey | undefined
-  await done
-  return key
+  try {
+    const key = await requestResult(transaction.objectStore(keyStore).get(id)) as CryptoKey | undefined
+    await done
+    return key
+  } catch (error) {
+    await done.catch(() => undefined)
+    throw error
+  }
 }
 
 async function getEncryptionKey(db: IDBDatabase): Promise<CryptoKey> {
@@ -64,6 +69,7 @@ async function getEncryptionKey(db: IDBDatabase): Promise<CryptoKey> {
     await done
     return generated
   } catch {
+    await done.catch(() => undefined)
     const winner = await readKey(db, masterKeyId)
     if (winner) return winner
     throw new Error('El navegador no pudo persistir la clave local de cifrado.')
@@ -81,6 +87,7 @@ export async function createHolderKey(): Promise<void> {
       await requestResult(transaction.objectStore(keyStore).add(pair.privateKey, holderKeyId))
       await done
     } catch (error) {
+      await done.catch(() => undefined)
       if (!await readKey(db, holderKeyId)) throw error
     }
   } finally {
@@ -107,9 +114,14 @@ export async function saveCredential(compactSdJwt: string, label: string): Promi
     const record: EncryptedCredential = { id: crypto.randomUUID(), iv, ciphertext, createdAt: new Date().toISOString() }
     const transaction = db.transaction(credentialStore, 'readwrite')
     const done = transactionComplete(transaction)
-    await requestResult(transaction.objectStore(credentialStore).add(record))
-    await done
-    return record.id
+    try {
+      await requestResult(transaction.objectStore(credentialStore).add(record))
+      await done
+      return record.id
+    } catch (error) {
+      await done.catch(() => undefined)
+      throw error
+    }
   } finally {
     db.close()
   }
@@ -121,8 +133,14 @@ export async function listCredentials(): Promise<Array<CredentialPayload & { id:
     const key = await getEncryptionKey(db)
     const transaction = db.transaction(credentialStore, 'readonly')
     const done = transactionComplete(transaction)
-    const records = await requestResult(transaction.objectStore(credentialStore).getAll()) as EncryptedCredential[]
-    await done
+    let records: EncryptedCredential[]
+    try {
+      records = await requestResult(transaction.objectStore(credentialStore).getAll()) as EncryptedCredential[]
+      await done
+    } catch (error) {
+      await done.catch(() => undefined)
+      throw error
+    }
     return await Promise.all(records.map(async ({ id, iv, ciphertext, createdAt }) => {
       const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext)
       return { ...JSON.parse(new TextDecoder().decode(plaintext)) as CredentialPayload, id, createdAt }
