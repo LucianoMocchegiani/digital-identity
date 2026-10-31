@@ -35,7 +35,7 @@ function assertProtocolEndpoint(request: WalletRequest): URL {
   const origin = request.kind === 'issue' ? issuerOrigin : 'https://verifier.kuatia.xyz'
   const path = request.kind === 'issue'
     ? /^\/openid4vc-flow\/[^/]+\/offers\/[^/]+\/?$/
-    : /^\/openid4vc-flow\/[^/]+\/authorize\/[^/]+\/?$/
+    : /^\/openid4vc-flow\/[^/]+\/(?:authorize|authorization-requests)\/[^/]+\/?$/
   if (url.origin !== origin || url.username || url.password || url.hash || !path.test(url.pathname)) {
     throw new Error('El endpoint protocolario no es válido.')
   }
