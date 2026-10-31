@@ -21,9 +21,9 @@ npm run build
 
 - Las rutas `/issue` y `/present` aceptan deep links OID4VCI/OID4VP y validan los hosts/rutas de Kuatia.
 - La clave P-256 no exportable del holder se persiste en IndexedDB; las credenciales se cifran con AES-GCM.
-- La oferta OID4VCI y metadata se obtienen desde el issuer. Para grants preautorizados, la wallet solicita confirmación y, si el offer lo requiere, `tx_code`; intercambia el código por un token, firma un proof ES256 con la clave del holder, solicita SD-JWT VC y guarda la respuesta cifrada.
+- Emisión OID4VCI preautorizada: intercambio del código, proof ES256 del holder, solicitud SD-JWT VC y almacenamiento cifrado. La firma ES256 del JWT recibido se verifica contra la clave autorizada en el DID document HTTPS del tenant; también se comprueban issuer, VCT y expiración.
 - La presentación OID4VP continúa siendo solo una previsualización no verificada.
 
-La credencial recibida se marca explícitamente como **no verificada**. Esta PoC no valida la firma del emisor ni la confianza del issuer, por lo que no debe usarse ni presentarse como una credencial confiable. Se limita a `dc+sd-jwt`, P-256/ES256, binding `jwk` y el grant preautorizado. No implementa authorization-code, emisión diferida, backup ni recuperación.
+La comprobación de firma no valida todavía los hashes de disclosures SD-JWT. No presentes ni compartas credenciales desde esta PoC. El alcance se limita a ES256 y grants preautorizados; no incluye authorization-code, emisión diferida, backup ni recuperación.
 
 No se incluyen API keys ni se llaman endpoints administrativos. CORS debe permitir el origen de la wallet en issuer y verifier. Web Crypto e IndexedDB no aportan protección hardware; borrar los datos del sitio puede eliminar claves y credenciales. Ejecutar `npm test` y `npm run build` antes de integrar.

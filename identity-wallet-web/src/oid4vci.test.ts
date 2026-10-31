@@ -8,8 +8,10 @@ vi.mock('./wallet-storage', () => ({
   getHolderSigningKey: vi.fn(async () => ({ privateKey: (globalThis as typeof globalThis & { __holderKey?: CryptoKey }).__holderKey!, publicJwk: (globalThis as typeof globalThis & { __holderJwk?: JsonWebKey }).__holderJwk! })),
   saveCredential: vi.fn(async () => 'saved-id'),
 }))
+vi.mock('./credential-verification', () => ({ verifySdJwtSignature: vi.fn(async () => undefined) }))
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { getHolderSigningKey, saveCredential } from './wallet-storage'
+import { verifySdJwtSignature } from './credential-verification'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
 Object.assign(globalThis, { __holderKey: pair.privateKey, __holderJwk: publicJwk })
@@ -21,7 +23,7 @@ const resource: Extract<ResolvedResource, { kind: 'issue' }> = {
   tokenEndpoint: 'https://issuer.kuatia.xyz/openid4vc-flow/issuer/token',
   credentialConfigurationIds: ['membership_card'],
   supportedConfigurations: { membership_card: {
-    format: 'dc+sd-jwt', proof_types_supported: { jwt: { proof_signing_alg_values_supported: ['ES256'] } },
+    format: 'dc+sd-jwt', vct: 'MembershipCredential', proof_types_supported: { jwt: { proof_signing_alg_values_supported: ['ES256'] } },
     cryptographic_binding_methods_supported: ['jwk'],
   } },
   hasPreAuthorizedCode: true, preAuthorizedCode: 'secret-one-time-code',
@@ -39,7 +41,7 @@ describe('OID4VCI pre-authorized issuance', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: 'access', token_type: 'Bearer', c_nonce: 'nonce' })))
       .mockResolvedValueOnce(new Response(JSON.stringify({ credential: issuedJwt })))
     vi.stubGlobal('fetch', fetch)
-    await expect(issuePreAuthorizedCredential(resource)).resolves.toBe(1)
+    await expect(issuePreAuthorizedCredential(resource)).resolves.toEqual({ count: 1, verifiedCount: 1 })
     expect(fetch).toHaveBeenCalledTimes(2)
     expect(fetch.mock.calls[0][1]).toMatchObject({ credentials: 'omit', redirect: 'error' })
     expect(String(fetch.mock.calls[0][1].body)).toContain('pre-authorized_code=secret-one-time-code')
@@ -50,7 +52,8 @@ describe('OID4VCI pre-authorized issuance', () => {
     expect(await webcrypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pair.publicKey, decodeBase64url(proofParts[2]), signingInput)).toBe(true)
     const proofPayload = JSON.parse(new TextDecoder().decode(decodeBase64url(proofParts[1])))
     expect(proofPayload).toMatchObject({ aud: resource.credentialIssuer, nonce: 'nonce' })
-    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma aún no verificada'))
+    expect(verifySdJwtSignature).toHaveBeenCalledWith(issuedJwt, resource.credentialIssuer, 'MembershipCredential')
+    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma ES256 verificada'))
   })
 
   it('does not contact the issuer if the configuration does not support the proof', async () => {

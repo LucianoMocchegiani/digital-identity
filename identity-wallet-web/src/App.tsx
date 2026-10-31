@@ -3,6 +3,7 @@ import { createHolderKey, hasHolderKey, listCredentials } from './wallet-storage
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 import { issuePreAuthorizedCredential } from './oid4vci'
+import { verifySdJwtSignature } from './credential-verification'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
@@ -12,6 +13,7 @@ export default function App() {
   const [txCode, setTxCode] = useState('')
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
+  const [verifiedCount, setVerifiedCount] = useState(0)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -22,10 +24,14 @@ export default function App() {
     } finally {
       if (window.location.search) window.history.replaceState({}, '', window.location.pathname)
     }
-    void Promise.all([hasHolderKey(), listCredentials()]).then(([keyExists, credentials]) => {
+    void Promise.all([hasHolderKey(), listCredentials()]).then(async ([keyExists, credentials]) => {
       setHasKey(keyExists)
       setCredentialCount(credentials.length)
-    }).catch(() => setError('No se pudo acceder al almacenamiento local de esta wallet.'))
+      const results = await Promise.all(credentials.map(credential =>
+        verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false),
+      ))
+      setVerifiedCount(results.filter(Boolean).length)
+    }).catch(() => setError('No se pudo acceder o verificar el almacenamiento local de esta wallet.'))
   }, [])
 
   async function generateKey() {
@@ -62,13 +68,18 @@ export default function App() {
     setError('')
     setNotice('')
     try {
-      const count = await issuePreAuthorizedCredential(resource, txCode || undefined)
+      const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
       const credentials = await listCredentials()
       setCredentialCount(credentials.length)
-      setNotice(`${count} credencial(es) recibida(s) y almacenada(s) cifrada(s). La firma aún no está verificada; no las compartas.`)
+      setVerifiedCount(credentials.filter(credential => credential.label.includes('firma ES256 verificada')).length)
+      setNotice(`${result.count} credencial(es) recibida(s) y cifrada(s); ${result.verifiedCount} con firma ES256 verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
       setCredentialCount(credentials.length)
+      const results = await Promise.all(credentials.map(credential =>
+        verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false),
+      ))
+      setVerifiedCount(results.filter(Boolean).length)
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       setBusy(false)
@@ -118,7 +129,7 @@ export default function App() {
           </label>}
           {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
             {!hasKey && <p className="warning">Generá primero una clave de holder para poder emitir.</p>}
-            <p className="warning">Al continuar se consumirá el código de un solo uso de esta oferta. La credencial recibida se guarda cifrada, pero su firma todavía no se verifica.</p>
+            <p className="warning">Al continuar se consumirá el código de un solo uso de esta oferta. La credencial se guarda cifrada; se verifica la firma ES256 con el DID document del issuer.</p>
             <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
               {busy ? 'Emitiendo…' : 'Confirmar y emitir'}
             </button>
@@ -131,14 +142,14 @@ export default function App() {
       </section>}
 
       <section className="card">
-        <div className="row"><div><h2>Almacenamiento local</h2><p>{credentialCount} credenciales guardadas (cifradas con AES-GCM)</p></div><span className="status">{hasKey ? 'CLAVE LISTA' : 'SIN CLAVE'}</span></div>
+        <div className="row"><div><h2>Almacenamiento local</h2><p>{credentialCount} credenciales cifradas; {verifiedCount} firmas ES256 verificadas</p></div><span className="status">{hasKey ? 'CLAVE LISTA' : 'SIN CLAVE'}</span></div>
         <p>La clave de holder P-256 se genera como CryptoKey no exportable y se persiste en IndexedDB.</p>
         <button type="button" onClick={() => void generateKey()} disabled={busy || hasKey}>
           {busy ? 'Procesando…' : hasKey ? 'Clave creada' : 'Generar clave de holder'}
         </button>
       </section>
 
-      <p className="warning">Esta PoC no ofrece protección de hardware ni recuperación. Borrar los datos del sitio puede eliminar definitivamente claves y credenciales.</p>
+      <p className="warning">La comprobación actual verifica la firma del JWT SD-JWT y el VCT; aún no valida disclosures ni permite presentar credenciales. Esta PoC no ofrece protección de hardware ni recuperación.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )

@@ -1,5 +1,6 @@
 import type { ResolvedResource } from './protocol-resource'
 import { getHolderSigningKey, saveCredential } from './wallet-storage'
+import { verifySdJwtSignature } from './credential-verification'
 
 const grantType = 'urn:ietf:params:oauth:grant-type:pre-authorized_code'
 const maxResponseBytes = 512_000
@@ -66,7 +67,7 @@ function validSdJwt(value: unknown): value is string {
 export async function issuePreAuthorizedCredential(
   resource: Extract<ResolvedResource, { kind: 'issue' }>,
   txCode?: string,
-): Promise<number> {
+): Promise<{ count: number; verifiedCount: number }> {
   if (!resource.hasPreAuthorizedCode || !resource.preAuthorizedCode || !resource.tokenEndpoint) {
     throw new Error('La oferta no tiene un grant preautorizado compatible.')
   }
@@ -85,6 +86,7 @@ export async function issuePreAuthorizedCredential(
   }
 
   let saved = 0
+  let verified = 0
   for (const id of resource.credentialConfigurationIds) {
     const configuration = resource.supportedConfigurations[id]
     const payload = {
@@ -109,8 +111,16 @@ export async function issuePreAuthorizedCredential(
     if (typeof credentialResponse.credential !== 'string' || !validSdJwt(credentialResponse.credential)) {
       throw new Error('La respuesta no contiene una credencial SD-JWT válida para guardar.')
     }
-    await saveCredential(credentialResponse.credential, `${id} · recibida, firma aún no verificada`)
+    const vct = typeof configuration.vct === 'string' ? configuration.vct : undefined
+    try {
+      await verifySdJwtSignature(credentialResponse.credential, resource.credentialIssuer, vct)
+      await saveCredential(credentialResponse.credential, `${id} · firma ES256 verificada`)
+      verified++
+    } catch (cause) {
+      await saveCredential(credentialResponse.credential, `${id} · firma no verificada`)
+      throw new Error(`La credencial se guardó cifrada, pero no se pudo verificar la firma: ${cause instanceof Error ? cause.message : 'error desconocido'}`)
+    }
     saved++
   }
-  return saved
+  return { count: saved, verifiedCount: verified }
 }
