@@ -2,17 +2,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { webcrypto } from 'node:crypto'
 import type { ResolvedResource } from './protocol-resource'
 
-const privateKey = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify'])
-const publicJwk = await webcrypto.subtle.exportKey('jwk', privateKey.publicKey)
+const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify'])
+const publicJwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey)
 vi.mock('./wallet-storage', () => ({
-  getHolderSigningKey: vi.fn(async () => ({ privateKey: (globalThis as typeof globalThis & { __holderKey?: CryptoKey }).__holderKey, publicJwk: (globalThis as typeof globalThis & { __holderJwk?: JsonWebKey }).__holderJwk })),
+  getHolderSigningKey: vi.fn(async () => ({ privateKey: (globalThis as typeof globalThis & { __holderKey?: CryptoKey }).__holderKey!, publicJwk: (globalThis as typeof globalThis & { __holderJwk?: JsonWebKey }).__holderJwk! })),
   saveCredential: vi.fn(async () => 'saved-id'),
 }))
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { getHolderSigningKey, saveCredential } from './wallet-storage'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
-Object.assign(globalThis, { __holderKey: privateKey.privateKey, __holderJwk: publicJwk })
+Object.assign(globalThis, { __holderKey: pair.privateKey, __holderJwk: publicJwk })
 afterEach(() => vi.unstubAllGlobals())
 
 const resource: Extract<ResolvedResource, { kind: 'issue' }> = {
@@ -28,6 +28,11 @@ const resource: Extract<ResolvedResource, { kind: 'issue' }> = {
 }
 const issuedJwt = 'eyJhbGciOiJFUzI1NiJ9.eyJ2Y3QiOiJNZW1iZXJzaGlwQ3JlZGVudGlhbCJ9.signature~'
 
+function decodeBase64url(value: string): Uint8Array {
+  const binary = atob(value.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(value.length / 4) * 4, '='))
+  return Uint8Array.from(binary, char => char.charCodeAt(0))
+}
+
 describe('OID4VCI pre-authorized issuance', () => {
   it('exchanges the code, signs a holder proof, requests and stores SD-JWT encrypted', async () => {
     const fetch = vi.fn()
@@ -41,7 +46,9 @@ describe('OID4VCI pre-authorized issuance', () => {
     const requestBody = JSON.parse(String(fetch.mock.calls[1][1].body))
     expect(requestBody).toMatchObject({ credential_configuration_id: 'membership_card', format: 'dc+sd-jwt', proof: { proof_type: 'jwt' } })
     const proofParts = requestBody.proof.jwt.split('.')
-    const proofPayload = JSON.parse(Buffer.from(proofParts[1], 'base64url').toString())
+    const signingInput = new TextEncoder().encode(`${proofParts[0]}.${proofParts[1]}`)
+    expect(await webcrypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, pair.publicKey, decodeBase64url(proofParts[2]), signingInput)).toBe(true)
+    const proofPayload = JSON.parse(new TextDecoder().decode(decodeBase64url(proofParts[1])))
     expect(proofPayload).toMatchObject({ aud: resource.credentialIssuer, nonce: 'nonce' })
     expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma aún no verificada'))
   })
