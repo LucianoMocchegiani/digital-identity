@@ -1,15 +1,18 @@
 import { describe, expect, it, vi } from 'vitest'
+import { webcrypto } from 'node:crypto'
 
 vi.mock('./credential-verification', () => ({ verifySdJwtSignature: vi.fn(async () => undefined) }))
 import { findPresentationOptions } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
+
+Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
 
 function encode(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url')
 }
 
 async function digest(value: string): Promise<string> {
-  return Buffer.from(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value))).toString('base64url')
+  return Buffer.from(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(value))).toString('base64url')
 }
 
 const request = {
@@ -41,7 +44,7 @@ describe('OID4VP local presentation preview', () => {
     const stored = await credential({ vct: 'MembershipCredential', _sd: [await digest(name)] }, [name])
     const missing = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['role'] }] }] } } } as VerifiedOid4vpRequest
     await expect(findPresentationOptions(missing, [stored])).resolves.toEqual([])
-    const nested = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['address', 'city'] }] }] } } as VerifiedOid4vpRequest
+    const nested = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['address', 'city'] }] }] } } } as VerifiedOid4vpRequest
     await expect(findPresentationOptions(nested, [stored])).resolves.toEqual([])
   })
 
