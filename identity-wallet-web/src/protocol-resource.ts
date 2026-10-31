@@ -91,8 +91,8 @@ async function resolveCredentialOffer(endpoint: URL): Promise<ResolvedResource> 
   }
 
   const credentialConfigurationIds = value.credential_configuration_ids
-  if (!credentialConfigurationIds.length || !credentialConfigurationIds.every(id => typeof id === 'string')) {
-    throw new Error('La oferta no indica configuraciones de credencial válidas.')
+  if (!credentialConfigurationIds.length || !credentialConfigurationIds.every(id => typeof id === 'string' && id.length > 0) || new Set(credentialConfigurationIds).size !== credentialConfigurationIds.length) {
+    throw new Error('La oferta no indica configuraciones de credencial válidas y únicas.')
   }
 
   const issuer = new URL(value.credential_issuer)

@@ -104,10 +104,11 @@ export default function App() {
             <pre className="resource-preview">{JSON.stringify(resource.supportedConfigurations[id], null, 2)}</pre>
           </li>)}</ul>
           {!resource.hasPreAuthorizedCode && <p className="warning">Esta PoC solo completa ofertas preautorizadas; esta oferta no incluye un código compatible.</p>}
-          {resource.hasPreAuthorizedCode && resource.txCode && <label className="field">
+          {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo resolver el token endpoint del issuer; no se puede continuar con esta oferta.</p>}
+          {resource.hasPreAuthorizedCode && resource.tokenEndpoint && resource.txCode && <label className="field">
             {resource.txCode.description || 'Código de transacción requerido'}
             <input
-              type={resource.txCode.inputMode === 'numeric' ? 'text' : 'text'}
+              type="text"
               inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'}
               maxLength={resource.txCode.length}
               value={txCode}
@@ -115,7 +116,7 @@ export default function App() {
               autoComplete="off"
             />
           </label>}
-          {resource.hasPreAuthorizedCode && <>
+          {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
             {!hasKey && <p className="warning">Generá primero una clave de holder para poder emitir.</p>}
             <p className="warning">Al continuar se consumirá el código de un solo uso de esta oferta. La credencial recibida se guarda cifrada, pero su firma todavía no se verifica.</p>
             <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
