@@ -19,6 +19,7 @@ function decodeJson(segment: string): Record<string, unknown> {
 
 function requestedClaims(query: Record<string, unknown>): string[] | null {
   if (!Array.isArray(query.claims) || !query.claims.length) return null
+  // shortcut: solo previsualiza claims de nivel superior, cuando haya rutas DCQL anidadas se implementará su resolución.
   const paths = query.claims.map(claim => isRecord(claim) && Array.isArray(claim.path) && claim.path.length === 1 && typeof claim.path[0] === 'string' ? claim.path[0] : null)
   return paths.every((path): path is string => path !== null) ? paths : null
 }
