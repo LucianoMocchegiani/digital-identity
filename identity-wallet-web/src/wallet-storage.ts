@@ -163,7 +163,7 @@ export async function listCredentials(): Promise<Array<CredentialPayload & { id:
       throw error
     }
     return await Promise.all(records.map(async ({ id, iv, ciphertext, createdAt }) => {
-      const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, ciphertext)
+      const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(iv) }, key, ciphertext)
       return { ...JSON.parse(new TextDecoder().decode(plaintext)) as CredentialPayload, id, createdAt }
     }))
   } finally {

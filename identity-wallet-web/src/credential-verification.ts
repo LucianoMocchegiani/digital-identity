@@ -81,7 +81,7 @@ export async function verifySdJwtSignature(
   const valid = await crypto.subtle.verify(
     { name: 'ECDSA', hash: 'SHA-256' },
     key,
-    decodeBase64url(parts[2]),
+    new Uint8Array(decodeBase64url(parts[2])),
     new TextEncoder().encode(`${parts[0]}.${parts[1]}`),
   )
   if (!valid) throw new Error('La firma ES256 de la credencial no es válida.')
