@@ -72,8 +72,14 @@ export default function App() {
           {busy ? 'Cargando…' : resource ? 'Volver a cargar' : 'Descargar recurso'}
         </button>
         {resource?.kind === 'issue' && <>
-          <p>Oferta recibida. Todavía no se intercambiaron tokens ni se solicitó una credencial.</p>
-          <pre className="resource-preview">{JSON.stringify(resource.credentialOffer, null, 2)}</pre>
+          <p>Oferta y metadata recibidas. Todavía no se intercambiaron tokens ni se solicitó una credencial.</p>
+          <p><strong>Issuer:</strong> <span className="endpoint">{resource.credentialIssuer}</span></p>
+          <h3>Configuraciones ofrecidas</h3>
+          <ul>{resource.credentialConfigurationIds.map(id => <li key={id}>
+            <strong>{id}</strong>
+            <pre className="resource-preview">{JSON.stringify(resource.supportedConfigurations[id], null, 2)}</pre>
+          </li>)}</ul>
+          {!resource.hasPreAuthorizedCode && <p className="warning">La oferta no contiene un código preautorizado reconocido; no se puede continuar con el flujo PoC preautorizado.</p>}
         </>}
         {resource?.kind === 'present' && <>
           <p className="warning">Request Object descargado, pero la firma y el emisor todavía no se verificaron. No compartas datos.</p>
