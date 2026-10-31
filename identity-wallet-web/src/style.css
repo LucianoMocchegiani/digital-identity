@@ -1,0 +1,22 @@
+:root { font-family: Inter, ui-sans-serif, system-ui, sans-serif; color: #edf3f8; background: #08121c; font-synthesis: none; text-rendering: optimizeLegibility; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; min-height: 100vh; background: radial-gradient(ellipse at 50% 0%, #183043 0, #08121c 54rem); }
+.shell { width: min(100% - 32px, 720px); margin: 0 auto; padding: 28px 0 36px; }
+header { display: flex; align-items: center; gap: 12px; font-size: 15px; color: #d9e6ef; }
+.mark { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 11px; color: #08121c; font-weight: 800; background: #64e0bd; }
+.hero { padding: 68px 0 34px; }
+.eyebrow { color: #64e0bd; font-size: 11px; letter-spacing: .15em; font-weight: 700; }
+h1 { font-size: clamp(40px, 9vw, 64px); line-height: 1.02; letter-spacing: -.05em; margin: 14px 0; }
+.hero > p:last-child, .card > p, .row p { color: #a7b7c4; line-height: 1.55; }
+.card { padding: 24px; margin: 16px 0; border: 1px solid #2b3d4a; border-radius: 16px; background: #101e29dd; }
+h2 { font-size: 20px; margin: 8px 0; }
+.row { display: flex; align-items: flex-start; justify-content: space-between; gap: 18px; }
+.status { color: #64e0bd; font-size: 10px; letter-spacing: .12em; white-space: nowrap; padding-top: 10px; }
+button { border: 0; border-radius: 9px; padding: 12px 16px; margin-top: 12px; color: #08121c; background: #64e0bd; font: inherit; font-weight: 700; cursor: pointer; }
+button:disabled { opacity: .65; cursor: default; }
+.endpoint { overflow-wrap: anywhere; color: #c3d1db; font: 12px ui-monospace, monospace; }
+.notice, .warning { border-radius: 10px; padding: 13px 15px; font-size: 13px; line-height: 1.5; color: #c5d5df; background: #1a2b36; }
+.error { color: #ffd4c8; background: #44251f; }
+.warning { margin-top: 22px; color: #f6d99c; background: #31291b; }
+footer { margin-top: 34px; color: #71828e; font-size: 12px; }
+@media (max-width: 480px) { .hero { padding-top: 48px; } .card { padding: 18px; } .row { flex-direction: column; gap: 0; } }
