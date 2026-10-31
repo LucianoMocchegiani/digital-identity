@@ -1,7 +1,7 @@
 import 'fake-indexeddb/auto'
 import { webcrypto } from 'node:crypto'
 import { beforeEach, describe, expect, it } from 'vitest'
-import { createHolderKey, hasHolderKey, listCredentials, saveCredential } from './wallet-storage'
+import { createHolderKey, getHolderSigningKey, hasHolderKey, listCredentials, saveCredential } from './wallet-storage'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
 
@@ -15,9 +15,13 @@ beforeEach(async () => {
 })
 
 describe('local wallet storage', () => {
-  it('persists a non-exportable P-256 holder key', async () => {
+  it('persists a non-exportable P-256 holder key and its public JWK', async () => {
     await createHolderKey()
     await expect(hasHolderKey()).resolves.toBe(true)
+    const holderKey = await getHolderSigningKey()
+    expect(holderKey.privateKey.extractable).toBe(false)
+    expect(holderKey.publicJwk).toMatchObject({ kty: 'EC', crv: 'P-256' })
+    expect(holderKey.publicJwk).not.toHaveProperty('d')
   })
 
   it('encrypts credentials before storing and decrypts them on read', async () => {
