@@ -26,12 +26,13 @@ function requestedClaims(query: Record<string, unknown>): string[] | null {
 function disclosedTopLevelClaims(segments: string[]): Record<string, unknown> {
   const claims: Record<string, unknown> = {}
   for (const segment of segments) {
-    const decoded = decodeJson(segment)
-    const disclosure: unknown = JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(segment.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')), char => char.charCodeAt(0))))
+    if (!/^[\w-]+$/.test(segment)) throw new Error('Disclosure inválido')
+    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+    const bytes = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), char => char.charCodeAt(0))
+    const disclosure: unknown = JSON.parse(new TextDecoder().decode(bytes))
     if (!Array.isArray(disclosure) || disclosure.length !== 3 || typeof disclosure[1] !== 'string') continue
     if (Object.hasOwn(claims, disclosure[1])) throw new Error('Disclosure duplicado')
     claims[disclosure[1]] = disclosure[2]
-    void decoded
   }
   return claims
 }
