@@ -5,6 +5,7 @@ import { verifyOid4vpRequest } from './oid4vp-verification'
 const did = 'did:web:verifier.kuatia.xyz:verifier-a'
 const clientId = `decentralized_identifier:${did}`
 const kid = `${did}#key-p256`
+const requestId = '0f6d6594-7cc9-4d9d-b860-554fbefef8f4'
 const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])
 const jwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey)
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
@@ -19,13 +20,13 @@ async function request(overrides: Record<string, unknown> = {}): Promise<string>
   const header = encode({ alg: 'ES256', kid })
   const payload = encode({
     client_id: clientId,
-    aud: 'https://self-issued.me/v2',
+    aud: `https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize/${requestId}`,
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 120,
     nonce: 'one-time-nonce',
     response_type: 'vp_token',
     response_mode: 'direct_post',
-    response_uri: 'https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize',
+    response_uri: `https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize?session=${requestId}`,
     dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] } }] },
     ...overrides,
   })
@@ -47,7 +48,7 @@ describe('OID4VP signed request verification', () => {
     mockDid()
     await expect(verifyOid4vpRequest(await request(), clientId)).resolves.toMatchObject({
       verifierDid: did,
-      responseUri: 'https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize',
+      responseUri: `https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize?session=${requestId}`,
       nonce: 'one-time-nonce',
       payload: { response_mode: 'direct_post', response_type: 'vp_token', client_id: clientId },
     })
@@ -61,6 +62,7 @@ describe('OID4VP signed request verification', () => {
     const altered = `${header}.${payload}.${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`
     await expect(verifyOid4vpRequest(altered, clientId)).rejects.toThrow('firma')
     await expect(verifyOid4vpRequest(await request({ response_uri: 'https://attacker.example/collect' }), clientId)).rejects.toThrow('response_uri')
+    await expect(verifyOid4vpRequest(await request({ response_uri: `https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize?session=00000000-0000-4000-8000-000000000000` }), clientId)).rejects.toThrow('response_uri')
     await expect(verifyOid4vpRequest(await request({ aud: 'https://attacker.example' }), clientId)).rejects.toThrow('audiencia')
     await expect(verifyOid4vpRequest(await request({ nonce: '' }), clientId)).rejects.toThrow('compatible')
   })

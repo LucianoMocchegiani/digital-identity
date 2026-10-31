@@ -57,8 +57,16 @@ export async function verifyOid4vpRequest(compactRequest: string, clientId: stri
     throw new Error('El Request Object no usa un flujo OID4VP compatible.')
   }
   const audiences = typeof payload.aud === 'string' ? [payload.aud] : payload.aud
-  if (!Array.isArray(audiences) || !audiences.includes(selfIssuedAudience)) {
-    throw new Error('La audiencia del Request Object no corresponde a una wallet OID4VP.')
+  if (!Array.isArray(audiences)) throw new Error('La audiencia del Request Object no corresponde a una wallet OID4VP.')
+  const requestAudience = audiences.find((value): value is string => typeof value === 'string' && value.startsWith(`${verifierOrigin}/openid4vc-flow/${expected.tenant}/authorize/`))
+  let requestId: string | undefined
+  if (requestAudience) {
+    const audienceUrl = new URL(requestAudience)
+    const match = new RegExp(`^/openid4vc-flow/${expected.tenant}/authorize/([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})$`, 'i').exec(audienceUrl.pathname)
+    if (audienceUrl.origin === verifierOrigin && !audienceUrl.username && !audienceUrl.password && !audienceUrl.search && !audienceUrl.hash && match) requestId = match[1]
+  }
+  if (!audiences.includes(selfIssuedAudience) && !requestId) {
+    throw new Error('La audiencia del Request Object no corresponde a una wallet OID4VP ni al endpoint del verifier.')
   }
   if (!isRecord(payload.dcql_query) || !Array.isArray(payload.dcql_query.credentials) || !payload.dcql_query.credentials.length) {
     throw new Error('La PoC solo acepta solicitudes DCQL con credenciales explícitas.')
@@ -66,7 +74,8 @@ export async function verifyOid4vpRequest(compactRequest: string, clientId: stri
 
   if (typeof payload.response_uri !== 'string') throw new Error('El Request Object no declara response_uri.')
   const responseUri = new URL(payload.response_uri)
-  if (responseUri.origin !== verifierOrigin || responseUri.username || responseUri.password || responseUri.search || responseUri.hash || responseUri.pathname !== `/openid4vc-flow/${expected.tenant}/authorize`) {
+  const sessionValues = responseUri.searchParams.getAll('session')
+  if (responseUri.origin !== verifierOrigin || responseUri.username || responseUri.password || responseUri.hash || responseUri.pathname !== `/openid4vc-flow/${expected.tenant}/authorize` || (requestId ? sessionValues.length !== 1 || sessionValues[0] !== requestId : responseUri.search !== '')) {
     throw new Error('El response_uri no pertenece al endpoint de autorización de ese verifier Kuatia.')
   }
   if (payload.state !== undefined && (typeof payload.state !== 'string' || !payload.state)) {
