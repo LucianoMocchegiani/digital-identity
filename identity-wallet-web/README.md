@@ -23,8 +23,9 @@ npm run build
 - Se validan HTTPS, host y patrón de ruta antes de aceptar el endpoint del protocolo.
 - Se puede generar una clave ECDSA P-256 no exportable y persistirla como `CryptoKey` en IndexedDB.
 - Las funciones de almacenamiento cifran el SD-JWT con AES-GCM y guardan el ciphertext en IndexedDB.
-- La interfaz informa explícitamente que las solicitudes todavía no se descargan ni se verifican, y no permite autorizar ni compartir credenciales.
+- Desde un enlace de oferta o presentación, la app ahora descarga el recurso protocolario con `credentials: omit`, sin seguir redirects y con límite de tamaño. Muestra el Credential Offer JSON o el payload del Request Object.
+- El payload OID4VP se **decodifica solo para previsualizarlo**; el JWT aún no está verificado criptográficamente. La UI lo advierte y no permite compartir credenciales.
 
-Todavía **no implementa OpenID4VCI/OpenID4VP end-to-end**, verificación de firmas, selección DCQL, Key Binding JWT, lectura de cámara ni backup. No usar con credenciales reales. La clave AES persistida junto a los datos protege contra lectura casual del registro, pero no contra XSS o código malicioso del mismo origen; Web Crypto e IndexedDB no garantizan protección hardware. Al borrar los datos del sitio se pierden claves y credenciales, sin recuperación.
+Todavía no se implementan el intercambio de tokens/solicitud de credencial OID4VCI, verificación de firma y confianza, parsing/matching DCQL, Key Binding JWT ni envío OID4VP. No usar con credenciales reales. La clave AES guardada junto a los datos no protege contra XSS o código malicioso del mismo origen; Web Crypto e IndexedDB no garantizan protección hardware. Al borrar datos del sitio se pierden claves y credenciales, sin recuperación.
 
-Las URLs protocolarias se limitan por ahora a `issuer.kuatia.xyz` y `verifier.kuatia.xyz` y a sus rutas `/openid4vc-flow/...`; cambiar esos dominios requiere actualizar `src/protocol-link.ts` y sus pruebas. Antes de conectar los endpoints, confirmar CORS y usar los VCT coincidentes entre oferta y DCQL.
+Las URLs protocolarias se limitan a `issuer.kuatia.xyz` y `verifier.kuatia.xyz` y sus rutas `/openid4vc-flow/...`; CORS debe permitir el origen de la wallet. No se llaman endpoints administrativos ni se incluyen API keys. El VCT debe coincidir entre la credencial emitida y la consulta DCQL del verifier.

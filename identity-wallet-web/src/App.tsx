@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { createHolderKey, hasHolderKey, listCredentials } from './wallet-storage'
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
+import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
+  const [resource, setResource] = useState<ResolvedResource | null>(null)
   const [error, setError] = useState('')
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
@@ -36,6 +38,20 @@ export default function App() {
     }
   }
 
+  async function loadResource() {
+    if (!request) return
+    setBusy(true)
+    setError('')
+    setResource(null)
+    try {
+      setResource(await resolveProtocolResource(request))
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo cargar el recurso del protocolo.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <main className="shell">
       <header><span className="mark">K</span><span>Kuatia <strong>Wallet PoC</strong></span></header>
@@ -48,11 +64,21 @@ export default function App() {
       {error && <p className="notice error" role="alert">{error}</p>}
 
       {request && <section className="card" aria-live="polite">
-        <p className="eyebrow">SOLICITUD RECIBIDA</p>
-        <h2>{request.kind === 'issue' ? 'Oferta de emisión' : 'Solicitud de presentación'}</h2>
+        <p className="eyebrow">{request.kind === 'issue' ? 'OFERTA DE EMISIÓN' : 'SOLICITUD DE PRESENTACIÓN'}</p>
+        <h2>{request.kind === 'issue' ? 'Cargar oferta' : 'Cargar solicitud'}</h2>
         <p className="endpoint">{request.endpoint}</p>
         {request.kind === 'present' && <p className="endpoint">Client ID: {request.clientId}</p>}
-        <p className="notice">El enlace se validó contra los dominios y rutas de Kuatia, pero todavía no se descargó ni verificó criptográficamente. No autorices ni compartas datos desde esta PoC.</p>
+        <button type="button" onClick={() => void loadResource()} disabled={busy}>
+          {busy ? 'Cargando…' : resource ? 'Volver a cargar' : 'Descargar recurso'}
+        </button>
+        {resource?.kind === 'issue' && <>
+          <p>Oferta recibida. Todavía no se intercambiaron tokens ni se solicitó una credencial.</p>
+          <pre className="resource-preview">{JSON.stringify(resource.credentialOffer, null, 2)}</pre>
+        </>}
+        {resource?.kind === 'present' && <>
+          <p className="warning">Request Object descargado, pero la firma y el emisor todavía no se verificaron. No compartas datos.</p>
+          <pre className="resource-preview">{JSON.stringify(resource.payload, null, 2)}</pre>
+        </>}
       </section>}
 
       <section className="card">
