@@ -12,12 +12,20 @@ function base64url(value: Uint8Array): string {
   return Buffer.from(value).toString('base64url')
 }
 
-async function signedCredential(payload: Record<string, unknown>): Promise<string> {
+async function disclosure(value: unknown): Promise<string> {
+  return base64url(new TextEncoder().encode(JSON.stringify(value)))
+}
+
+async function disclosureDigest(encoded: string): Promise<string> {
+  return base64url(new Uint8Array(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(encoded))))
+}
+
+async function signedCredential(payload: Record<string, unknown>, disclosures: string[] = []): Promise<string> {
   const header = base64url(new TextEncoder().encode(JSON.stringify({ alg: 'ES256', kid })))
   const body = base64url(new TextEncoder().encode(JSON.stringify(payload)))
   const input = `${header}.${body}`
   const signature = new Uint8Array(await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, new TextEncoder().encode(input)))
-  return `${input}.${base64url(signature)}~`
+  return `${input}.${base64url(signature)}~${disclosures.join('~')}~`
 }
 
 function mockDidDocument() {
@@ -28,10 +36,27 @@ function mockDidDocument() {
   }))))
 }
 
-describe('SD-JWT ES256 issuer signature', () => {
-  it('verifies the signature using the issuer tenant DID document and checks issuer and VCT', async () => {
+describe('SD-JWT ES256 issuer signature and disclosures', () => {
+  it('verifies the issuer signature, expected issuer/VCT, and disclosure digest', async () => {
+    const encodedDisclosure = await disclosure(['salt', 'name', 'Ada'])
     mockDidDocument()
-    await expect(verifySdJwtSignature(await signedCredential({ iss: issuer, vct: 'MembershipCredential' }), issuer, 'MembershipCredential')).resolves.toBeUndefined()
+    await expect(verifySdJwtSignature(await signedCredential({
+      iss: issuer,
+      vct: 'MembershipCredential',
+      _sd_alg: 'sha-256',
+      _sd: [await disclosureDigest(encodedDisclosure)],
+    }, [encodedDisclosure]), issuer, 'MembershipCredential')).resolves.toBeUndefined()
+  })
+
+  it('rejects a disclosure not committed by the signed payload and an unsupported digest algorithm', async () => {
+    mockDidDocument()
+    await expect(verifySdJwtSignature(await signedCredential(
+      { iss: issuer, vct: 'MembershipCredential', _sd_alg: 'sha-256', _sd: ['A'.repeat(43)] },
+      [await disclosure(['salt', 'name', 'Ada'])],
+    ), issuer, 'MembershipCredential')).rejects.toThrow('no coincide')
+    await expect(verifySdJwtSignature(await signedCredential(
+      { iss: issuer, vct: 'MembershipCredential', _sd_alg: 'sha-512' },
+    ), issuer, 'MembershipCredential')).rejects.toThrow('algoritmo')
   })
 
   it('rejects a credential signed by another key or for another VCT', async () => {

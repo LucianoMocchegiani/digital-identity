@@ -31,13 +31,81 @@ function issuerContext(value: unknown): { issuer: string; tenant: string; did: s
   return { issuer: `${issuerOrigin}/openid4vc-flow/${tenant}`, tenant, did: `did:web:issuer.kuatia.xyz:${tenant}` }
 }
 
+function disclosureReferences(value: unknown): Set<string> {
+  const references = new Set<string>()
+  const pending = [value]
+  while (pending.length) {
+    const current = pending.pop()
+    if (Array.isArray(current)) {
+      pending.push(...current)
+    } else if (isRecord(current)) {
+      if (current._sd_alg !== undefined && current._sd_alg !== 'sha-256') {
+        throw new Error('La credencial usa un algoritmo de disclosures no compatible.')
+      }
+      if (current._sd !== undefined) {
+        if (!Array.isArray(current._sd)) throw new Error('La credencial contiene referencias SD-JWT inválidas.')
+        for (const digest of current._sd) {
+          if (typeof digest !== 'string' || !/^[\w-]{43}$/.test(digest) || references.has(digest)) {
+            throw new Error('La credencial contiene referencias SD-JWT inválidas o duplicadas.')
+          }
+          references.add(digest)
+        }
+      }
+      for (const [key, child] of Object.entries(current)) {
+        if (key === '...') {
+          if (typeof child !== 'string' || !/^[\w-]{43}$/.test(child) || references.has(child)) {
+            throw new Error('La credencial contiene una referencia SD-JWT de array inválida.')
+          }
+          references.add(child)
+        } else if (key !== '_sd') {
+          pending.push(child)
+        }
+      }
+    }
+  }
+  return references
+}
+
+async function verifyDisclosures(payload: Record<string, unknown>, encodedDisclosures: string[]): Promise<void> {
+  const references = disclosureReferences(payload)
+  const pending = new Map<string, unknown>()
+  for (const encoded of encodedDisclosures) {
+    const parsed: unknown = JSON.parse(new TextDecoder().decode(decodeBase64url(encoded)))
+    if (!Array.isArray(parsed) || (parsed.length !== 2 && parsed.length !== 3) || typeof parsed[0] !== 'string' || !parsed[0] || (parsed.length === 3 && (typeof parsed[1] !== 'string' || !parsed[1]))) {
+      throw new Error('La credencial contiene un disclosure SD-JWT inválido.')
+    }
+    const digestBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(encoded))
+    const digest = btoa(String.fromCharCode(...new Uint8Array(digestBytes))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+    if (pending.has(digest)) throw new Error('La credencial contiene disclosures duplicados.')
+    pending.set(digest, parsed[parsed.length - 1])
+  }
+
+  let resolved = true
+  while (pending.size && resolved) {
+    resolved = false
+    for (const [digest, value] of pending) {
+      if (!references.delete(digest)) continue
+      pending.delete(digest)
+      for (const nested of disclosureReferences(value)) {
+        if (references.has(nested)) throw new Error('La credencial contiene referencias SD-JWT duplicadas.')
+        references.add(nested)
+      }
+      resolved = true
+    }
+  }
+  if (pending.size) throw new Error('Un disclosure SD-JWT no coincide con los hashes firmados por el issuer.')
+}
+
 export async function verifySdJwtSignature(
   compactSdJwt: string,
   expectedIssuer?: string,
   expectedVct?: string,
 ): Promise<void> {
   if (compactSdJwt.length > maxResponseBytes) throw new Error('La credencial supera el tamaño permitido.')
-  const issuerJwt = compactSdJwt.split('~', 1)[0]
+  const segments = compactSdJwt.split('~')
+  if (segments.at(-1) === '') segments.pop()
+  if (segments.some(segment => !segment)) throw new Error('La credencial contiene segmentos SD-JWT vacíos.')
+  const issuerJwt = segments.shift() ?? ''
   const parts = issuerJwt.split('.')
   if (parts.length !== 3 || parts.some(part => !part)) throw new Error('La credencial no contiene un JWT compacto válido.')
 
@@ -85,4 +153,5 @@ export async function verifySdJwtSignature(
     new TextEncoder().encode(`${parts[0]}.${parts[1]}`),
   )
   if (!valid) throw new Error('La firma ES256 de la credencial no es válida.')
+  await verifyDisclosures(payload, segments)
 }

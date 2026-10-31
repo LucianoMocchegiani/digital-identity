@@ -149,7 +149,7 @@ export default function App() {
         </button>
       </section>
 
-      <p className="warning">La comprobación actual verifica la firma del JWT SD-JWT y el VCT; aún no valida disclosures ni permite presentar credenciales. Esta PoC no ofrece protección de hardware ni recuperación.</p>
+      <p className="warning">Se verifican la firma ES256 del issuer y los hashes de disclosures. Aún no se valida el binding del holder ni la revocación; OID4VP continúa deshabilitado. No presentes ni compartas credenciales desde esta PoC.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )

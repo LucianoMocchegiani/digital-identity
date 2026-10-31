@@ -24,6 +24,6 @@ npm run build
 - Emisión OID4VCI preautorizada: intercambio del código, proof ES256 del holder, solicitud SD-JWT VC y almacenamiento cifrado. La firma ES256 del JWT recibido se verifica contra la clave autorizada en el DID document HTTPS del tenant; también se comprueban issuer, VCT y expiración.
 - La presentación OID4VP continúa siendo solo una previsualización no verificada.
 
-La comprobación de firma no valida todavía los hashes de disclosures SD-JWT. No presentes ni compartas credenciales desde esta PoC. El alcance se limita a ES256 y grants preautorizados; no incluye authorization-code, emisión diferida, backup ni recuperación.
+La comprobación de firma también valida los hashes de disclosures SD-JWT firmados por el issuer. Aún no se verifica el binding del holder, revocación ni la presentación OID4VP; no presentes ni compartas credenciales desde esta PoC hasta completar esos controles.
 
 No se incluyen API keys ni se llaman endpoints administrativos. CORS debe permitir el origen de la wallet en issuer y verifier. Web Crypto e IndexedDB no aportan protección hardware; borrar los datos del sitio puede eliminar claves y credenciales. Ejecutar `npm test` y `npm run build` antes de integrar.
