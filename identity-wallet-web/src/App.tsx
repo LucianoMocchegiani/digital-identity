@@ -5,12 +5,17 @@ import { resolveProtocolResource, type ResolvedResource } from './protocol-resou
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifySdJwtSignature } from './credential-verification'
 import { verifyPresentationResource } from './oid4vp'
+import { findPresentationOptions, type PresentationOption } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
   const [resource, setResource] = useState<ResolvedResource | null>(null)
   const [verifiedPresentation, setVerifiedPresentation] = useState<VerifiedOid4vpRequest | null>(null)
+  const [presentationOptions, setPresentationOptions] = useState<PresentationOption[]>([])
+  const [selectedOption, setSelectedOption] = useState('')
+  const [consent, setConsent] = useState(false)
+  const [consentConfirmed, setConsentConfirmed] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [txCode, setTxCode] = useState('')
@@ -57,10 +62,17 @@ export default function App() {
     setNotice('')
     setResource(null)
     setVerifiedPresentation(null)
+    setPresentationOptions([])
+    setSelectedOption('')
+    setConsent(false)
+    setConsentConfirmed(false)
     try {
       const resolved = await resolveProtocolResource(request)
       if (resolved.kind === 'present' && request.kind === 'present') {
-        setVerifiedPresentation(await verifyPresentationResource(resolved, request.clientId))
+        const verified = await verifyPresentationResource(resolved, request.clientId)
+        setVerifiedPresentation(verified)
+        const credentials = await listCredentials()
+        setPresentationOptions(await findPresentationOptions(verified, credentials))
       }
       setResource(resolved)
     } catch (cause) {
@@ -94,6 +106,14 @@ export default function App() {
     }
   }
 
+  function confirmPresentationConsent() {
+    if (!selectedOption || !consent) return
+    setConsentConfirmed(true)
+    setNotice('Selección y consentimiento confirmados solo en esta pantalla. No se enviaron datos al verifier.')
+  }
+
+  const chosenOption = presentationOptions.find(option => `${option.queryId}:${option.credentialId}` === selectedOption)
+
   return (
     <main className="shell">
       <header><span className="mark">K</span><span>Kuatia <strong>Wallet PoC</strong></span></header>
@@ -126,14 +146,7 @@ export default function App() {
           {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo resolver el token endpoint del issuer; no se puede continuar con esta oferta.</p>}
           {resource.hasPreAuthorizedCode && resource.tokenEndpoint && resource.txCode && <label className="field">
             {resource.txCode.description || 'Código de transacción requerido'}
-            <input
-              type="text"
-              inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'}
-              maxLength={resource.txCode.length}
-              value={txCode}
-              onChange={event => setTxCode(event.target.value)}
-              autoComplete="off"
-            />
+            <input type="text" inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'} maxLength={resource.txCode.length} value={txCode} onChange={event => setTxCode(event.target.value)} autoComplete="off" />
           </label>}
           {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
             {!hasKey && <p className="warning">Generá primero una clave de holder para poder emitir.</p>}
@@ -147,8 +160,25 @@ export default function App() {
           <p className="notice" role="status">Request Object firmado verificado contra el DID del verifier. No se compartieron datos.</p>
           <p><strong>Verifier:</strong> <span className="endpoint">{verifiedPresentation.verifierDid}</span></p>
           <p><strong>Respuesta solicitada:</strong> {String(verifiedPresentation.payload.response_mode)} · DCQL</p>
-          <pre className="resource-preview">{JSON.stringify(verifiedPresentation.payload.dcql_query, null, 2)}</pre>
-          <p className="warning">La presentación todavía no está implementada: no se seleccionaron ni enviaron credenciales.</p>
+          <h3>Credenciales que coinciden</h3>
+          {!presentationOptions.length && <p>No se encontró una credencial que coincida con el formato, VCT y claims solicitados.</p>}
+          {presentationOptions.length > 0 && <fieldset className="credential-options">
+            <legend>Elegí qué credencial usar (todavía no se comparte):</legend>
+            {presentationOptions.map(option => {
+              const id = `${option.queryId}:${option.credentialId}`
+              return <label className="credential-option" key={id}>
+                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
+                <span><strong>{option.label}</strong><small>Consulta: {option.queryId}</small></span>
+              </label>
+            })}
+          </fieldset>}
+          {chosenOption && <>
+            <h3>Datos solicitados de esta credencial</h3>
+            <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
+            <label className="consent-option"><input type="checkbox" checked={consent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
+            <button type="button" onClick={confirmPresentationConsent} disabled={!consent || consentConfirmed}>Confirmar selección y consentimiento</button>
+            <p className="warning">Esta confirmación solo queda en la pantalla. La wallet aún no genera ni envía la presentación y no transmite estos datos.</p>
+          </>}
         </>}
       </section>}
 
@@ -160,7 +190,7 @@ export default function App() {
         </button>
       </section>
 
-      <p className="warning">OID4VP verifica la firma del Request Object y el DID del verifier, pero todavía no genera ni envía presentaciones. No compartas credenciales.</p>
+      <p className="warning">OID4VP muestra claims de credenciales verificadas y permite confirmarlos localmente, pero todavía no valida el binding con la clave de holder ni envía presentaciones. No compartas credenciales.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )
