@@ -18,7 +18,7 @@ function encode(value: unknown): string {
 async function request(overrides: Record<string, unknown> = {}): Promise<string> {
   const header = encode({ alg: 'ES256', kid })
   const payload = encode({
-    iss: clientId,
+    client_id: clientId,
     aud: 'https://self-issued.me/v2',
     iat: Math.floor(Date.now() / 1000),
     exp: Math.floor(Date.now() / 1000) + 120,
@@ -43,18 +43,19 @@ function mockDid() {
 }
 
 describe('OID4VP signed request verification', () => {
-  it('verifies ES256 against the expected verifier DID and accepts supported request fields', async () => {
+  it('verifies ES256 against the expected verifier DID and accepts the verifier request fields', async () => {
     mockDid()
     await expect(verifyOid4vpRequest(await request(), clientId)).resolves.toMatchObject({
       verifierDid: did,
       responseUri: 'https://verifier.kuatia.xyz/openid4vc-flow/verifier-a/authorize',
       nonce: 'one-time-nonce',
-      payload: { response_mode: 'direct_post', response_type: 'vp_token' },
+      payload: { response_mode: 'direct_post', response_type: 'vp_token', client_id: clientId },
     })
   })
 
-  it('fails closed for an invalid signature, response endpoint, audience, or missing nonce', async () => {
+  it('fails closed for a mismatched issuer, invalid signature, response endpoint, audience, or missing nonce', async () => {
     mockDid()
+    await expect(verifyOid4vpRequest(await request({ iss: 'wrong-client' }), clientId)).rejects.toThrow('issuer')
     const jwt = await request()
     const [header, payload, signature] = jwt.split('.')
     const altered = `${header}.${payload}.${signature[0] === 'A' ? 'B' : 'A'}${signature.slice(1)}`

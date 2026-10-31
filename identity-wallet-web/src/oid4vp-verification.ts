@@ -44,8 +44,8 @@ export async function verifyOid4vpRequest(compactRequest: string, clientId: stri
   const expected = expectedVerifier(clientId)
   const header = decodeJson(parts[0])
   const payload = decodeJson(parts[1])
-  if (payload.iss !== expected.clientId || (payload.client_id !== undefined && payload.client_id !== expected.clientId)) {
-    throw new Error('El issuer del Request Object no coincide con el client_id del enlace.')
+  if (payload.client_id !== expected.clientId || (payload.iss !== undefined && payload.iss !== expected.clientId)) {
+    throw new Error('El client_id o issuer del Request Object no coincide con el enlace.')
   }
   if (header.alg !== 'ES256' || typeof header.kid !== 'string' || !header.kid.startsWith(`${expected.did}#`)) {
     throw new Error('El Request Object no está firmado con ES256 por el DID esperado.')
