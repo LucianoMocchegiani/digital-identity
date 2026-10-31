@@ -44,11 +44,11 @@ export async function verifyOid4vpRequest(compactRequest: string, clientId: stri
   const expected = expectedVerifier(clientId)
   const header = decodeJson(parts[0])
   const payload = decodeJson(parts[1])
-  if (header.alg !== 'ES256' || typeof header.kid !== 'string' || !header.kid.startsWith(`${expected.did}#`)) {
-    throw new Error('El Request Object no está firmado con ES256 por el DID esperado.')
-  }
   if (payload.iss !== expected.clientId || (payload.client_id !== undefined && payload.client_id !== expected.clientId)) {
     throw new Error('El issuer del Request Object no coincide con el client_id del enlace.')
+  }
+  if (header.alg !== 'ES256' || typeof header.kid !== 'string' || !header.kid.startsWith(`${expected.did}#`)) {
+    throw new Error('El Request Object no está firmado con ES256 por el DID esperado.')
   }
   if (typeof payload.exp !== 'number' || payload.exp <= Date.now() / 1000 || typeof payload.iat !== 'number' || payload.iat > Date.now() / 1000 + 60) {
     throw new Error('El Request Object está vencido o tiene fechas inválidas.')
