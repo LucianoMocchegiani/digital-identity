@@ -24,14 +24,18 @@ function requestedClaims(query: Record<string, unknown>): string[] | null {
   return paths.every((path): path is string => path !== null) ? paths : null
 }
 
-function disclosedTopLevelClaims(segments: string[]): Record<string, unknown> {
+async function disclosedTopLevelClaims(segments: string[], references: unknown): Promise<Record<string, unknown>> {
   const claims: Record<string, unknown> = {}
+  if (!Array.isArray(references)) return claims
+  const topLevelDigests = new Set(references.filter((digest): digest is string => typeof digest === 'string'))
   for (const segment of segments) {
     if (!/^[\w-]+$/.test(segment)) throw new Error('Disclosure inválido')
-    const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
-    const bytes = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), char => char.charCodeAt(0))
+    const bytes = Uint8Array.from(atob(segment.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')), char => char.charCodeAt(0))
     const disclosure: unknown = JSON.parse(new TextDecoder().decode(bytes))
     if (!Array.isArray(disclosure) || disclosure.length !== 3 || typeof disclosure[1] !== 'string') continue
+    const digestBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(segment))
+    const digest = btoa(String.fromCharCode(...new Uint8Array(digestBytes))).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+    if (!topLevelDigests.has(digest)) continue
     if (Object.hasOwn(claims, disclosure[1])) throw new Error('Disclosure duplicado')
     claims[disclosure[1]] = disclosure[2]
   }
@@ -60,7 +64,9 @@ export async function findPresentationOptions(
           const jwtParts = segments.shift()?.split('.') ?? []
           if (jwtParts.length !== 3) continue
           const payload = decodeJson(jwtParts[1])
-          const available = { ...payload, ...disclosedTopLevelClaims(segments) }
+          const disclosed = await disclosedTopLevelClaims(segments, payload._sd)
+          if (Object.keys(disclosed).some(key => Object.hasOwn(payload, key))) continue
+          const available = { ...payload, ...disclosed }
           if (payload.vct !== vct || !claimsRequested.every(path => Object.hasOwn(available, path))) continue
           options.push({
             queryId: query.id,
