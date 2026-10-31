@@ -37,7 +37,7 @@ function disclosureReferences(value: unknown): Set<string> {
   while (pending.length) {
     const current = pending.pop()
     if (Array.isArray(current)) {
-      pending.push(...current)
+      for (const child of current) pending.push(child)
     } else if (isRecord(current)) {
       if (current._sd_alg !== undefined && current._sd_alg !== 'sha-256') {
         throw new Error('La credencial usa un algoritmo de disclosures no compatible.')
