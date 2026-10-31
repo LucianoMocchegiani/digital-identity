@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { createHolderKey, hasHolderKey, listCredentials } from './wallet-storage'
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
+import { issuePreAuthorizedCredential } from './oid4vci'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
   const [resource, setResource] = useState<ResolvedResource | null>(null)
   const [error, setError] = useState('')
+  const [notice, setNotice] = useState('')
+  const [txCode, setTxCode] = useState('')
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
@@ -42,11 +45,31 @@ export default function App() {
     if (!request) return
     setBusy(true)
     setError('')
+    setNotice('')
     setResource(null)
     try {
       setResource(await resolveProtocolResource(request))
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo cargar el recurso del protocolo.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function issueCredential() {
+    if (!resource || resource.kind !== 'issue') return
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      const count = await issuePreAuthorizedCredential(resource, txCode || undefined)
+      const credentials = await listCredentials()
+      setCredentialCount(credentials.length)
+      setNotice(`${count} credencial(es) recibida(s) y almacenada(s) cifrada(s). La firma aún no está verificada; no las compartas.`)
+    } catch (cause) {
+      const credentials = await listCredentials().catch(() => [])
+      setCredentialCount(credentials.length)
+      setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       setBusy(false)
     }
@@ -62,6 +85,7 @@ export default function App() {
       </section>
 
       {error && <p className="notice error" role="alert">{error}</p>}
+      {notice && <p className="notice" role="status">{notice}</p>}
 
       {request && <section className="card" aria-live="polite">
         <p className="eyebrow">{request.kind === 'issue' ? 'OFERTA DE EMISIÓN' : 'SOLICITUD DE PRESENTACIÓN'}</p>
@@ -72,14 +96,32 @@ export default function App() {
           {busy ? 'Cargando…' : resource ? 'Volver a cargar' : 'Descargar recurso'}
         </button>
         {resource?.kind === 'issue' && <>
-          <p>Oferta y metadata recibidas. Todavía no se intercambiaron tokens ni se solicitó una credencial.</p>
+          <p>Oferta y metadata recibidas. Revisá el issuer y la configuración antes de continuar.</p>
           <p><strong>Issuer:</strong> <span className="endpoint">{resource.credentialIssuer}</span></p>
           <h3>Configuraciones ofrecidas</h3>
           <ul>{resource.credentialConfigurationIds.map(id => <li key={id}>
             <strong>{id}</strong>
             <pre className="resource-preview">{JSON.stringify(resource.supportedConfigurations[id], null, 2)}</pre>
           </li>)}</ul>
-          {!resource.hasPreAuthorizedCode && <p className="warning">La oferta no contiene un código preautorizado reconocido; no se puede continuar con el flujo PoC preautorizado.</p>}
+          {!resource.hasPreAuthorizedCode && <p className="warning">Esta PoC solo completa ofertas preautorizadas; esta oferta no incluye un código compatible.</p>}
+          {resource.hasPreAuthorizedCode && resource.txCode && <label className="field">
+            {resource.txCode.description || 'Código de transacción requerido'}
+            <input
+              type={resource.txCode.inputMode === 'numeric' ? 'text' : 'text'}
+              inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'}
+              maxLength={resource.txCode.length}
+              value={txCode}
+              onChange={event => setTxCode(event.target.value)}
+              autoComplete="off"
+            />
+          </label>}
+          {resource.hasPreAuthorizedCode && <>
+            {!hasKey && <p className="warning">Generá primero una clave de holder para poder emitir.</p>}
+            <p className="warning">Al continuar se consumirá el código de un solo uso de esta oferta. La credencial recibida se guarda cifrada, pero su firma todavía no se verifica.</p>
+            <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
+              {busy ? 'Emitiendo…' : 'Confirmar y emitir'}
+            </button>
+          </>}
         </>}
         {resource?.kind === 'present' && <>
           <p className="warning">Request Object descargado, pero la firma y el emisor todavía no se verificaron. No compartas datos.</p>
@@ -91,7 +133,7 @@ export default function App() {
         <div className="row"><div><h2>Almacenamiento local</h2><p>{credentialCount} credenciales guardadas (cifradas con AES-GCM)</p></div><span className="status">{hasKey ? 'CLAVE LISTA' : 'SIN CLAVE'}</span></div>
         <p>La clave de holder P-256 se genera como CryptoKey no exportable y se persiste en IndexedDB.</p>
         <button type="button" onClick={() => void generateKey()} disabled={busy || hasKey}>
-          {busy ? 'Generando…' : hasKey ? 'Clave creada' : 'Generar clave de holder'}
+          {busy ? 'Procesando…' : hasKey ? 'Clave creada' : 'Generar clave de holder'}
         </button>
       </section>
 

@@ -8,7 +8,7 @@ const encode = (value: unknown) => btoa(JSON.stringify(value)).replace(/=/g, '')
 afterEach(() => vi.unstubAllGlobals())
 
 describe('protocol resource resolution', () => {
-  it('resolves a pre-authorized credential offer and issuer metadata without browser credentials', async () => {
+  it('resolves a pre-authorized offer and issuer metadata without browser credentials', async () => {
     const offer = {
       credential_issuer: 'https://issuer.kuatia.xyz/openid4vc-flow/issuer',
       credential_configuration_ids: ['membership_card'],
@@ -16,6 +16,8 @@ describe('protocol resource resolution', () => {
     }
     const metadata = {
       credential_issuer: offer.credential_issuer,
+      credential_endpoint: `${offer.credential_issuer}/credential`,
+      token_endpoint: `${offer.credential_issuer}/token`,
       credential_configurations_supported: { membership_card: { format: 'dc+sd-jwt', vct: 'MembershipCredential' } },
     }
     const fetch = vi.fn()
@@ -23,8 +25,9 @@ describe('protocol resource resolution', () => {
       .mockResolvedValueOnce(new Response(JSON.stringify(metadata)))
     vi.stubGlobal('fetch', fetch)
 
-    await expect(resolveProtocolResource(offerRequest)).resolves.toEqual({
+    await expect(resolveProtocolResource(offerRequest)).resolves.toMatchObject({
       kind: 'issue', credentialIssuer: offer.credential_issuer, credentialConfigurationIds: ['membership_card'],
+      credentialEndpoint: metadata.credential_endpoint, tokenEndpoint: metadata.token_endpoint,
       supportedConfigurations: metadata.credential_configurations_supported, hasPreAuthorizedCode: true,
     })
     expect(fetch.mock.calls.map(call => call[0].toString())).toEqual([
@@ -42,7 +45,7 @@ describe('protocol resource resolution', () => {
     })
   })
 
-  it('rejects malformed offers, unsupported configurations and non-JWT verifier responses', async () => {
+  it('rejects malformed offers, unsupported configurations and untrusted endpoints', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response(JSON.stringify({ credential_issuer: 'https://issuer.kuatia.xyz' }))))
     await expect(resolveProtocolResource(offerRequest)).rejects.toThrow()
 
@@ -53,10 +56,24 @@ describe('protocol resource resolution', () => {
     vi.stubGlobal('fetch', vi.fn()
       .mockResolvedValueOnce(new Response(JSON.stringify(unsupported)))
       .mockResolvedValueOnce(new Response(JSON.stringify({
-        credential_issuer: unsupported.credential_issuer, credential_configurations_supported: {},
+        credential_issuer: unsupported.credential_issuer,
+        credential_endpoint: `${unsupported.credential_issuer}/credential`,
+        credential_configurations_supported: {},
       }))))
     await expect(resolveProtocolResource(offerRequest)).rejects.toThrow('no anuncia la configuración')
 
+    const malicious = { ...unsupported, grants: {} }
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(malicious)))
+      .mockResolvedValueOnce(new Response(JSON.stringify({
+        credential_issuer: malicious.credential_issuer,
+        credential_endpoint: 'https://attacker.example/credential',
+        credential_configurations_supported: { missing: { format: 'dc+sd-jwt' } },
+      }))))
+    await expect(resolveProtocolResource(offerRequest)).rejects.toThrow('no pertenece al issuer')
+  })
+
+  it('rejects non-JWT verifier responses', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('not-a-jwt')))
     await expect(resolveProtocolResource(presentationRequest)).rejects.toThrow()
   })

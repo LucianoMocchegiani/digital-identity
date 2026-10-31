@@ -4,9 +4,13 @@ export type ResolvedResource =
   | {
       kind: 'issue'
       credentialIssuer: string
+      credentialEndpoint: string
+      tokenEndpoint: string | null
       credentialConfigurationIds: string[]
-      supportedConfigurations: Record<string, unknown>
+      supportedConfigurations: Record<string, Record<string, unknown>>
       hasPreAuthorizedCode: boolean
+      preAuthorizedCode: string | null
+      txCode?: { length?: number; inputMode?: string; description?: string }
     }
   | { kind: 'present'; compactRequest: string; header: Record<string, unknown>; payload: Record<string, unknown> }
 
@@ -52,6 +56,34 @@ async function getText(url: URL, accept: string): Promise<string> {
   return text
 }
 
+function trustedIssuerEndpoint(value: unknown, issuer: URL, name: string): string {
+  if (typeof value !== 'string') throw new Error(`La metadata no incluye ${name}.`)
+  const endpoint = new URL(value)
+  const issuerPath = issuer.pathname.replace(/\/$/, '')
+  if (endpoint.origin !== issuer.origin || endpoint.username || endpoint.password || endpoint.hash || !endpoint.pathname.startsWith(`${issuerPath}/`)) {
+    throw new Error(`El endpoint ${name} no pertenece al issuer esperado.`)
+  }
+  return endpoint.href
+}
+
+async function resolveTokenEndpoint(metadata: Record<string, unknown>, issuer: URL): Promise<string | null> {
+  if (metadata.token_endpoint) return trustedIssuerEndpoint(metadata.token_endpoint, issuer, 'token_endpoint')
+
+  const issuerPath = issuer.pathname.replace(/\/$/, '')
+  for (const suffix of ['/.well-known/oauth-authorization-server', '/.well-known/openid-configuration']) {
+    const discoveryUrl = new URL(`${issuerPath}${suffix}`, issuer.origin)
+    try {
+      const discovery: unknown = JSON.parse(await getText(discoveryUrl, 'application/json'))
+      if (!isRecord(discovery)) continue
+      if (typeof discovery.issuer === 'string' && discovery.issuer.replace(/\/$/, '') !== issuer.href.replace(/\/$/, '')) continue
+      return trustedIssuerEndpoint(discovery.token_endpoint, issuer, 'token_endpoint')
+    } catch {
+      // Try the next standard discovery document; do not hide a missing token endpoint.
+    }
+  }
+  return null
+}
+
 async function resolveCredentialOffer(endpoint: URL): Promise<ResolvedResource> {
   const value: unknown = JSON.parse(await getText(endpoint, 'application/json'))
   if (!isRecord(value) || typeof value.credential_issuer !== 'string' || !Array.isArray(value.credential_configuration_ids) || !isRecord(value.grants)) {
@@ -79,7 +111,7 @@ async function resolveCredentialOffer(endpoint: URL): Promise<ResolvedResource> 
   }
 
   const configurations = metadata.credential_configurations_supported
-  const supportedConfigurations: Record<string, unknown> = {}
+  const supportedConfigurations: Record<string, Record<string, unknown>> = {}
   for (const id of credentialConfigurationIds) {
     const configuration = configurations[id]
     if (!isRecord(configuration)) throw new Error(`El issuer no anuncia la configuración ${id}.`)
@@ -88,8 +120,25 @@ async function resolveCredentialOffer(endpoint: URL): Promise<ResolvedResource> 
 
   const grants = value.grants
   const grant = grants[preAuthorizedGrant] ?? grants['pre-authorized_code']
-  const hasPreAuthorizedCode = isRecord(grant) && typeof grant['pre-authorized_code'] === 'string'
-  return { kind: 'issue', credentialIssuer: issuer.href, credentialConfigurationIds, supportedConfigurations, hasPreAuthorizedCode }
+  const hasPreAuthorizedCode = isRecord(grant) && typeof grant['pre-authorized_code'] === 'string' && grant['pre-authorized_code'].length > 0
+  const preAuthorizedCode = hasPreAuthorizedCode ? grant['pre-authorized_code'] as string : null
+  const txCode = isRecord(grant) && isRecord(grant.tx_code) ? {
+    length: typeof grant.tx_code.length === 'number' ? grant.tx_code.length : undefined,
+    inputMode: typeof grant.tx_code.input_mode === 'string' ? grant.tx_code.input_mode : undefined,
+    description: typeof grant.tx_code.description === 'string' ? grant.tx_code.description : undefined,
+  } : undefined
+
+  return {
+    kind: 'issue',
+    credentialIssuer: issuer.href,
+    credentialEndpoint: trustedIssuerEndpoint(metadata.credential_endpoint, issuer, 'credential_endpoint'),
+    tokenEndpoint: hasPreAuthorizedCode ? await resolveTokenEndpoint(metadata, issuer) : null,
+    credentialConfigurationIds,
+    supportedConfigurations,
+    hasPreAuthorizedCode,
+    preAuthorizedCode,
+    ...(txCode ? { txCode } : {}),
+  }
 }
 
 export async function resolveProtocolResource(request: WalletRequest): Promise<ResolvedResource> {

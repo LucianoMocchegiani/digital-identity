@@ -3,7 +3,8 @@ const databaseVersion = 1
 const keyStore = 'keys'
 const credentialStore = 'credentials'
 const masterKeyId = 'credential-encryption-key'
-const holderKeyId = 'holder-p256'
+const holderPrivateKeyId = 'holder-p256-v2-private'
+const holderPublicKeyId = 'holder-p256-v2-public'
 
 interface EncryptedCredential {
   id: string
@@ -15,6 +16,11 @@ interface EncryptedCredential {
 interface CredentialPayload {
   compactSdJwt: string
   label: string
+}
+
+export interface HolderSigningKey {
+  privateKey: CryptoKey
+  publicJwk: JsonWebKey
 }
 
 function openDatabase(): Promise<IDBDatabase> {
@@ -79,17 +85,32 @@ async function getEncryptionKey(db: IDBDatabase): Promise<CryptoKey> {
 export async function createHolderKey(): Promise<void> {
   const db = await openDatabase()
   try {
-    if (await readKey(db, holderKeyId)) return
+    if (await readKey(db, holderPrivateKeyId) && await readKey(db, holderPublicKeyId)) return
     const pair = await crypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, false, ['sign', 'verify'])
     const transaction = db.transaction(keyStore, 'readwrite')
     const done = transactionComplete(transaction)
-    try {
-      await requestResult(transaction.objectStore(keyStore).add(pair.privateKey, holderKeyId))
-      await done
-    } catch (error) {
-      await done.catch(() => undefined)
-      if (!await readKey(db, holderKeyId)) throw error
+    const store = transaction.objectStore(keyStore)
+    store.put(pair.privateKey, holderPrivateKeyId)
+    store.put(pair.publicKey, holderPublicKeyId)
+    await done
+  } finally {
+    db.close()
+  }
+}
+
+export async function getHolderSigningKey(): Promise<HolderSigningKey> {
+  const db = await openDatabase()
+  try {
+    const [privateKey, publicKey] = await Promise.all([
+      readKey(db, holderPrivateKeyId),
+      readKey(db, holderPublicKeyId),
+    ])
+    if (!privateKey || !publicKey) throw new Error('Generá una nueva clave P-256 de holder para emitir.')
+    const publicJwk = await crypto.subtle.exportKey('jwk', publicKey)
+    if (publicJwk.kty !== 'EC' || publicJwk.crv !== 'P-256' || !publicJwk.x || !publicJwk.y) {
+      throw new Error('La clave pública de holder no es una JWK P-256 válida.')
     }
+    return { privateKey, publicJwk: { kty: publicJwk.kty, crv: publicJwk.crv, x: publicJwk.x, y: publicJwk.y } }
   } finally {
     db.close()
   }
@@ -98,7 +119,7 @@ export async function createHolderKey(): Promise<void> {
 export async function hasHolderKey(): Promise<boolean> {
   const db = await openDatabase()
   try {
-    return Boolean(await readKey(db, holderKeyId))
+    return Boolean(await readKey(db, holderPrivateKeyId) && await readKey(db, holderPublicKeyId))
   } finally {
     db.close()
   }
