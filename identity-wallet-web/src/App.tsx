@@ -4,10 +4,13 @@ import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifySdJwtSignature } from './credential-verification'
+import { verifyPresentationResource } from './oid4vp'
+import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
   const [resource, setResource] = useState<ResolvedResource | null>(null)
+  const [verifiedPresentation, setVerifiedPresentation] = useState<VerifiedOid4vpRequest | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [txCode, setTxCode] = useState('')
@@ -53,10 +56,15 @@ export default function App() {
     setError('')
     setNotice('')
     setResource(null)
+    setVerifiedPresentation(null)
     try {
-      setResource(await resolveProtocolResource(request))
+      const resolved = await resolveProtocolResource(request)
+      if (resolved.kind === 'present' && request.kind === 'present') {
+        setVerifiedPresentation(await verifyPresentationResource(resolved, request.clientId))
+      }
+      setResource(resolved)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo cargar el recurso del protocolo.')
+      setError(cause instanceof Error ? cause.message : 'No se pudo cargar o verificar el recurso del protocolo.')
     } finally {
       setBusy(false)
     }
@@ -135,9 +143,12 @@ export default function App() {
             </button>
           </>}
         </>}
-        {resource?.kind === 'present' && <>
-          <p className="warning">Request Object descargado, pero la firma y el emisor todavía no se verificaron. No compartas datos.</p>
-          <pre className="resource-preview">{JSON.stringify(resource.payload, null, 2)}</pre>
+        {resource?.kind === 'present' && verifiedPresentation && <>
+          <p className="notice" role="status">Request Object firmado verificado contra el DID del verifier. No se compartieron datos.</p>
+          <p><strong>Verifier:</strong> <span className="endpoint">{verifiedPresentation.verifierDid}</span></p>
+          <p><strong>Respuesta solicitada:</strong> {String(verifiedPresentation.payload.response_mode)} · DCQL</p>
+          <pre className="resource-preview">{JSON.stringify(verifiedPresentation.payload.dcql_query, null, 2)}</pre>
+          <p className="warning">La presentación todavía no está implementada: no se seleccionaron ni enviaron credenciales.</p>
         </>}
       </section>}
 
@@ -149,7 +160,7 @@ export default function App() {
         </button>
       </section>
 
-      <p className="warning">Se verifican la firma ES256 del issuer y los hashes de disclosures. Aún no se valida el binding del holder ni la revocación; OID4VP continúa deshabilitado. No presentes ni compartas credenciales desde esta PoC.</p>
+      <p className="warning">OID4VP verifica la firma del Request Object y el DID del verifier, pero todavía no genera ni envía presentaciones. No compartas credenciales.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )
