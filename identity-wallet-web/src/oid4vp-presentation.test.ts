@@ -15,11 +15,15 @@ async function digest(value: string): Promise<string> {
   return Buffer.from(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(value))).toString('base64url')
 }
 
-const request = {
+const request: VerifiedOid4vpRequest = {
+  header: {},
   payload: {
     dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['name'] }, { path: ['email'] }] }] },
   },
-} as VerifiedOid4vpRequest
+  verifierDid: 'did:web:verifier.kuatia.xyz:test',
+  responseUri: 'https://verifier.kuatia.xyz/openid4vc-flow/test/authorize',
+  nonce: 'test-nonce',
+}
 
 async function credential(payload: Record<string, unknown>, disclosures: string[]) {
   return {
@@ -42,9 +46,9 @@ describe('OID4VP local presentation preview', () => {
   it('does not offer credentials missing requested claims or unsupported nested paths', async () => {
     const name = encode(['salt', 'name', 'Ada'])
     const stored = await credential({ vct: 'MembershipCredential', _sd: [await digest(name)] }, [name])
-    const missing = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['role'] }] }] } } } as VerifiedOid4vpRequest
+    const missing: VerifiedOid4vpRequest = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['role'] }] }] } } }
     await expect(findPresentationOptions(missing, [stored])).resolves.toEqual([])
-    const nested = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['address', 'city'] }] }] } } } as VerifiedOid4vpRequest
+    const nested: VerifiedOid4vpRequest = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['address', 'city'] }] }] } } }
     await expect(findPresentationOptions(nested, [stored])).resolves.toEqual([])
   })
 
