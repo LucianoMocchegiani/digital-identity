@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { webcrypto } from 'node:crypto'
 import type { ResolvedResource } from './protocol-resource'
 
@@ -15,6 +15,7 @@ import { verifySdJwtSignature } from './credential-verification'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
 Object.assign(globalThis, { __holderKey: pair.privateKey, __holderJwk: publicJwk })
+beforeEach(() => vi.clearAllMocks())
 afterEach(() => vi.unstubAllGlobals())
 
 const resource: Extract<ResolvedResource, { kind: 'issue' }> = {
