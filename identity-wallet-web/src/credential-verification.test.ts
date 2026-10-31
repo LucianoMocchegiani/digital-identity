@@ -25,7 +25,7 @@ async function signedCredential(payload: Record<string, unknown>, disclosures: s
   const body = base64url(new TextEncoder().encode(JSON.stringify(payload)))
   const input = `${header}.${body}`
   const signature = new Uint8Array(await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, new TextEncoder().encode(input)))
-  return `${input}.${base64url(signature)}~${disclosures.join('~')}~`
+  return disclosures.length ? `${input}.${base64url(signature)}~${disclosures.join('~')}~` : `${input}.${base64url(signature)}~`
 }
 
 function mockDidDocument() {
