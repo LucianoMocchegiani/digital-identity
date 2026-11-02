@@ -3,7 +3,6 @@ import { createHolderKey, hasHolderKey, listCredentials } from './wallet-storage
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 import { issuePreAuthorizedCredential } from './oid4vci'
-import { verifySdJwtSignature } from './credential-verification'
 import { verifyPresentationResource } from './oid4vp'
 import { findPresentationOptions, inspectStoredCredentials, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
