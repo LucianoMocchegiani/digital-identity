@@ -192,7 +192,7 @@ export default function App() {
             {presentationOptions.map(option => {
               const id = `${option.queryId}:${option.credentialId}`
               return <label className="credential-option" key={id}>
-                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setPresentationSent(false); setNotice('') }} />
+                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} disabled={busy || presentationSent} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
                 <span><strong>{option.label}</strong><small>Consulta: {option.queryId}</small></span>
               </label>
             })}
@@ -200,7 +200,7 @@ export default function App() {
           {chosenOption && <>
             <h3>Datos solicitados de esta credencial</h3>
             <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
-            <label className="consent-option"><input type="checkbox" checked={consent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setPresentationSent(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
+            <label className="consent-option"><input type="checkbox" checked={consent} disabled={busy || presentationSent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
             {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Confirmar selección y consentimiento</button>}
             {consentConfirmed && <button type="button" onClick={() => void sendPresentation()} disabled={busy || presentationSent}>
               {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Firmar y enviar presentación'}
