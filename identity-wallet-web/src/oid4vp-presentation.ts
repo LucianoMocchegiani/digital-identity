@@ -64,7 +64,14 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
     } catch {
       // Keep the record visible, but never claim metadata could not be decoded.
     }
-    const verified = await verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false)
+    const verified = await verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(cause => {
+      // Log only the local record ID and generic verifier error; never log the credential or its claims.
+      console.warn('No se pudo verificar la firma de una credencial guardada.', {
+        credentialId: credential.id,
+        reason: cause instanceof Error ? cause.message : 'error desconocido',
+      })
+      return false
+    })
     return { id: credential.id, label: credential.label, format: 'dc+sd-jwt' as const, vct, claims, verified }
   }))
 }
