@@ -2,7 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { webcrypto } from 'node:crypto'
 
 vi.mock('./credential-verification', () => ({ verifySdJwtSignature: vi.fn(async () => undefined) }))
-import { findPresentationOptions } from './oid4vp-presentation'
+import { findPresentationOptions, inspectStoredCredentials } from './oid4vp-presentation'
+import { verifySdJwtSignature } from './credential-verification'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
@@ -56,5 +57,23 @@ describe('OID4VP local presentation preview', () => {
     const name = encode(['salt', 'name', 'Ada'])
     const stored = await credential({ vct: 'MembershipCredential', address: { _sd: [await digest(name)] } }, [name])
     await expect(findPresentationOptions(request, [stored])).resolves.toEqual([])
+  })
+
+  it('shows only metadata and claim names in the local credential inventory', async () => {
+    const name = encode(['salt', 'name', 'Ada Lovelace'])
+    const stored = await credential({ iss: 'issuer', vct: 'MembershipCredential', role: 'member', _sd: [await digest(name)] }, [name])
+    await expect(inspectStoredCredentials([stored])).resolves.toEqual([{
+      id: 'credential-1', label: 'Membership', format: 'dc+sd-jwt', vct: 'MembershipCredential',
+      claims: ['name', 'role'], verified: true,
+    }])
+    expect(vi.mocked(verifySdJwtSignature)).toHaveBeenCalledWith(stored.compactSdJwt)
+  })
+
+  it('does not expose claim values and marks unverifiable credentials', async () => {
+    const stored = await credential({ vct: 'MembershipCredential', name: 'Private Name' }, [])
+    vi.mocked(verifySdJwtSignature).mockRejectedValueOnce(new Error('signature invalid'))
+    const [summary] = await inspectStoredCredentials([stored])
+    expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], verified: false })
+    expect(JSON.stringify(summary)).not.toContain('Private Name')
   })
 })

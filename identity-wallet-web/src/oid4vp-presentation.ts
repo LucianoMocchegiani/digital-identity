@@ -3,6 +3,7 @@ import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 type StoredCredential = { id: string; label: string; compactSdJwt: string }
 export type PresentationOption = { queryId: string; credentialId: string; label: string; claims: Record<string, unknown> }
+export type StoredCredentialSummary = { id: string; label: string; format: 'dc+sd-jwt'; vct: string; claims: string[]; verified: boolean }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -40,6 +41,32 @@ async function disclosedTopLevelClaims(segments: string[], references: unknown):
     claims[disclosure[1]] = disclosure[2]
   }
   return claims
+}
+
+const reservedClaims = new Set(['iss', 'iat', 'exp', 'nbf', 'vct', '_sd', '_sd_alg', 'cnf', 'status', 'aud', 'sub', 'jti'])
+
+export async function inspectStoredCredentials(credentials: StoredCredential[]): Promise<StoredCredentialSummary[]> {
+  return Promise.all(credentials.map(async credential => {
+    let vct = 'No disponible'
+    let claims: string[] = []
+    try {
+      const segments = credential.compactSdJwt.split('~')
+      if (segments.at(-1) === '') segments.pop()
+      const jwtParts = (segments.shift() ?? '').split('.')
+      if (jwtParts.length !== 3) throw new Error('JWT inválido')
+      const payload = decodeJson(jwtParts[1])
+      if (typeof payload.vct === 'string') vct = payload.vct
+      const disclosed = await disclosedTopLevelClaims(segments, payload._sd)
+      claims = [...new Set([
+        ...Object.keys(payload).filter(key => !reservedClaims.has(key) && !key.startsWith('_')),
+        ...Object.keys(disclosed),
+      ])].sort()
+    } catch {
+      // Keep the record visible, but never claim metadata could not be decoded.
+    }
+    const verified = await verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false)
+    return { id: credential.id, label: credential.label, format: 'dc+sd-jwt' as const, vct, claims, verified }
+  }))
 }
 
 export async function findPresentationOptions(

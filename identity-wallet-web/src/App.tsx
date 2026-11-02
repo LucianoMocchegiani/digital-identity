@@ -5,7 +5,7 @@ import { resolveProtocolResource, type ResolvedResource } from './protocol-resou
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifySdJwtSignature } from './credential-verification'
 import { verifyPresentationResource } from './oid4vp'
-import { findPresentationOptions, type PresentationOption } from './oid4vp-presentation'
+import { findPresentationOptions, inspectStoredCredentials, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 export default function App() {
@@ -13,6 +13,7 @@ export default function App() {
   const [resource, setResource] = useState<ResolvedResource | null>(null)
   const [verifiedPresentation, setVerifiedPresentation] = useState<VerifiedOid4vpRequest | null>(null)
   const [presentationOptions, setPresentationOptions] = useState<PresentationOption[]>([])
+  const [credentialSummaries, setCredentialSummaries] = useState<StoredCredentialSummary[]>([])
   const [selectedOption, setSelectedOption] = useState('')
   const [consent, setConsent] = useState(false)
   const [consentConfirmed, setConsentConfirmed] = useState(false)
@@ -35,10 +36,9 @@ export default function App() {
     void Promise.all([hasHolderKey(), listCredentials()]).then(async ([keyExists, credentials]) => {
       setHasKey(keyExists)
       setCredentialCount(credentials.length)
-      const results = await Promise.all(credentials.map(credential =>
-        verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false),
-      ))
-      setVerifiedCount(results.filter(Boolean).length)
+      const summaries = await inspectStoredCredentials(credentials)
+      setCredentialSummaries(summaries)
+      setVerifiedCount(summaries.filter(credential => credential.verified).length)
     }).catch(() => setError('No se pudo acceder o verificar el almacenamiento local de esta wallet.'))
   }, [])
 
@@ -90,16 +90,17 @@ export default function App() {
     try {
       const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
       const credentials = await listCredentials()
+      const summaries = await inspectStoredCredentials(credentials)
       setCredentialCount(credentials.length)
-      setVerifiedCount(credentials.filter(credential => credential.label.includes('firma ES256 verificada')).length)
+      setCredentialSummaries(summaries)
+      setVerifiedCount(summaries.filter(credential => credential.verified).length)
       setNotice(`${result.count} credencial(es) recibida(s) y cifrada(s); ${result.verifiedCount} con firma ES256 verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
+      const summaries = await inspectStoredCredentials(credentials)
       setCredentialCount(credentials.length)
-      const results = await Promise.all(credentials.map(credential =>
-        verifySdJwtSignature(credential.compactSdJwt).then(() => true).catch(() => false),
-      ))
-      setVerifiedCount(results.filter(Boolean).length)
+      setCredentialSummaries(summaries)
+      setVerifiedCount(summaries.filter(credential => credential.verified).length)
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       setBusy(false)
@@ -188,6 +189,19 @@ export default function App() {
         <button type="button" onClick={() => void generateKey()} disabled={busy || hasKey}>
           {busy ? 'Procesando…' : hasKey ? 'Clave creada' : 'Generar clave de holder'}
         </button>
+        <h3>Credenciales guardadas (solo metadatos)</h3>
+        {!credentialSummaries.length && <p>No hay credenciales guardadas.</p>}
+        <ul className="credential-inventory">
+          {credentialSummaries.map(credential => <li key={credential.id}>
+            <strong>{credential.label}</strong> · {credential.verified ? 'firma verificada' : 'firma no verificada'}
+            <dl>
+              <div><dt>Formato</dt><dd>{credential.format}</dd></div>
+              <div><dt>VCT</dt><dd>{credential.vct}</dd></div>
+              <div><dt>Claims disponibles</dt><dd>{credential.claims.join(', ') || 'ninguno legible'}</dd></div>
+            </dl>
+          </li>)}
+        </ul>
+        <p className="warning">Esta vista descifra localmente solo para mostrar metadatos y nombres de claims; no muestra valores personales ni transmite credenciales.</p>
       </section>
 
       <p className="warning">OID4VP muestra claims de credenciales verificadas y permite confirmarlos localmente, pero todavía no valida el binding con la clave de holder ni envía presentaciones. No compartas credenciales.</p>
