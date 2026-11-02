@@ -134,8 +134,9 @@ export async function verifySdJwtSignature(
   if (!isRecord(document) || document.id !== context.did || !Array.isArray(document.verificationMethod) || !Array.isArray(document.assertionMethod)) {
     throw new Error('El DID document no coincide con el issuer de la credencial.')
   }
+  const keyId = header.kid.startsWith('#') ? `${context.did}${header.kid}` : header.kid
   const method = document.verificationMethod.find((item: unknown) =>
-    isRecord(item) && (item.id === header.kid || (isRecord(item.publicKeyJwk) && item.publicKeyJwk.kid === header.kid)),
+    isRecord(item) && (item.id === keyId || (isRecord(item.publicKeyJwk) && item.publicKeyJwk.kid === header.kid)),
   )
   if (!isRecord(method) || method.controller !== context.did || !document.assertionMethod.includes(method.id) || !isRecord(method.publicKeyJwk)) {
     throw new Error('La clave de firma no está autorizada por el DID document del issuer.')
