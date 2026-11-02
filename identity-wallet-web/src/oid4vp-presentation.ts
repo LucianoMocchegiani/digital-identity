@@ -189,7 +189,7 @@ export async function sendOid4vpPresentation(
   const clientId = request.payload.client_id
   if (typeof clientId !== 'string' || !clientId) throw new Error('El Request Object no declara un client_id válido.')
   const header = encodeBase64url(new TextEncoder().encode(JSON.stringify({ typ: 'kb+jwt', alg: 'ES256' })))
-  const sdHash = encodeBase64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(sdJwt))))
+  const sdHash = encodeBase64url(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${sdJwt}~`))))
   const body = encodeBase64url(new TextEncoder().encode(JSON.stringify({ aud: clientId, nonce: request.nonce, iat: Math.floor(Date.now() / 1000), sd_hash: sdHash })))
   const signingInput = `${header}.${body}`
   const signature = encodeBase64url(new Uint8Array(await crypto.subtle.sign(
