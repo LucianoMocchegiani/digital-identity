@@ -4,7 +4,7 @@ import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifyPresentationResource } from './oid4vp'
-import { findPresentationOptions, inspectStoredCredentials, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
+import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 export default function App() {
@@ -16,6 +16,7 @@ export default function App() {
   const [selectedOption, setSelectedOption] = useState('')
   const [consent, setConsent] = useState(false)
   const [consentConfirmed, setConsentConfirmed] = useState(false)
+  const [presentationSent, setPresentationSent] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [txCode, setTxCode] = useState('')
@@ -65,6 +66,7 @@ export default function App() {
     setSelectedOption('')
     setConsent(false)
     setConsentConfirmed(false)
+    setPresentationSent(false)
     try {
       const resolved = await resolveProtocolResource(request)
       if (resolved.kind === 'present' && request.kind === 'present') {
@@ -109,13 +111,32 @@ export default function App() {
     }
   }
 
+  const chosenOption = presentationOptions.find(option => `${option.queryId}:${option.credentialId}` === selectedOption)
+
+  async function sendPresentation() {
+    if (!verifiedPresentation || !chosenOption || !consentConfirmed || presentationSent) return
+    setBusy(true)
+    setError('')
+    setNotice('')
+    try {
+      const credential = (await listCredentials()).find(item => item.id === chosenOption.credentialId)
+      if (!credential) throw new Error('La credencial seleccionada ya no está disponible.')
+      const holderKey = await getHolderSigningKey()
+      await sendOid4vpPresentation(verifiedPresentation, chosenOption, credential, holderKey)
+      setPresentationSent(true)
+      setNotice('Presentación enviada al verifier. La respuesta HTTP fue aceptada.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'No se pudo enviar la presentación al verifier.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   function confirmPresentationConsent() {
     if (!selectedOption || !consent) return
     setConsentConfirmed(true)
-    setNotice('Selección y consentimiento confirmados solo en esta pantalla. No se enviaron datos al verifier.')
+    setNotice('Selección y consentimiento confirmados. La presentación aún no se envió.')
   }
-
-  const chosenOption = presentationOptions.find(option => `${option.queryId}:${option.credentialId}` === selectedOption)
 
   return (
     <main className="shell">
@@ -171,7 +192,7 @@ export default function App() {
             {presentationOptions.map(option => {
               const id = `${option.queryId}:${option.credentialId}`
               return <label className="credential-option" key={id}>
-                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
+                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setPresentationSent(false); setNotice('') }} />
                 <span><strong>{option.label}</strong><small>Consulta: {option.queryId}</small></span>
               </label>
             })}
@@ -179,9 +200,12 @@ export default function App() {
           {chosenOption && <>
             <h3>Datos solicitados de esta credencial</h3>
             <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
-            <label className="consent-option"><input type="checkbox" checked={consent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
-            <button type="button" onClick={confirmPresentationConsent} disabled={!consent || consentConfirmed}>Confirmar selección y consentimiento</button>
-            <p className="warning">Esta confirmación solo queda en la pantalla. La wallet todavía no prueba posesión durante la presentación ni genera o envía la presentación; no transmite estos datos.</p>
+            <label className="consent-option"><input type="checkbox" checked={consent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setPresentationSent(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
+            {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Confirmar selección y consentimiento</button>}
+            {consentConfirmed && <button type="button" onClick={() => void sendPresentation()} disabled={busy || presentationSent}>
+              {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Firmar y enviar presentación'}
+            </button>}
+            <p className="warning">Al enviar, la wallet comparte únicamente los claims solicitados que puede seleccionar, firma la prueba de posesión con el nonce del verifier y transmite la presentación a su response_uri. No se envía antes de tu confirmación.</p>
           </>}
         </>}
       </section>}
@@ -207,7 +231,7 @@ export default function App() {
         <p className="warning">Esta vista descifra localmente solo para mostrar metadatos y nombres de claims; no muestra valores personales ni transmite credenciales.</p>
       </section>
 
-      <p className="warning">OID4VP comprueba la firma del issuer y la coincidencia de cnf.jwk con la clave local, pero todavía no demuestra posesión al verifier ni envía presentaciones. No compartas credenciales.</p>
+      <p className="warning">OID4VP valida la firma del issuer, el binding cnf y la prueba de posesión al enviar. No uses esta PoC con credenciales reales.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )

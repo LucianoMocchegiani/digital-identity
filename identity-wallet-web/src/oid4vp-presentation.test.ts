@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { webcrypto } from 'node:crypto'
 
 vi.mock('./credential-verification', () => ({ verifySdJwtSignature: vi.fn(async () => undefined) }))
-import { findPresentationOptions, inspectStoredCredentials } from './oid4vp-presentation'
+import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation } from './oid4vp-presentation'
 import { verifySdJwtSignature } from './credential-verification'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
@@ -24,6 +24,7 @@ const holderPublicJwk: JsonWebKey = {
 const request: VerifiedOid4vpRequest = {
   header: {},
   payload: {
+    client_id: 'decentralized_identifier:did:web:verifier.kuatia.xyz:test',
     dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['name'] }, { path: ['email'] }] }] },
   },
   verifierDid: 'did:web:verifier.kuatia.xyz:test',
@@ -98,5 +99,46 @@ describe('OID4VP local presentation preview', () => {
     const [summary] = await inspectStoredCredentials([stored])
     expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], verified: false })
     expect(JSON.stringify(summary)).not.toContain('Private Name')
+  })
+
+  it('signs a nonce-bound presentation and posts only requested disclosures', async () => {
+    const pair = await webcrypto.subtle.generateKey({ name: 'ECDSA', namedCurve: 'P-256' }, true, ['sign', 'verify'])
+    const publicJwk = await webcrypto.subtle.exportKey('jwk', pair.publicKey)
+    const name = encode(['salt', 'name', 'Ada'])
+    const email = encode(['salt-2', 'email', 'private@example.test'])
+    const stored = await credential({
+      vct: 'MembershipCredential', cnf: { jwk: publicJwk }, _sd: [await digest(name), await digest(email)],
+    }, [name, email])
+    const selected: PresentationOption = {
+      queryId: 'membership', credentialId: stored.id, label: stored.label, claims: { name: 'Ada' },
+    }
+    const selectedRequest: VerifiedOid4vpRequest = {
+      ...request,
+      payload: { ...request.payload, dcql_query: { credentials: [{
+        id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['name'] }],
+      }] } },
+      state: 'state-123',
+    }
+    const fetchMock = vi.fn().mockResolvedValue(new Response(null, { status: 204 }))
+    vi.stubGlobal('fetch', fetchMock)
+
+    await sendOid4vpPresentation(selectedRequest, selected, stored, { privateKey: pair.privateKey, publicJwk })
+
+    const [, init] = fetchMock.mock.calls[0] as [string, RequestInit]
+    expect(fetchMock.mock.calls[0][0]).toBe(selectedRequest.responseUri)
+    const params = new URLSearchParams(init.body as string)
+    expect(params.get('state')).toBe('state-123')
+    const vpToken = JSON.parse(params.get('vp_token') ?? '{}') as Record<string, string[]>
+    const presentation = vpToken.membership[0]
+    expect(presentation).not.toContain(email)
+    const [sdJwt, keyBindingJwt] = presentation.split('~').slice(0, -1).join('~').split('~')
+    const jwt = presentation.slice(presentation.lastIndexOf('~') + 1)
+    const [header, body, signature] = jwt.split('.')
+    const decodedBody = JSON.parse(Buffer.from(body, 'base64url').toString())
+    expect(decodedBody).toMatchObject({ aud: selectedRequest.payload.client_id, nonce: 'test-nonce', sd_hash: await digest(sdJwt) })
+    const verifyKey = await webcrypto.subtle.importKey('jwk', publicJwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify'])
+    expect(await webcrypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, verifyKey, Buffer.from(signature, 'base64url'), new TextEncoder().encode(`${header}.${body}`))).toBe(true)
+    expect(init.method).toBe('POST')
+    expect(init.redirect).toBe('error')
   })
 })
