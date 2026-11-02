@@ -16,6 +16,11 @@ async function digest(value: string): Promise<string> {
   return Buffer.from(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(value))).toString('base64url')
 }
 
+const holderPublicJwk: JsonWebKey = {
+  kty: 'EC', crv: 'P-256',
+  x: 'holder-key-x', y: 'holder-key-y',
+}
+
 const request: VerifiedOid4vpRequest = {
   header: {},
   payload: {
@@ -37,26 +42,44 @@ describe('OID4VP local presentation preview', () => {
   it('offers only a verified matching credential and previews only requested claims', async () => {
     const name = encode(['salt', 'name', 'Ada'])
     const email = encode(['salt-2', 'email', 'ada@example.test'])
-    const stored = await credential({ vct: 'MembershipCredential', _sd: [await digest(name), await digest(email)] }, [name, email])
-    await expect(findPresentationOptions(request, [stored])).resolves.toEqual([{
+    const stored = await credential({ vct: 'MembershipCredential', cnf: { jwk: holderPublicJwk }, _sd: [await digest(name), await digest(email)] }, [name, email])
+    await expect(findPresentationOptions(request, [stored], holderPublicJwk)).resolves.toEqual([{
       queryId: 'membership', credentialId: 'credential-1', label: 'Membership',
       claims: { name: 'Ada', email: 'ada@example.test' },
     }])
+  })
+
+  it('does not offer credentials bound to a different holder key', async () => {
+    const name = encode(['salt', 'name', 'Ada'])
+    const email = encode(['salt-2', 'email', 'ada@example.test'])
+    const stored = await credential({
+      vct: 'MembershipCredential',
+      cnf: { jwk: { ...holderPublicJwk, x: 'another-key' } },
+      _sd: [await digest(name), await digest(email)],
+    }, [name, email])
+    await expect(findPresentationOptions(request, [stored], holderPublicJwk)).resolves.toEqual([])
+  })
+
+  it('does not offer credentials without a holder binding', async () => {
+    const name = encode(['salt', 'name', 'Ada'])
+    const email = encode(['salt-2', 'email', 'ada@example.test'])
+    const stored = await credential({ vct: 'MembershipCredential', _sd: [await digest(name), await digest(email)] }, [name, email])
+    await expect(findPresentationOptions(request, [stored], holderPublicJwk)).resolves.toEqual([])
   })
 
   it('does not offer credentials missing requested claims or unsupported nested paths', async () => {
     const name = encode(['salt', 'name', 'Ada'])
     const stored = await credential({ vct: 'MembershipCredential', _sd: [await digest(name)] }, [name])
     const missing: VerifiedOid4vpRequest = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['role'] }] }] } } }
-    await expect(findPresentationOptions(missing, [stored])).resolves.toEqual([])
+    await expect(findPresentationOptions(missing, [stored], holderPublicJwk)).resolves.toEqual([])
     const nested: VerifiedOid4vpRequest = { ...request, payload: { dcql_query: { credentials: [{ id: 'membership', format: 'dc+sd-jwt', meta: { vct_values: ['MembershipCredential'] }, claims: [{ path: ['address', 'city'] }] }] } } }
-    await expect(findPresentationOptions(nested, [stored])).resolves.toEqual([])
+    await expect(findPresentationOptions(nested, [stored], holderPublicJwk)).resolves.toEqual([])
   })
 
   it('never mislabels nested disclosures as top-level claims', async () => {
     const name = encode(['salt', 'name', 'Ada'])
     const stored = await credential({ vct: 'MembershipCredential', address: { _sd: [await digest(name)] } }, [name])
-    await expect(findPresentationOptions(request, [stored])).resolves.toEqual([])
+    await expect(findPresentationOptions(request, [stored], holderPublicJwk)).resolves.toEqual([])
   })
 
   it('shows only metadata and claim names in the local credential inventory', async () => {

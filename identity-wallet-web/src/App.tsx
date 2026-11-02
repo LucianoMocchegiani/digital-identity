@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { createHolderKey, hasHolderKey, listCredentials } from './wallet-storage'
+import { createHolderKey, getHolderSigningKey, hasHolderKey, listCredentials } from './wallet-storage'
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
 import { issuePreAuthorizedCredential } from './oid4vci'
@@ -71,7 +71,10 @@ export default function App() {
         const verified = await verifyPresentationResource(resolved, request.clientId)
         setVerifiedPresentation(verified)
         const credentials = await listCredentials()
-        setPresentationOptions(await findPresentationOptions(verified, credentials))
+        if (hasKey) {
+          const { publicJwk } = await getHolderSigningKey()
+          setPresentationOptions(await findPresentationOptions(verified, credentials, publicJwk))
+        }
       }
       setResource(resolved)
     } catch (cause) {
@@ -161,7 +164,8 @@ export default function App() {
           <p><strong>Verifier:</strong> <span className="endpoint">{verifiedPresentation.verifierDid}</span></p>
           <p><strong>Respuesta solicitada:</strong> {String(verifiedPresentation.payload.response_mode)} · DCQL</p>
           <h3>Credenciales que coinciden</h3>
-          {!presentationOptions.length && <p>No se encontró una credencial que coincida con el formato, VCT y claims solicitados.</p>}
+          {!hasKey && <p className="warning">Necesitás la clave local de holder para comprobar el binding de las credenciales.</p>}
+          {hasKey && !presentationOptions.length && <p>No se encontró una credencial que coincida con el formato, VCT, claims y clave de holder local.</p>}
           {presentationOptions.length > 0 && <fieldset className="credential-options">
             <legend>Elegí qué credencial usar (todavía no se comparte):</legend>
             {presentationOptions.map(option => {
@@ -177,7 +181,7 @@ export default function App() {
             <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
             <label className="consent-option"><input type="checkbox" checked={consent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
             <button type="button" onClick={confirmPresentationConsent} disabled={!consent || consentConfirmed}>Confirmar selección y consentimiento</button>
-            <p className="warning">Esta confirmación solo queda en la pantalla. La wallet aún no genera ni envía la presentación y no transmite estos datos.</p>
+            <p className="warning">Esta confirmación solo queda en la pantalla. La wallet todavía no prueba posesión durante la presentación ni genera o envía la presentación; no transmite estos datos.</p>
           </>}
         </>}
       </section>}
@@ -203,7 +207,7 @@ export default function App() {
         <p className="warning">Esta vista descifra localmente solo para mostrar metadatos y nombres de claims; no muestra valores personales ni transmite credenciales.</p>
       </section>
 
-      <p className="warning">OID4VP muestra claims de credenciales verificadas y permite confirmarlos localmente, pero todavía no valida el binding con la clave de holder ni envía presentaciones. No compartas credenciales.</p>
+      <p className="warning">OID4VP comprueba la firma del issuer y la coincidencia de cnf.jwk con la clave local, pero todavía no demuestra posesión al verifier ni envía presentaciones. No compartas credenciales.</p>
       <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
     </main>
   )

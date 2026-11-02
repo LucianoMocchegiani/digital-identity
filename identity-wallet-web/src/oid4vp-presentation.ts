@@ -79,6 +79,7 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
 export async function findPresentationOptions(
   request: VerifiedOid4vpRequest,
   credentials: StoredCredential[],
+  holderPublicJwk: JsonWebKey,
 ): Promise<PresentationOption[]> {
   const dcql = request.payload.dcql_query
   if (!isRecord(dcql) || !Array.isArray(dcql.credentials)) return []
@@ -98,6 +99,11 @@ export async function findPresentationOptions(
           const jwtParts = segments.shift()?.split('.') ?? []
           if (jwtParts.length !== 3) continue
           const payload = decodeJson(jwtParts[1])
+          const holderJwk = isRecord(payload.cnf) ? payload.cnf.jwk : undefined
+          if (!isRecord(holderJwk) || holderJwk.kty !== 'EC' || holderJwk.crv !== 'P-256' ||
+              typeof holderJwk.x !== 'string' || typeof holderJwk.y !== 'string' ||
+              holderJwk.x !== holderPublicJwk.x || holderJwk.y !== holderPublicJwk.y ||
+              holderPublicJwk.kty !== 'EC' || holderPublicJwk.crv !== 'P-256') continue
           const disclosed = await disclosedTopLevelClaims(segments, payload._sd)
           if (Object.keys(disclosed).some(key => Object.hasOwn(payload, key))) continue
           const available = { ...payload, ...disclosed }
