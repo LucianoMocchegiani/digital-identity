@@ -10,8 +10,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function decodeJson(segment: string): Record<string, unknown> {
-  if (!/^[\\w-]+$/.test(segment)) throw new Error('JWT inválido')
-  const base64 = segment.replace(/-/g, '+').replace(/_/g, '/')
+  if (!/^[A-Za-z0-9_-]+$/.test(segment)) throw new Error('JWT inválido')
+  const base64 = segment.replaceAll('-', '+').replaceAll('_', '/')
   const bytes = Uint8Array.from(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')), char => char.charCodeAt(0))
   const value: unknown = JSON.parse(new TextDecoder().decode(bytes))
   if (!isRecord(value)) throw new Error('JWT inválido')
@@ -30,12 +30,12 @@ async function disclosedTopLevelClaims(segments: string[], references: unknown):
   if (!Array.isArray(references)) return claims
   const topLevelDigests = new Set(references.filter((digest): digest is string => typeof digest === 'string'))
   for (const segment of segments) {
-    if (!/^[\\w-]+$/.test(segment)) throw new Error('Disclosure inválido')
-    const bytes = Uint8Array.from(atob(segment.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')), char => char.charCodeAt(0))
+    if (!/^[A-Za-z0-9_-]+$/.test(segment)) throw new Error('Disclosure inválido')
+    const bytes = Uint8Array.from(atob(segment.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')), char => char.charCodeAt(0))
     const disclosure: unknown = JSON.parse(new TextDecoder().decode(bytes))
     if (!Array.isArray(disclosure) || disclosure.length !== 3 || typeof disclosure[1] !== 'string') continue
     const digestBytes = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(segment))
-    const digest = btoa(String.fromCharCode(...new Uint8Array(digestBytes))).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_')
+    const digest = btoa(String.fromCharCode(...new Uint8Array(digestBytes))).replace(/=/g, '').replaceAll('+', '-').replaceAll('/', '_')
     if (!topLevelDigests.has(digest)) continue
     if (Object.hasOwn(claims, disclosure[1])) throw new Error('Disclosure duplicado')
     claims[disclosure[1]] = disclosure[2]
@@ -125,7 +125,7 @@ export async function findPresentationOptions(
 }
 
 function encodeBase64url(bytes: Uint8Array): string {
-  return btoa(String.fromCharCode(...bytes)).replace(/=/g, '').replace(/\\+/g, '-').replace(/\\//g, '_')
+  return btoa(String.fromCharCode(...bytes)).replace(/=/g, '').replaceAll('+', '-').replaceAll('/', '_')
 }
 
 export async function sendOid4vpPresentation(
@@ -166,9 +166,9 @@ export async function sendOid4vpPresentation(
   const disclosedNames = new Set<string>()
   const signedDigests = new Set(Array.isArray(payload._sd) ? payload._sd.filter((value): value is string => typeof value === 'string') : [])
   for (const segment of segments) {
-    if (!/^[\\w-]+$/.test(segment)) throw new Error('Disclosure inválido')
+    if (!/^[A-Za-z0-9_-]+$/.test(segment)) throw new Error('Disclosure inválido')
     const parsed: unknown = JSON.parse(new TextDecoder().decode(Uint8Array.from(
-      atob(segment.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')),
+      atob(segment.replaceAll('-', '+').replaceAll('_', '/').padEnd(Math.ceil(segment.length / 4) * 4, '=')),
       char => char.charCodeAt(0),
     )))
     if (!Array.isArray(parsed) || parsed.length !== 3 || typeof parsed[1] !== 'string') continue
