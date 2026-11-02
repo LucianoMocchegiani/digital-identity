@@ -1,12 +1,13 @@
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { webcrypto } from 'node:crypto'
 
 vi.mock('./credential-verification', () => ({ verifySdJwtSignature: vi.fn(async () => undefined) }))
-import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation } from './oid4vp-presentation'
+import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation, type PresentationOption } from './oid4vp-presentation'
 import { verifySdJwtSignature } from './credential-verification'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 Object.defineProperty(globalThis, 'crypto', { value: webcrypto, configurable: true })
+afterEach(() => vi.unstubAllGlobals())
 
 function encode(value: unknown): string {
   return Buffer.from(JSON.stringify(value)).toString('base64url')
@@ -131,7 +132,7 @@ describe('OID4VP local presentation preview', () => {
     const vpToken = JSON.parse(params.get('vp_token') ?? '{}') as Record<string, string[]>
     const presentation = vpToken.membership[0]
     expect(presentation).not.toContain(email)
-    const [sdJwt, keyBindingJwt] = presentation.split('~').slice(0, -1).join('~').split('~')
+    const sdJwt = presentation.slice(0, presentation.lastIndexOf('~'))
     const jwt = presentation.slice(presentation.lastIndexOf('~') + 1)
     const [header, body, signature] = jwt.split('.')
     const decodedBody = JSON.parse(Buffer.from(body, 'base64url').toString())
