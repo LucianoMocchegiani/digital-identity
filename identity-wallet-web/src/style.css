@@ -1,5 +1,57 @@
- .credential-inventory { display: grid; gap: 14px; padding-left: 20px; }
-.credential-inventory > li { padding: 12px; border: 1px solid #2b3d4a; border-radius: 8px; overflow-wrap: anywhere; }
-.credential-inventory dl { display: grid; grid-template-columns: max-content 1fr; gap: 4px 12px; margin-bottom: 0; font-size: 13px; }
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: #e8f0f2;
+  background: #0b1115;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body { min-width: 320px; margin: 0; background: #0b1115; }
+button, input { font: inherit; }
+button { padding: 10px 16px; border: 0; border-radius: 8px; background: #64e0bd; color: #092019; font-weight: 700; cursor: pointer; }
+button:hover:not(:disabled) { background: #8bf0d2; }
+button:disabled { opacity: .55; cursor: not-allowed; }
+button:focus-visible, input:focus-visible { outline: 3px solid #a0f3dc; outline-offset: 3px; }
+
+.shell { width: min(100% - 32px, 760px); margin: 0 auto; padding: 28px 0 36px; }
+header { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+.mark { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: #64e0bd; color: #092019; font-weight: 800; }
+.hero { padding: 42px 0 24px; }
+.eyebrow { color: #64e0bd; font-size: 12px; font-weight: 700; letter-spacing: .12em; }
+h1 { margin: 12px 0; font-size: clamp(34px, 7vw, 52px); line-height: 1.08; letter-spacing: -.04em; }
+h2 { margin: 0 0 12px; font-size: 21px; }
+h3 { margin: 24px 0 12px; font-size: 16px; }
+p { line-height: 1.55; }
+.card { margin: 16px 0; padding: clamp(18px, 4vw, 28px); border: 1px solid #263941; border-radius: 16px; background: #111b20; box-shadow: 0 12px 32px #0003; }
+.row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.status { flex: 0 0 auto; padding: 6px 9px; border: 1px solid #326c5d; border-radius: 999px; color: #8bf0d2; font-size: 11px; font-weight: 700; letter-spacing: .06em; }
+.notice { padding: 12px 14px; border: 1px solid #326c5d; border-radius: 10px; background: #10251f; }
+.error { border-color: #8e4242; background: #2b1719; color: #ffb5ae; }
+.warning { padding-left: 12px; border-left: 3px solid #e1b85c; color: #d8c99f; }
+.endpoint { overflow-wrap: anywhere; color: #a8c2c9; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: .9em; }
+.resource-preview { max-width: 100%; overflow: auto; padding: 12px; border-radius: 8px; background: #091014; color: #c8d8dc; }
+.field { display: grid; gap: 8px; margin: 16px 0; }
+.field input { width: 100%; padding: 10px 12px; border: 1px solid #40545b; border-radius: 8px; background: #0b1115; color: inherit; }
+.credential-options { display: grid; gap: 10px; margin: 16px 0; padding: 14px; border: 1px solid #40545b; border-radius: 10px; }
+.credential-option, .consent-option { display: flex; align-items: flex-start; gap: 10px; cursor: pointer; }
+.credential-option small { display: block; margin-top: 4px; color: #9db0b5; }
+.credential-option input, .consent-option input { accent-color: #64e0bd; }
+.claim-preview { display: grid; gap: 8px; }
+.claim-preview > div { display: grid; grid-template-columns: minmax(90px, .35fr) 1fr; gap: 12px; padding: 10px; border-radius: 8px; background: #0b1418; }
+.claim-preview dt { color: #8bf0d2; }
+.claim-preview dd { margin: 0; overflow-wrap: anywhere; }
+.credential-inventory { display: grid; gap: 12px; padding-left: 20px; }
+.credential-inventory > li { padding: 14px; border: 1px solid #344b53; border-radius: 10px; overflow-wrap: anywhere; background: #0c1519; }
+.credential-inventory dl { display: grid; grid-template-columns: max-content 1fr; gap: 5px 14px; margin: 10px 0 0; font-size: 13px; }
 .credential-inventory dt { color: #64e0bd; }
 .credential-inventory dd { margin: 0; }
+footer { padding-top: 18px; color: #82969c; font-size: 13px; }
+
+@media (max-width: 480px) {
+  .shell { width: min(100% - 24px, 760px); padding-top: 18px; }
+  .hero { padding-top: 32px; }
+  .row { flex-direction: column; }
+  .status { align-self: flex-start; }
+}
