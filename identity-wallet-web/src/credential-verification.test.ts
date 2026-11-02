@@ -20,8 +20,8 @@ async function disclosureDigest(encoded: string): Promise<string> {
   return base64url(new Uint8Array(await webcrypto.subtle.digest('SHA-256', new TextEncoder().encode(encoded))))
 }
 
-async function signedCredential(payload: Record<string, unknown>, disclosures: string[] = []): Promise<string> {
-  const header = base64url(new TextEncoder().encode(JSON.stringify({ alg: 'ES256', kid })))
+async function signedCredential(payload: Record<string, unknown>, disclosures: string[] = [], headerKid = kid): Promise<string> {
+  const header = base64url(new TextEncoder().encode(JSON.stringify({ alg: 'ES256', kid: headerKid })))
   const body = base64url(new TextEncoder().encode(JSON.stringify(payload)))
   const input = `${header}.${body}`
   const signature = new Uint8Array(await webcrypto.subtle.sign({ name: 'ECDSA', hash: 'SHA-256' }, pair.privateKey, new TextEncoder().encode(input)))
@@ -37,6 +37,15 @@ function mockDidDocument() {
 }
 
 describe('SD-JWT ES256 issuer signature and disclosures', () => {
+  it('verifies an issuer signature whose kid is a relative DID URL', async () => {
+    mockDidDocument()
+    await expect(verifySdJwtSignature(
+      await signedCredential({ iss: issuer, vct: 'MembershipCredential' }, [], '#key-p256'),
+      issuer,
+      'MembershipCredential',
+    )).resolves.toBeUndefined()
+  })
+
   it('verifies the issuer signature, expected issuer/VCT, and disclosure digest', async () => {
     const encodedDisclosure = await disclosure(['salt', 'name', 'Ada'])
     mockDidDocument()
