@@ -136,7 +136,7 @@ describe('OID4VP local presentation preview', () => {
     const jwt = presentation.slice(presentation.lastIndexOf('~') + 1)
     const [header, body, signature] = jwt.split('.')
     const decodedBody = JSON.parse(Buffer.from(body, 'base64url').toString())
-    expect(decodedBody).toMatchObject({ aud: selectedRequest.payload.client_id, nonce: 'test-nonce', sd_hash: await digest(sdJwt) })
+    expect(decodedBody).toMatchObject({ aud: selectedRequest.payload.client_id, nonce: 'test-nonce', sd_hash: await digest(`${sdJwt}~`) })
     const verifyKey = await webcrypto.subtle.importKey('jwk', publicJwk, { name: 'ECDSA', namedCurve: 'P-256' }, false, ['verify'])
     expect(await webcrypto.subtle.verify({ name: 'ECDSA', hash: 'SHA-256' }, verifyKey, Buffer.from(signature, 'base64url'), new TextEncoder().encode(`${header}.${body}`))).toBe(true)
     expect(init.method).toBe('POST')
