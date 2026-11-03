@@ -30,14 +30,17 @@ export function UriQrPanel({
   uri: string
   sessionHint?: string
 }) {
-  const [copied, setCopied] = useState(false)
-  const walletUri = walletLink(uri)
+  const [copiedUri, setCopiedUri] = useState<string | null>(null)
+  const options = [
+    { title: `QR original · ${label}`, uri, copyLabel: 'Copiar URI' },
+    { title: `QR para wallet web · ${label}`, uri: walletLink(uri), copyLabel: 'Copiar enlace de wallet' },
+  ]
 
-  async function onCopy() {
+  async function onCopy(value: string) {
     try {
-      await navigator.clipboard.writeText(walletUri)
-      setCopied(true)
-      window.setTimeout(() => setCopied(false), 2000)
+      await navigator.clipboard.writeText(value)
+      setCopiedUri(value)
+      window.setTimeout(() => setCopiedUri(null), 2000)
     } catch {
       /* ignore */
     }
@@ -45,27 +48,32 @@ export function UriQrPanel({
 
   return (
     <div className="space-y-4 rounded-2xl border border-[var(--kuatia-border)] bg-[var(--kuatia-panel)] p-4 sm:p-5">
-      <div className="flex flex-col items-center gap-4 sm:flex-row sm:items-start">
-        <div className="rounded-2xl bg-white p-3 shadow-sm">
-          <QRCodeSVG value={walletUri} size={180} level="M" marginSize={1} />
+      {options.map((option, index) => (
+        <div
+          key={option.title}
+          className={`flex flex-col items-center gap-4 sm:flex-row sm:items-start ${index ? 'border-t border-[var(--kuatia-border)] pt-4' : ''}`}
+        >
+          <div className="rounded-2xl bg-white p-3 shadow-sm">
+            <QRCodeSVG value={option.uri} size={180} level="M" marginSize={1} />
+          </div>
+          <div className="min-w-0 flex-1 space-y-3">
+            <p className="text-sm font-medium text-[var(--kuatia-muted)]">{option.title}</p>
+            <code className="block break-all rounded-xl bg-[var(--kuatia-code-bg)] p-3 text-sm text-[var(--kuatia-accent)]">
+              {option.uri}
+            </code>
+            {index === 0 && sessionHint ? (
+              <p className="text-sm text-[var(--kuatia-muted)]">
+                Sesión: <span className="font-mono text-[var(--kuatia-text)]">{sessionHint}</span>
+              </p>
+            ) : null}
+            <Button type="button" variant="secondary" size="sm" onClick={() => void onCopy(option.uri)}>
+              {copiedUri === option.uri ? 'Copiado' : option.copyLabel}
+            </Button>
+          </div>
         </div>
-        <div className="min-w-0 flex-1 space-y-3">
-          <p className="text-sm font-medium text-[var(--kuatia-muted)]">{label}</p>
-          <code className="block break-all rounded-xl bg-[var(--kuatia-code-bg)] p-3 text-sm text-[var(--kuatia-accent)]">
-            {walletUri}
-          </code>
-          {sessionHint ? (
-            <p className="text-sm text-[var(--kuatia-muted)]">
-              Sesión: <span className="font-mono text-[var(--kuatia-text)]">{sessionHint}</span>
-            </p>
-          ) : null}
-          <Button type="button" variant="secondary" size="sm" onClick={() => void onCopy()}>
-            {copied ? 'Copiado' : 'Copiar enlace de wallet'}
-          </Button>
-        </div>
-      </div>
+      ))}
       <p className="text-sm text-[var(--kuatia-muted)]">
-        Escaneá el QR con la cámara del teléfono para abrir la wallet web.
+        Usá el QR original con una wallet compatible o escaneá el QR para wallet web con la cámara del teléfono.
       </p>
     </div>
   )
