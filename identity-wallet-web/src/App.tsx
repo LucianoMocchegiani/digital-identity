@@ -270,7 +270,7 @@ export default function App() {
           </>}
           {resource?.kind === 'present' && verifiedPresentation && <>
             <div className="issuer-info"><span>Solicitado por</span><strong>{verifiedPresentation.verifierDid}</strong></div>
-            <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>
+            {!presentationSent && <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>}
             {!presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
             {presentationOptions.length > 0 && <fieldset className="credential-options">
               <legend>Elegí qué credencial compartir</legend>
