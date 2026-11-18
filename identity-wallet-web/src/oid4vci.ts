@@ -90,6 +90,7 @@ export async function issuePreAuthorizedCredential(
   let verified = 0
   for (const [id, configuration] of configurations) {
     const display = credentialDisplayFromConfiguration(configuration.display)
+    const label = display?.name ?? id
     const payload = {
       aud: resource.credentialIssuer.replace(/\/$/, ''),
       iat: Math.floor(Date.now() / 1000),
@@ -115,10 +116,10 @@ export async function issuePreAuthorizedCredential(
     const vct = typeof configuration.vct === 'string' ? configuration.vct : undefined
     try {
       await verifySdJwtSignature(credentialResponse.credential, resource.credentialIssuer, vct)
-      await saveCredential(credentialResponse.credential, display?.name ?? id, display)
+      await saveCredential(credentialResponse.credential, `${label} · firma ES256 verificada`, display)
       verified++
     } catch (cause) {
-      await saveCredential(credentialResponse.credential, display?.name ?? id, display)
+      await saveCredential(credentialResponse.credential, `${label} · firma no verificada`, display)
       throw new Error(`La credencial se guardó cifrada, pero no se pudo verificar la firma: ${cause instanceof Error ? cause.message : 'error desconocido'}`)
     }
     saved++

@@ -54,7 +54,26 @@ describe('OID4VCI pre-authorized issuance', () => {
     const proofPayload = JSON.parse(new TextDecoder().decode(decodeBase64url(proofParts[1])))
     expect(proofPayload).toMatchObject({ aud: resource.credentialIssuer, nonce: 'nonce' })
     expect(verifySdJwtSignature).toHaveBeenCalledWith(issuedJwt, resource.credentialIssuer, 'MembershipCredential')
-    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma ES256 verificada'))
+    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma ES256 verificada'), undefined)
+  })
+
+  it('persists the issuer display metadata as encrypted card styling', async () => {
+    const fetch = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ access_token: 'access', token_type: 'Bearer' })))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ credential: issuedJwt })))
+    vi.stubGlobal('fetch', fetch)
+    const styledResource = {
+      ...resource,
+      supportedConfigurations: { membership_card: {
+        ...resource.supportedConfigurations.membership_card,
+        display: [{ locale: 'es', name: 'Membresía', background_color: '#14253A', text_color: '#FFFFFF', logo: { uri: 'https://issuer.example/brand.png' } }],
+      } },
+    }
+    await issuePreAuthorizedCredential(styledResource)
+    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, 'Membresía · firma ES256 verificada', {
+      name: 'Membresía', backgroundColor: '#14253A', textColor: '#FFFFFF',
+      backgroundImageUrl: undefined, logoUrl: 'https://issuer.example/brand.png',
+    })
   })
 
   it('does not contact the issuer if the configuration does not support the proof', async () => {
