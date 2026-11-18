@@ -205,6 +205,12 @@ services:
         condition: service_started
       identity-verifier-service:
         condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
 
   # Browser wallet is a static SPA; it has no server-side dependency on this stack.
   identity-wallet-web:
