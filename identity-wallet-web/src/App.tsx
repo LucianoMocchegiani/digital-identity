@@ -159,7 +159,7 @@ export default function App() {
       const credentials = await listCredentials()
       setCredentialCount(credentials.length)
       await refreshCredentialSummaries(credentials)
-      setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
+      setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con emisor verificado.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
       if (credentials.length > credentialCount) setIssuanceComplete(true)
