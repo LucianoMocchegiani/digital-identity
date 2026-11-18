@@ -46,6 +46,7 @@ export default function App() {
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
   const initialized = useRef(false)
+  const flowDialog = useRef<HTMLDialogElement>(null)
 
   async function refreshCredentialSummaries(credentials: Awaited<ReturnType<typeof listCredentials>>) {
     setCredentialSummaries(pendingCredentialSummaries(credentials))
@@ -55,6 +56,13 @@ export default function App() {
       setError(`No se pudieron inspeccionar las credenciales guardadas.${cause instanceof Error ? ` ${cause.message}` : ''}`)
     }
   }
+
+  useEffect(() => {
+    const dialog = flowDialog.current
+    if (!dialog) return
+    if (request && !dialog.open) dialog.showModal()
+    else if (!request && dialog.open) dialog.close()
+  }, [request])
 
   useEffect(() => {
     if (initialized.current) return
@@ -165,6 +173,10 @@ export default function App() {
     setNotice('Selección confirmada. Todavía no compartiste tus datos.')
   }
 
+  function closeFlow() {
+    if (!busy) setRequest(null)
+  }
+
   return (
     <main className="shell">
       <header className="brand-header">
@@ -178,64 +190,74 @@ export default function App() {
         <p>Consultá y compartí tus credenciales desde este dispositivo.</p>
       </section>}
 
-      {error && <p className="notice error" role="alert">{error}</p>}
-      {notice && <p className="notice" role="status">{notice}</p>}
+      {!request && error && <p className="notice error" role="alert">{error}</p>}
+      {!request && notice && <p className="notice" role="status">{notice}</p>}
 
-      {request && <section className="card flow-card" aria-live="polite">
-        <p className="eyebrow">{request.kind === 'issue' ? 'NUEVA CREDENCIAL' : 'SOLICITUD DE PRESENTACIÓN'}</p>
-        <h1>{request.kind === 'issue' ? 'Recibir credencial' : 'Compartir credencial'}</h1>
-        {!resource && <>
-          <p>{request.kind === 'issue'
-            ? 'Revisá la oferta del emisor antes de guardar una credencial.'
-            : 'Revisá quién solicita tus datos antes de elegir qué compartir.'}</p>
-          <button type="button" onClick={() => void loadResource()} disabled={busy}>
-            {busy ? 'Revisando…' : 'Revisar solicitud'}
-          </button>
-        </>}
-        {resource?.kind === 'issue' && <>
-          <div className="issuer-info"><span>Emisor</span><strong>{resource.credentialIssuer}</strong></div>
-          <p>La oferta puede usarse una sola vez. Revisá el emisor antes de continuar.</p>
-          {!resource.hasPreAuthorizedCode && <p className="warning">Este tipo de oferta todavía no se puede completar desde la wallet.</p>}
-          {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo confirmar la solicitud del emisor; no es posible continuar.</p>}
-          {resource.hasPreAuthorizedCode && resource.tokenEndpoint && resource.txCode && <label className="field">
-            {resource.txCode.description || 'Ingresá el código que te proporcionó el emisor'}
-            <input type="text" inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'} maxLength={resource.txCode.length} value={txCode} onChange={event => setTxCode(event.target.value)} autoComplete="off" />
-          </label>}
-          {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
-            {!hasKey && <p className="warning">Configurá la clave de tu wallet antes de recibir una credencial.</p>}
-            <p className="privacy-note">Al continuar, la credencial se recibirá y guardará cifrada en este dispositivo.</p>
-            <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
-              {busy ? 'Recibiendo…' : 'Aceptar y guardar'}
+      <dialog
+        className="flow-dialog"
+        ref={flowDialog}
+        aria-labelledby="flow-title"
+        onCancel={event => { event.preventDefault(); closeFlow() }}
+      >
+        {request && <section className="card flow-card" aria-live="polite">
+          <button type="button" className="flow-close" onClick={closeFlow} disabled={busy}>Volver a mi wallet</button>
+          <p className="eyebrow">{request.kind === 'issue' ? 'NUEVA CREDENCIAL' : 'SOLICITUD DE PRESENTACIÓN'}</p>
+          <h1 id="flow-title">{request.kind === 'issue' ? 'Recibir credencial' : 'Compartir credencial'}</h1>
+          {error && <p className="notice error" role="alert">{error}</p>}
+          {notice && <p className="notice" role="status">{notice}</p>}
+          {!resource && <>
+            <p>{request.kind === 'issue'
+              ? 'Revisá la oferta del emisor antes de guardar una credencial.'
+              : 'Revisá quién solicita tus datos antes de elegir qué compartir.'}</p>
+            <button type="button" onClick={() => void loadResource()} disabled={busy}>
+              {busy ? 'Revisando…' : 'Revisar solicitud'}
             </button>
           </>}
-        </>}
-        {resource?.kind === 'present' && verifiedPresentation && <>
-          <div className="issuer-info"><span>Solicitado por</span><strong>{verifiedPresentation.verifierDid}</strong></div>
-          <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>
-          {!hasKey && <p className="warning">Configurá la clave de tu wallet para comprobar y presentar tus credenciales.</p>}
-          {hasKey && !presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
-          {presentationOptions.length > 0 && <fieldset className="credential-options">
-            <legend>Elegí qué credencial compartir</legend>
-            {presentationOptions.map(option => {
-              const id = `${option.queryId}:${option.credentialId}`
-              return <label className="credential-option" key={id}>
-                <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} disabled={busy || presentationSent} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
-                <span><strong>{option.label}</strong></span>
-              </label>
-            })}
-          </fieldset>}
-          {chosenOption && <>
-            <h2 className="subheading">Datos que se compartirán</h2>
-            <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
-            <label className="consent-option"><input type="checkbox" checked={consent} disabled={busy || presentationSent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Confirmo que quiero compartir los datos mostrados.</label>
-            {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Continuar</button>}
-            {consentConfirmed && <button type="button" onClick={() => void sendPresentation()} disabled={busy || presentationSent}>
-              {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Compartir datos'}
-            </button>}
-            <p className="privacy-note">Solo se compartirán los datos que aparecen arriba, después de tu confirmación.</p>
+          {resource?.kind === 'issue' && <>
+            <div className="issuer-info"><span>Emisor</span><strong>{resource.credentialIssuer}</strong></div>
+            <p>La oferta puede usarse una sola vez. Revisá el emisor antes de continuar.</p>
+            {!resource.hasPreAuthorizedCode && <p className="warning">Este tipo de oferta todavía no se puede completar desde la wallet.</p>}
+            {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo confirmar la solicitud del emisor; no es posible continuar.</p>}
+            {resource.hasPreAuthorizedCode && resource.tokenEndpoint && resource.txCode && <label className="field">
+              {resource.txCode.description || 'Ingresá el código que te proporcionó el emisor'}
+              <input type="text" inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'} maxLength={resource.txCode.length} value={txCode} onChange={event => setTxCode(event.target.value)} autoComplete="off" />
+            </label>}
+            {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
+              {!hasKey && <p className="warning">Configurá la clave de tu wallet antes de recibir una credencial.</p>}
+              <p className="privacy-note">Al continuar, la credencial se recibirá y guardará cifrada en este dispositivo.</p>
+              <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
+                {busy ? 'Recibiendo…' : 'Aceptar y guardar'}
+              </button>
+            </>}
           </>}
-        </>}
-      </section>}
+          {resource?.kind === 'present' && verifiedPresentation && <>
+            <div className="issuer-info"><span>Solicitado por</span><strong>{verifiedPresentation.verifierDid}</strong></div>
+            <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>
+            {!hasKey && <p className="warning">Configurá la clave de tu wallet para comprobar y presentar tus credenciales.</p>}
+            {hasKey && !presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
+            {presentationOptions.length > 0 && <fieldset className="credential-options">
+              <legend>Elegí qué credencial compartir</legend>
+              {presentationOptions.map(option => {
+                const id = `${option.queryId}:${option.credentialId}`
+                return <label className="credential-option" key={id}>
+                  <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} disabled={busy || presentationSent} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
+                  <span><strong>{option.label}</strong></span>
+                </label>
+              })}
+            </fieldset>}
+            {chosenOption && <>
+              <h2 className="subheading">Datos que se compartirán</h2>
+              <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
+              <label className="consent-option"><input type="checkbox" checked={consent} disabled={busy || presentationSent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Confirmo que quiero compartir los datos mostrados.</label>
+              {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Continuar</button>}
+              {consentConfirmed && <button type="button" onClick={() => void sendPresentation()} disabled={busy || presentationSent}>
+                {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Compartir datos'}
+              </button>}
+              <p className="privacy-note">Solo se compartirán los datos que aparecen arriba, después de tu confirmación.</p>
+            </>}
+          </>}
+        </section>}
+      </dialog>
 
       <section className="card wallet-card">
         <div className="section-heading">

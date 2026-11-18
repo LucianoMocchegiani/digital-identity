@@ -121,3 +121,24 @@ footer span { color: #8b9aab; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
 }
+
+dialog.flow-dialog {
+  width: min(680px, calc(100% - 24px));
+  max-width: none;
+  max-height: min(90vh, 900px);
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid rgb(0 168 157 / .4);
+  border-radius: 22px;
+  background: #0b1520;
+  color: #f3f7f8;
+  box-shadow: 0 24px 80px rgb(0 0 0 / .55);
+}
+dialog.flow-dialog::backdrop { background: rgb(2 7 12 / .78); backdrop-filter: blur(5px); }
+dialog .flow-card { position: relative; margin: 0; border: 0; box-shadow: none; }
+.flow-close { display: block; min-height: 40px; margin: 0 0 24px auto; padding: 8px 12px; border: 1px solid rgb(255 255 255 / .15); background: transparent; color: #cbd7da; font-size: 13px; }
+.flow-close:hover:not(:disabled) { background: rgb(255 255 255 / .08); }
+@media (max-width: 480px) {
+  dialog.flow-dialog { max-height: 92vh; border-radius: 18px; }
+  dialog .flow-card { padding: 20px; }
+}
