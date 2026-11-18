@@ -213,7 +213,7 @@ export default function App() {
   }
 
   function credentialSignatureLabel(credential: StoredCredentialSummary) {
-    return credential.verified === null ? 'Verificando firma…' : credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'
+    return credential.verified === null ? 'Verificando emisor…' : credential.verified ? 'Emisor verificado' : 'No se pudo verificar el emisor'
   }
 
   return (
