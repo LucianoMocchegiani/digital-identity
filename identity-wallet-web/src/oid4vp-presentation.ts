@@ -1,9 +1,22 @@
+import { credentialDisplayFromConfiguration } from './credential-display'
 import { verifySdJwtSignature } from './credential-verification'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 type StoredCredential = { id: string; label: string; compactSdJwt: string }
 export type PresentationOption = { queryId: string; credentialId: string; label: string; claims: Record<string, unknown> }
-export type StoredCredentialSummary = { id: string; label: string; format: 'dc+sd-jwt'; vct: string; claims: string[]; verified: boolean }
+export type StoredCredentialSummary = {
+  id: string
+  label: string
+  format: 'dc+sd-jwt'
+  vct: string
+  claims: string[]
+  verified: boolean
+  displayName?: string
+  backgroundColor?: string
+  textColor?: string
+  backgroundImageUrl?: string
+  logoUrl?: string
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return Boolean(value) && typeof value === 'object' && !Array.isArray(value)
@@ -49,6 +62,7 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
   return Promise.all(credentials.map(async credential => {
     let vct = 'No disponible'
     let claims: string[] = []
+    let display: ReturnType<typeof credentialDisplayFromConfiguration>
     try {
       const segments = credential.compactSdJwt.split('~')
       if (segments.at(-1) === '') segments.pop()
@@ -61,6 +75,7 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
         ...Object.keys(payload).filter(key => !reservedClaims.has(key) && !key.startsWith('_')),
         ...Object.keys(disclosed),
       ])].sort()
+      display = credential.display
     } catch {
       // Keep the record visible, but never claim metadata could not be decoded.
     }
@@ -72,7 +87,19 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
       })
       return false
     })
-    return { id: credential.id, label: credential.label, format: 'dc+sd-jwt' as const, vct, claims, verified }
+    return {
+      id: credential.id,
+      label: credential.label,
+      format: 'dc+sd-jwt' as const,
+      vct,
+      claims,
+      verified,
+      displayName: display?.name,
+      backgroundColor: display?.backgroundColor,
+      textColor: display?.textColor,
+      backgroundImageUrl: display?.backgroundImageUrl,
+      logoUrl: display?.logoUrl,
+    }
   }))
 }
 

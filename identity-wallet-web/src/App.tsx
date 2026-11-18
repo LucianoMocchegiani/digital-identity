@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { createHolderKey, getHolderSigningKey, hasHolderKey, listCredentials } from './wallet-storage'
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
@@ -6,6 +6,8 @@ import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifyPresentationResource } from './oid4vp'
 import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
+
+const kuatiaMark = 'https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/20dd4c60ff4b71a4e65c9bbd419759ad5ddd827f/identity-kuatia/source/public/kuatia-mark.png'
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
@@ -134,7 +136,7 @@ export default function App() {
   return (
     <main className="shell">
       <header className="brand-header">
-        <span className="mark" aria-hidden="true">K</span>
+        <img className="brand-mark" src={kuatiaMark} alt="" width="36" height="36" aria-hidden="true" referrerPolicy="no-referrer" />
         <span className="brand-name">Kuatia <strong>Wallet</strong></span>
       </header>
 
@@ -221,10 +223,20 @@ export default function App() {
           <p>Todavía no tenés credenciales guardadas.</p>
         </div>}
         {credentialSummaries.length > 0 && <ul className="credential-inventory">
-          {credentialSummaries.map(credential => <li className="credential-item" key={credential.id}>
-            <div className="credential-symbol" aria-hidden="true">K</div>
+          {credentialSummaries.map(credential => <li
+            className={`credential-item${credential.backgroundImageUrl ? ' has-background-image' : ''}`}
+            key={credential.id}
+            style={{
+              '--credential-background': credential.backgroundColor ?? '#0b1520',
+              '--credential-foreground': credential.textColor ?? '#f3f7f8',
+              '--credential-image': credential.backgroundImageUrl ? `url(${JSON.stringify(credential.backgroundImageUrl)})` : 'none',
+            } as CSSProperties}
+          >
+            {credential.logoUrl
+              ? <img className="credential-logo" src={credential.logoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+              : <span className="credential-symbol" aria-hidden="true">▤</span>}
             <div className="credential-copy">
-              <strong>{credential.label}</strong>
+              <strong>{credential.displayName || credential.label}</strong>
               <span className={credential.verified ? 'credential-state verified' : 'credential-state unverified'}>
                 {credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'}
               </span>
@@ -235,7 +247,7 @@ export default function App() {
         <p className="privacy-note">Las credenciales se guardan cifradas en este dispositivo. Si borrás los datos del sitio, podrías perderlas.</p>
       </section>
 
-      <footer>Prototipo en desarrollo · No usar con credenciales reales</footer>
+      <footer>Kuatia Wallet <span aria-label="versión 0.1.0">v0.1.0</span></footer>
     </main>
   )
 }
