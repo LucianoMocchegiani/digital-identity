@@ -22,7 +22,6 @@ export default function App() {
   const [txCode, setTxCode] = useState('')
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
-  const [verifiedCount, setVerifiedCount] = useState(0)
   const [busy, setBusy] = useState(false)
 
   useEffect(() => {
@@ -36,9 +35,7 @@ export default function App() {
     void Promise.all([hasHolderKey(), listCredentials()]).then(async ([keyExists, credentials]) => {
       setHasKey(keyExists)
       setCredentialCount(credentials.length)
-      const summaries = await inspectStoredCredentials(credentials)
-      setCredentialSummaries(summaries)
-      setVerifiedCount(summaries.filter(credential => credential.verified).length)
+      setCredentialSummaries(await inspectStoredCredentials(credentials))
     }).catch(() => setError('No se pudo acceder o verificar el almacenamiento local de esta wallet.'))
   }, [])
 
@@ -94,17 +91,13 @@ export default function App() {
     try {
       const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
       const credentials = await listCredentials()
-      const summaries = await inspectStoredCredentials(credentials)
       setCredentialCount(credentials.length)
-      setCredentialSummaries(summaries)
-      setVerifiedCount(summaries.filter(credential => credential.verified).length)
+      setCredentialSummaries(await inspectStoredCredentials(credentials))
       setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
-      const summaries = await inspectStoredCredentials(credentials)
       setCredentialCount(credentials.length)
-      setCredentialSummaries(summaries)
-      setVerifiedCount(summaries.filter(credential => credential.verified).length)
+      setCredentialSummaries(await inspectStoredCredentials(credentials))
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       setBusy(false)
