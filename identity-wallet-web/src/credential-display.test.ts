@@ -16,4 +16,9 @@ describe('issuer credential display metadata', () => {
       background_image: 'https://issuer.example/image.svg',
     })).toBeUndefined()
   })
+
+  it('revalidates styles loaded from encrypted storage', () => {
+    expect(credentialDisplayFromConfiguration({ name: 'Tarjeta', logoUrl: 'javascript:alert(1)' }))
+      .toEqual({ name: 'Tarjeta', backgroundColor: undefined, textColor: undefined, backgroundImageUrl: undefined, logoUrl: undefined })
+  })
 })

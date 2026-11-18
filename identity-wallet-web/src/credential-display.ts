@@ -37,10 +37,10 @@ export function credentialDisplayFromConfiguration(value: unknown): CredentialDi
   const display = displays.find(item => typeof item.locale === 'string' && item.locale.toLowerCase().startsWith('es')) ?? displays[0]
   if (!display) return undefined
   const name = typeof display.name === 'string' && display.name.trim() ? display.name.trim() : undefined
-  const backgroundColor = displayColor(display.background_color)
-  const textColor = displayColor(display.text_color)
-  const backgroundImageUrl = displayImage(display.background_image)
-  const logoUrl = displayImage(display.logo)
+  const backgroundColor = displayColor(display.background_color ?? display.backgroundColor)
+  const textColor = displayColor(display.text_color ?? display.textColor)
+  const backgroundImageUrl = displayImage(display.background_image ?? display.backgroundImageUrl)
+  const logoUrl = displayImage(display.logo ?? display.logoUrl)
   return name || backgroundColor || textColor || backgroundImageUrl || logoUrl
     ? { name, backgroundColor, textColor, backgroundImageUrl, logoUrl }
     : undefined

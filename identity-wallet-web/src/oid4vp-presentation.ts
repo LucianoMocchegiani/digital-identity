@@ -2,7 +2,7 @@ import { credentialDisplayFromConfiguration } from './credential-display'
 import type { CredentialDisplay } from './credential-display'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
- type StoredCredential = { id: string; label: string; compactSdJwt: string; display?: CredentialDisplay }
+type StoredCredential = { id: string; label: string; compactSdJwt: string; display?: CredentialDisplay }
 export type PresentationOption = { queryId: string; credentialId: string; label: string; claims: Record<string, unknown> }
 export type StoredCredentialSummary = {
   id: string
@@ -75,7 +75,7 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
         ...Object.keys(payload).filter(key => !reservedClaims.has(key) && !key.startsWith('_')),
         ...Object.keys(disclosed),
       ])].sort()
-      display = credential.display
+      display = credentialDisplayFromConfiguration(credential.display)
     } catch {
       // Keep the record visible, but never claim metadata could not be decoded.
     }
