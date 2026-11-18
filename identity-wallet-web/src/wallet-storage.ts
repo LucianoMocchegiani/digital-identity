@@ -1,4 +1,3 @@
-import { credentialDisplayFromConfiguration } from './credential-display'
 import { cleanCredentialLabel } from './credential-display'
 import type { CredentialDisplay } from './credential-display'
 
