@@ -197,7 +197,6 @@ export default function App() {
       </section>}
 
       {!request && error && <p className="notice error" role="alert">{error}</p>}
-      {!request && notice && <p className="notice" role="status">{notice}</p>}
 
       <dialog
         className="flow-dialog"
