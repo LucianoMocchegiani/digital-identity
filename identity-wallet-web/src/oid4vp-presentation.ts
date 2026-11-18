@@ -99,7 +99,7 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
       vct,
       issuer,
       claims: Object.keys(claimValues).sort(),
-      claimValues,
+      claimValues: verified ? claimValues : {},
       verified,
       displayName: display?.name,
       backgroundColor: display?.backgroundColor,
