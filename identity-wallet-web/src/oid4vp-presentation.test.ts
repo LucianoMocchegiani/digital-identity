@@ -94,11 +94,11 @@ describe('OID4VP local presentation preview', () => {
     expect(vi.mocked(verifySdJwtSignature)).toHaveBeenCalledWith(stored.compactSdJwt)
   })
 
-  it('marks unverifiable credentials while keeping their decoded detail data', async () => {
+  it('does not expose claim values for unverifiable credentials', async () => {
     const stored = await credential({ vct: 'MembershipCredential', name: 'Private Name' }, [])
     vi.mocked(verifySdJwtSignature).mockRejectedValueOnce(new Error('signature invalid'))
     const [summary] = await inspectStoredCredentials([stored])
-    expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], claimValues: { name: 'Private Name' }, verified: false })
+    expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], claimValues: {}, verified: false })
   })
 
   it('signs a nonce-bound presentation and posts only requested disclosures', async () => {
