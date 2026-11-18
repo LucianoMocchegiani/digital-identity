@@ -142,6 +142,7 @@ export default function App() {
       setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
+      if (credentials.length > credentialCount) setIssuanceComplete(true)
       setCredentialCount(credentials.length)
       await refreshCredentialSummaries(credentials)
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
