@@ -39,12 +39,14 @@ export default function App() {
   const [consent, setConsent] = useState(false)
   const [consentConfirmed, setConsentConfirmed] = useState(false)
   const [presentationSent, setPresentationSent] = useState(false)
+  const [issuanceComplete, setIssuanceComplete] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
   const [txCode, setTxCode] = useState('')
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
+  const issuanceStarted = useRef(false)
   const initialized = useRef(false)
   const flowDialog = useRef<HTMLDialogElement>(null)
 
@@ -126,12 +128,14 @@ export default function App() {
   }
 
   async function issueCredential() {
-    if (!resource || resource.kind !== 'issue') return
+    if (!resource || resource.kind !== 'issue' || issuanceStarted.current || issuanceComplete) return
+    issuanceStarted.current = true
     setBusy(true)
     setError('')
     setNotice('')
     try {
       const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
+      setIssuanceComplete(true)
       const credentials = await listCredentials()
       setCredentialCount(credentials.length)
       await refreshCredentialSummaries(credentials)
@@ -142,6 +146,7 @@ export default function App() {
       await refreshCredentialSummaries(credentials)
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
+      issuanceStarted.current = false
       setBusy(false)
     }
   }
@@ -225,8 +230,8 @@ export default function App() {
             {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
               {!hasKey && <p className="warning">Configurá la clave de tu wallet antes de recibir una credencial.</p>}
               <p className="privacy-note">Al continuar, la credencial se recibirá y guardará cifrada en este dispositivo.</p>
-              <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
-                {busy ? 'Recibiendo…' : 'Aceptar y guardar'}
+              <button type="button" onClick={() => void issueCredential()} disabled={busy || issuanceComplete || !hasKey || Boolean(resource.txCode && !txCode)}>
+                {busy ? 'Recibiendo…' : issuanceComplete ? 'Credencial guardada' : 'Aceptar y guardar'}
               </button>
             </>}
           </>}
