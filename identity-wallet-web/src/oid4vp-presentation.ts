@@ -10,7 +10,7 @@ export type StoredCredentialSummary = {
   format: 'dc+sd-jwt'
   vct: string
   claims: string[]
-  verified: boolean
+  verified: boolean | null
   displayName?: string
   backgroundColor?: string
   textColor?: string

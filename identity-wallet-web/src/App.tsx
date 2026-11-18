@@ -5,9 +5,29 @@ import { resolveProtocolResource, type ResolvedResource } from './protocol-resou
 import { issuePreAuthorizedCredential } from './oid4vci'
 import { verifyPresentationResource } from './oid4vp'
 import { findPresentationOptions, inspectStoredCredentials, sendOid4vpPresentation, type PresentationOption, type StoredCredentialSummary } from './oid4vp-presentation'
+import { credentialDisplayFromConfiguration } from './credential-display'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
 
 const kuatiaMark = 'https://raw.githubusercontent.com/LucianoMocchegiani/digital-identity/20dd4c60ff4b71a4e65c9bbd419759ad5ddd827f/identity-kuatia/source/public/kuatia-mark.png'
+
+function pendingCredentialSummaries(credentials: Awaited<ReturnType<typeof listCredentials>>): StoredCredentialSummary[] {
+  return credentials.map(credential => {
+    const display = credentialDisplayFromConfiguration(credential.display)
+    return {
+      id: credential.id,
+      label: credential.label,
+      format: 'dc+sd-jwt',
+      vct: '',
+      claims: [],
+      verified: null,
+      displayName: display?.name,
+      backgroundColor: display?.backgroundColor,
+      textColor: display?.textColor,
+      backgroundImageUrl: display?.backgroundImageUrl,
+      logoUrl: display?.logoUrl,
+    }
+  })
+}
 
 export default function App() {
   const [request, setRequest] = useState<WalletRequest | null>(null)
@@ -37,6 +57,7 @@ export default function App() {
     void Promise.all([hasHolderKey(), listCredentials()]).then(async ([keyExists, credentials]) => {
       setHasKey(keyExists)
       setCredentialCount(credentials.length)
+      setCredentialSummaries(pendingCredentialSummaries(credentials))
       setCredentialSummaries(await inspectStoredCredentials(credentials))
     }).catch(() => setError('No se pudo acceder o verificar el almacenamiento local de esta wallet.'))
   }, [])
@@ -94,11 +115,13 @@ export default function App() {
       const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
       const credentials = await listCredentials()
       setCredentialCount(credentials.length)
+      setCredentialSummaries(pendingCredentialSummaries(credentials))
       setCredentialSummaries(await inspectStoredCredentials(credentials))
       setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
       setCredentialCount(credentials.length)
+      setCredentialSummaries(pendingCredentialSummaries(credentials))
       setCredentialSummaries(await inspectStoredCredentials(credentials))
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
@@ -237,8 +260,8 @@ export default function App() {
               : <span className="credential-symbol" aria-hidden="true">▤</span>}
             <div className="credential-copy">
               <strong>{credential.displayName || credential.label}</strong>
-              <span className={credential.verified ? 'credential-state verified' : 'credential-state unverified'}>
-                {credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'}
+              <span className={`credential-state${credential.verified === null ? ' pending' : credential.verified ? ' verified' : ' unverified'}`}>
+                {credential.verified === null ? 'Verificando firma…' : credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'}
               </span>
             </div>
             <span className="claim-count">{credential.claims.length} {credential.claims.length === 1 ? 'dato' : 'datos'}</span>
