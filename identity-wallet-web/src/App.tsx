@@ -201,6 +201,7 @@ export default function App() {
   }
 
   function closeFlow() {
+    window.history.replaceState({}, '', '/')
     setRequest(null)
   }
 
