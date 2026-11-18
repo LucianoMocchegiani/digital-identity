@@ -84,22 +84,21 @@ describe('OID4VP local presentation preview', () => {
     await expect(findPresentationOptions(request, [stored], holderPublicJwk)).resolves.toEqual([])
   })
 
-  it('shows only metadata and claim names in the local credential inventory', async () => {
+  it('shows decoded issuer and top-level claim values in credential details', async () => {
     const name = encode(['salt', 'name', 'Ada Lovelace'])
     const stored = await credential({ iss: 'issuer', vct: 'MembershipCredential', role: 'member', _sd: [await digest(name)] }, [name])
     await expect(inspectStoredCredentials([stored])).resolves.toEqual([{
       id: 'credential-1', label: 'Membership', format: 'dc+sd-jwt', vct: 'MembershipCredential',
-      claims: ['name', 'role'], verified: true,
+      issuer: 'issuer', claims: ['name', 'role'], claimValues: { name: 'Ada Lovelace', role: 'member' }, verified: true,
     }])
     expect(vi.mocked(verifySdJwtSignature)).toHaveBeenCalledWith(stored.compactSdJwt)
   })
 
-  it('does not expose claim values and marks unverifiable credentials', async () => {
+  it('marks unverifiable credentials while keeping their decoded detail data', async () => {
     const stored = await credential({ vct: 'MembershipCredential', name: 'Private Name' }, [])
     vi.mocked(verifySdJwtSignature).mockRejectedValueOnce(new Error('signature invalid'))
     const [summary] = await inspectStoredCredentials([stored])
-    expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], verified: false })
-    expect(JSON.stringify(summary)).not.toContain('Private Name')
+    expect(summary).toMatchObject({ vct: 'MembershipCredential', claims: ['name'], claimValues: { name: 'Private Name' }, verified: false })
   })
 
   it('signs a nonce-bound presentation and posts only requested disclosures', async () => {
