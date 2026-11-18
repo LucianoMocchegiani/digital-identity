@@ -205,7 +205,7 @@ export default function App() {
         onCancel={event => { event.preventDefault(); closeFlow() }}
       >
         {request && <section className="card flow-card" aria-live="polite">
-          <button type="button" className="flow-close" onClick={closeFlow}>Volver a mi wallet</button>
+          <button type="button" className="flow-close" onClick={closeFlow}>Ir a mi wallet</button>
           <p className="eyebrow">{request.kind === 'issue' ? 'NUEVA CREDENCIAL' : 'SOLICITUD DE PRESENTACIÓN'}</p>
           <h1 id="flow-title">{request.kind === 'issue' ? 'Recibir credencial' : 'Compartir credencial'}</h1>
           {error && <p className="notice error" role="alert">{error}</p>}
