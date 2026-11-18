@@ -24,9 +24,10 @@ describe('local wallet storage', () => {
     expect(holderKey.publicJwk).not.toHaveProperty('d')
   })
 
-  it('encrypts credentials before storing and decrypts them on read', async () => {
+  it('encrypts credentials and their issuer display metadata before storing', async () => {
     const sdJwt = 'header.payload.signature~disclosure'
-    const id = await saveCredential(sdJwt, 'Credencial de prueba')
+    const display = { name: 'Membresía', backgroundColor: '#214679' }
+    const id = await saveCredential(sdJwt, 'Membresía', display)
     const opening = indexedDB.open('kuatia-web-wallet', 1)
     const db = await new Promise<IDBDatabase>((resolve, reject) => {
       opening.onsuccess = () => resolve(opening.result)
@@ -38,9 +39,11 @@ describe('local wallet storage', () => {
       request.onerror = () => reject(request.error)
     })
     db.close()
-    expect(new TextDecoder().decode(stored.ciphertext)).not.toContain(sdJwt)
+    const encrypted = new TextDecoder().decode(stored.ciphertext)
+    expect(encrypted).not.toContain(sdJwt)
+    expect(encrypted).not.toContain(display.name)
     await expect(listCredentials()).resolves.toEqual([
-      expect.objectContaining({ id, compactSdJwt: sdJwt, label: 'Credencial de prueba' }),
+      expect.objectContaining({ id, compactSdJwt: sdJwt, label: 'Membresía', display }),
     ])
   })
 })

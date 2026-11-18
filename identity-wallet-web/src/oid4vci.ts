@@ -1,3 +1,4 @@
+import { credentialDisplayFromConfiguration } from './credential-display'
 import type { ResolvedResource } from './protocol-resource'
 import { getHolderSigningKey, saveCredential } from './wallet-storage'
 import { verifySdJwtSignature } from './credential-verification'
@@ -73,7 +74,7 @@ export async function issuePreAuthorizedCredential(
   }
   if (resource.txCode && !txCode) throw new Error('Ingresá el código de transacción requerido por el issuer.')
 
-  for (const id of resource.credentialConfigurationIds) assertSupportedConfiguration(resource, id)
+  const configurations = new Map(resource.credentialConfigurationIds.map(id => [id, assertSupportedConfiguration(resource, id)]))
   const signingKey = await getHolderSigningKey()
   const form = new URLSearchParams({
     grant_type: grantType,
@@ -87,8 +88,8 @@ export async function issuePreAuthorizedCredential(
 
   let saved = 0
   let verified = 0
-  for (const id of resource.credentialConfigurationIds) {
-    const configuration = resource.supportedConfigurations[id]
+  for (const [id, configuration] of configurations) {
+    const display = credentialDisplayFromConfiguration(configuration.display)
     const payload = {
       aud: resource.credentialIssuer.replace(/\/$/, ''),
       iat: Math.floor(Date.now() / 1000),
@@ -114,10 +115,10 @@ export async function issuePreAuthorizedCredential(
     const vct = typeof configuration.vct === 'string' ? configuration.vct : undefined
     try {
       await verifySdJwtSignature(credentialResponse.credential, resource.credentialIssuer, vct)
-      await saveCredential(credentialResponse.credential, `${id} · firma ES256 verificada`)
+      await saveCredential(credentialResponse.credential, display?.name ?? id, display)
       verified++
     } catch (cause) {
-      await saveCredential(credentialResponse.credential, `${id} · firma no verificada`)
+      await saveCredential(credentialResponse.credential, display?.name ?? id, display)
       throw new Error(`La credencial se guardó cifrada, pero no se pudo verificar la firma: ${cause instanceof Error ? cause.message : 'error desconocido'}`)
     }
     saved++

@@ -1,3 +1,5 @@
+import type { CredentialDisplay } from './credential-display'
+
 const databaseName = 'kuatia-web-wallet'
 const databaseVersion = 1
 const keyStore = 'keys'
@@ -16,6 +18,7 @@ interface EncryptedCredential {
 interface CredentialPayload {
   compactSdJwt: string
   label: string
+  display?: CredentialDisplay
 }
 
 export interface HolderSigningKey {
@@ -125,12 +128,12 @@ export async function hasHolderKey(): Promise<boolean> {
   }
 }
 
-export async function saveCredential(compactSdJwt: string, label: string): Promise<string> {
+export async function saveCredential(compactSdJwt: string, label: string, display?: CredentialDisplay): Promise<string> {
   const db = await openDatabase()
   try {
     const key = await getEncryptionKey(db)
     const iv = crypto.getRandomValues(new Uint8Array(12))
-    const plaintext = new TextEncoder().encode(JSON.stringify({ compactSdJwt, label } satisfies CredentialPayload))
+    const plaintext = new TextEncoder().encode(JSON.stringify({ compactSdJwt, label, ...(display ? { display } : {}) } satisfies CredentialPayload))
     const ciphertext = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, plaintext)
     const record: EncryptedCredential = { id: crypto.randomUUID(), iv, ciphertext, createdAt: new Date().toISOString() }
     const transaction = db.transaction(credentialStore, 'readwrite')
