@@ -46,6 +46,15 @@ export default function App() {
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
 
+  async function refreshCredentialSummaries(credentials: Awaited<ReturnType<typeof listCredentials>>) {
+    setCredentialSummaries(pendingCredentialSummaries(credentials))
+    try {
+      setCredentialSummaries(await inspectStoredCredentials(credentials))
+    } catch (cause) {
+      setError(`No se pudieron inspeccionar las credenciales guardadas.${cause instanceof Error ? ` ${cause.message}` : ''}`)
+    }
+  }
+
   useEffect(() => {
     try {
       setRequest(parseCurrentPage(window.location.pathname, window.location.search))
@@ -57,9 +66,8 @@ export default function App() {
     void Promise.all([hasHolderKey(), listCredentials()]).then(async ([keyExists, credentials]) => {
       setHasKey(keyExists)
       setCredentialCount(credentials.length)
-      setCredentialSummaries(pendingCredentialSummaries(credentials))
-      setCredentialSummaries(await inspectStoredCredentials(credentials))
-    }).catch(() => setError('No se pudo acceder o verificar el almacenamiento local de esta wallet.'))
+      await refreshCredentialSummaries(credentials)
+    }).catch(cause => setError(`No se pudo leer la clave o las credenciales guardadas.${cause instanceof Error ? ` ${cause.message}` : ''}`))
   }, [])
 
   async function generateKey() {
@@ -115,14 +123,12 @@ export default function App() {
       const result = await issuePreAuthorizedCredential(resource, txCode || undefined)
       const credentials = await listCredentials()
       setCredentialCount(credentials.length)
-      setCredentialSummaries(pendingCredentialSummaries(credentials))
-      setCredentialSummaries(await inspectStoredCredentials(credentials))
+      await refreshCredentialSummaries(credentials)
       setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
       setCredentialCount(credentials.length)
-      setCredentialSummaries(pendingCredentialSummaries(credentials))
-      setCredentialSummaries(await inspectStoredCredentials(credentials))
+      await refreshCredentialSummaries(credentials)
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       setBusy(false)
