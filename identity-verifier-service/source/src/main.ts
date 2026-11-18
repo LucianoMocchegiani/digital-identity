@@ -40,7 +40,9 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new GlobalExceptionFilter())
   app.setGlobalPrefix('v1', { exclude: GLOBAL_PREFIX_EXCLUDE })
 
-  const port = environmentConfig().port
+  const config = environmentConfig()
+  app.enableCors({ origin: config.corsOrigins })
+  const port = config.port
   const expressApp = app.getHttpAdapter().getInstance()
   expressApp.use(createPublicRateLimitMiddleware(publicRateLimitConfigFromEnv()))
   const httpServer = app.getHttpServer()

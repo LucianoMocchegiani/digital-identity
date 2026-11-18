@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────
 # Identity stack — local + Contabo (phase 1)
 #
-# Activos:     postgres · billing · issuer · verifier · kuatia (web)
+# Activos:     postgres · billing · issuer · verifier · kuatia (web) · wallet web
 # Comentados:  rabbitmq · pgadmin · holder  (descomentar cuando se usen)
 #
 # Usage:
@@ -11,6 +11,7 @@
 #   docker compose up -d --build
 #
 # Web Kuatia: http://localhost:3000  (proxy /api/billing → billing:9000)
+# Wallet web: http://localhost:3005  (proxy wallet.lucianomocchegiani.xyz → :3005)
 # Onboard CLI:
 #   cd identity-billing-service/source && npm run onboard -- --name "ACME" --email a@b.com --password secret123 --issuer acme --verifier acme
 # ─────────────────────────────────────────────────────────────
@@ -210,6 +211,18 @@ services:
           memory: 1024M
         reservations:
           memory: 256M
+
+  # Browser wallet is a static SPA; it has no server-side dependency on this stack.
+  identity-wallet-web:
+    build:
+      context: .
+      dockerfile: identity-wallet-web/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "3005:80"
+    networks:
+      - identity
+
   # ─── opcional: descomentar para custodia / holder ───
   # identity-holder-service:
   #   build:

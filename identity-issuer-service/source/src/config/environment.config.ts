@@ -8,6 +8,7 @@ export const environmentConfig = () => ({
   port: Number(env.PORT || 3000),
   serviceHost: env.SERVICE_HOST || 'localhost',
   logLevel: (env.LOG_LEVEL || 'INFO').toUpperCase() as LogLevel,
+  corsOrigins: (env.CORS_ORIGINS || '').split(',').map((origin) => origin.trim()).filter(Boolean),
   jwt: {
     secret: env.JWT_SECRET,
     issuer: env.JWT_ISSUER ?? 'quarkid',
