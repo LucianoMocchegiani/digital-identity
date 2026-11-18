@@ -46,6 +46,7 @@ export default function App() {
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
+  const [progress, setProgress] = useState('')
   const issuanceStarted = useRef(false)
   const initialized = useRef(false)
   const flowDialog = useRef<HTMLDialogElement>(null)
@@ -85,6 +86,7 @@ export default function App() {
 
   async function generateKey() {
     setBusy(true)
+    setProgress('Inicializando wallet…')
     setError('')
     try {
       await createHolderKey()
@@ -92,6 +94,7 @@ export default function App() {
     } catch {
       setError('El navegador no pudo generar o guardar la clave de esta wallet.')
     } finally {
+      setProgress('')
       setBusy(false)
     }
   }
@@ -99,6 +102,7 @@ export default function App() {
   async function loadResource() {
     if (!request) return
     setBusy(true)
+    setProgress('')
     setError('')
     setNotice('')
     setResource(null)
@@ -109,20 +113,25 @@ export default function App() {
     setConsentConfirmed(false)
     setPresentationSent(false)
     try {
+      if (!await hasHolderKey()) {
+        setProgress('Inicializando wallet…')
+        await createHolderKey()
+      }
+      setHasKey(true)
+      setProgress(request.kind === 'issue' ? 'Revisando oferta…' : 'Verificando solicitud…')
       const resolved = await resolveProtocolResource(request)
       if (resolved.kind === 'present' && request.kind === 'present') {
         const verified = await verifyPresentationResource(resolved, request.clientId)
         setVerifiedPresentation(verified)
         const credentials = await listCredentials()
-        if (hasKey) {
-          const { publicJwk } = await getHolderSigningKey()
-          setPresentationOptions(await findPresentationOptions(verified, credentials, publicJwk))
-        }
+        const { publicJwk } = await getHolderSigningKey()
+        setPresentationOptions(await findPresentationOptions(verified, credentials, publicJwk))
       }
       setResource(resolved)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'No se pudo cargar o verificar la solicitud.')
     } finally {
+      setProgress('')
       setBusy(false)
     }
   }
@@ -131,6 +140,7 @@ export default function App() {
     if (!resource || resource.kind !== 'issue' || issuanceStarted.current || issuanceComplete) return
     issuanceStarted.current = true
     setBusy(true)
+    setProgress('Recibiendo credencial…')
     setError('')
     setNotice('')
     try {
@@ -148,6 +158,7 @@ export default function App() {
       setError(cause instanceof Error ? cause.message : 'No se pudo completar la emisión.')
     } finally {
       issuanceStarted.current = false
+      setProgress('')
       setBusy(false)
     }
   }
@@ -215,7 +226,7 @@ export default function App() {
               ? 'Revisá la oferta del emisor antes de guardar una credencial.'
               : 'Revisá quién solicita tus datos antes de elegir qué compartir.'}</p>
             <button type="button" onClick={() => void loadResource()} disabled={busy}>
-              {busy ? 'Revisando…' : 'Revisar solicitud'}
+              {busy ? progress || 'Revisando…' : 'Revisar solicitud'}
             </button>
           </>}
           {resource?.kind === 'issue' && <>
@@ -228,18 +239,16 @@ export default function App() {
               <input type="text" inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'} maxLength={resource.txCode.length} value={txCode} onChange={event => setTxCode(event.target.value)} autoComplete="off" />
             </label>}
             {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
-              {!hasKey && <p className="warning">Configurá la clave de tu wallet antes de recibir una credencial.</p>}
               <p className="privacy-note">Al continuar, la credencial se recibirá y guardará cifrada en este dispositivo.</p>
-              <button type="button" onClick={() => void issueCredential()} disabled={busy || issuanceComplete || !hasKey || Boolean(resource.txCode && !txCode)}>
-                {busy ? 'Recibiendo…' : issuanceComplete ? 'Credencial guardada' : 'Aceptar y guardar'}
+              <button type="button" onClick={() => void issueCredential()} disabled={busy || issuanceComplete || Boolean(resource.txCode && !txCode)}>
+                {busy ? progress || 'Recibiendo…' : issuanceComplete ? 'Credencial guardada' : 'Aceptar y guardar'}
               </button>
             </>}
           </>}
           {resource?.kind === 'present' && verifiedPresentation && <>
             <div className="issuer-info"><span>Solicitado por</span><strong>{verifiedPresentation.verifierDid}</strong></div>
             <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>
-            {!hasKey && <p className="warning">Configurá la clave de tu wallet para comprobar y presentar tus credenciales.</p>}
-            {hasKey && !presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
+            {!presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
             {presentationOptions.length > 0 && <fieldset className="credential-options">
               <legend>Elegí qué credencial compartir</legend>
               {presentationOptions.map(option => {
@@ -269,11 +278,11 @@ export default function App() {
           <div><p className="eyebrow">MI WALLET</p><h2>Mis credenciales</h2></div>
           <span className="status">{credentialCount} {credentialCount === 1 ? 'credencial' : 'credenciales'}</span>
         </div>
-        {!hasKey && <div className="setup-panel">
+        {!request && !hasKey && <div className="setup-panel">
           <h3>Configurá tu wallet</h3>
           <p>Se creará una clave segura en este dispositivo para recibir y presentar credenciales.</p>
           <button type="button" onClick={() => void generateKey()} disabled={busy}>
-            {busy ? 'Configurando…' : 'Configurar wallet'}
+            {busy ? progress || 'Inicializando wallet…' : 'Inicializar wallet'}
           </button>
         </div>}
         {hasKey && <p className="storage-note">Tu wallet está configurada en este dispositivo.</p>}
