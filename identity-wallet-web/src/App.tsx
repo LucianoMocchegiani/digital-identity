@@ -19,6 +19,7 @@ function pendingCredentialSummaries(credentials: Awaited<ReturnType<typeof listC
       format: 'dc+sd-jwt',
       vct: '',
       claims: [],
+      claimValues: {},
       verified: null,
       displayName: display?.name,
       backgroundColor: display?.backgroundColor,
@@ -35,6 +36,7 @@ export default function App() {
   const [verifiedPresentation, setVerifiedPresentation] = useState<VerifiedOid4vpRequest | null>(null)
   const [presentationOptions, setPresentationOptions] = useState<PresentationOption[]>([])
   const [credentialSummaries, setCredentialSummaries] = useState<StoredCredentialSummary[]>([])
+  const [selectedCredential, setSelectedCredential] = useState<StoredCredentialSummary | null>(null)
   const [selectedOption, setSelectedOption] = useState('')
   const [consent, setConsent] = useState(false)
   const [consentConfirmed, setConsentConfirmed] = useState(false)
@@ -50,6 +52,7 @@ export default function App() {
   const issuanceStarted = useRef(false)
   const initialized = useRef(false)
   const flowDialog = useRef<HTMLDialogElement>(null)
+  const credentialDialog = useRef<HTMLDialogElement>(null)
 
   async function refreshCredentialSummaries(credentials: Awaited<ReturnType<typeof listCredentials>>) {
     setCredentialSummaries(pendingCredentialSummaries(credentials))
@@ -66,6 +69,13 @@ export default function App() {
     if (request && !dialog.open) dialog.showModal()
     else if (!request && dialog.open) dialog.close()
   }, [request])
+
+  useEffect(() => {
+    const dialog = credentialDialog.current
+    if (!dialog) return
+    if (selectedCredential && !dialog.open) dialog.showModal()
+    else if (!selectedCredential && dialog.open) dialog.close()
+  }, [selectedCredential])
 
   useEffect(() => {
     if (initialized.current) return
@@ -194,6 +204,18 @@ export default function App() {
     setRequest(null)
   }
 
+  function credentialStyle(credential: StoredCredentialSummary): CSSProperties {
+    return {
+      '--credential-background': credential.backgroundColor ?? '#0b1520',
+      '--credential-foreground': credential.textColor ?? '#f3f7f8',
+      '--credential-image': credential.backgroundImageUrl ? `url(${JSON.stringify(credential.backgroundImageUrl)})` : 'none',
+    } as CSSProperties
+  }
+
+  function credentialSignatureLabel(credential: StoredCredentialSummary) {
+    return credential.verified === null ? 'Verificando firma…' : credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'
+  }
+
   return (
     <main className="shell">
       <header className="brand-header">
@@ -273,6 +295,33 @@ export default function App() {
         </section>}
       </dialog>
 
+      <dialog
+        className="credential-detail-dialog"
+        ref={credentialDialog}
+        aria-labelledby="credential-detail-title"
+        onCancel={event => { event.preventDefault(); setSelectedCredential(null) }}
+      >
+        {selectedCredential && <section className="credential-detail" aria-live="polite">
+          <button type="button" className="detail-close" onClick={() => setSelectedCredential(null)}>Cerrar</button>
+          <div className={`credential-item credential-detail-card${selectedCredential.backgroundImageUrl ? ' has-background-image' : ''}`} style={credentialStyle(selectedCredential)}>
+            {selectedCredential.logoUrl
+              ? <img className="credential-logo" src={selectedCredential.logoUrl} alt="" referrerPolicy="no-referrer" />
+              : <span className="credential-symbol" aria-hidden="true">▤</span>}
+            <div className="credential-copy">
+              <strong>{selectedCredential.displayName || selectedCredential.label}</strong>
+              {selectedCredential.issuer && <span className="credential-issuer">{selectedCredential.issuer}</span>}
+            </div>
+          </div>
+          <h2 id="credential-detail-title" className="detail-title">Detalle de la credencial</h2>
+          <p className={`credential-state${selectedCredential.verified === null ? ' pending' : selectedCredential.verified ? ' verified' : ' unverified'}`} role="status">{credentialSignatureLabel(selectedCredential)}</p>
+          {selectedCredential.issuer && <dl className="credential-fields"><div><dt>Emisor</dt><dd>{selectedCredential.issuer}</dd></div></dl>}
+          <h3 className="detail-section-title">Atributos</h3>
+          {Object.entries(selectedCredential.claimValues).length
+            ? <dl className="credential-fields">{Object.entries(selectedCredential.claimValues).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'boolean' ? value ? 'Sí' : 'No' : typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
+            : <p className="detail-empty">{selectedCredential.verified === null ? 'Los datos estarán disponibles cuando termine la inspección.' : 'No hay atributos revelados para mostrar.'}</p>}
+        </section>}
+      </dialog>
+
       <section className="card wallet-card">
         <div className="section-heading">
           <div><p className="eyebrow">MI WALLET</p><h2>Mis credenciales</h2></div>
@@ -291,25 +340,26 @@ export default function App() {
           <p>Todavía no tenés credenciales guardadas.</p>
         </div>}
         {credentialSummaries.length > 0 && <ul className="credential-inventory">
-          {credentialSummaries.map(credential => <li
-            className={`credential-item${credential.backgroundImageUrl ? ' has-background-image' : ''}`}
-            key={credential.id}
-            style={{
-              '--credential-background': credential.backgroundColor ?? '#0b1520',
-              '--credential-foreground': credential.textColor ?? '#f3f7f8',
-              '--credential-image': credential.backgroundImageUrl ? `url(${JSON.stringify(credential.backgroundImageUrl)})` : 'none',
-            } as CSSProperties}
-          >
-            {credential.logoUrl
-              ? <img className="credential-logo" src={credential.logoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
-              : <span className="credential-symbol" aria-hidden="true">▤</span>}
-            <div className="credential-copy">
-              <strong>{credential.displayName || credential.label}</strong>
-              <span className={`credential-state${credential.verified === null ? ' pending' : credential.verified ? ' verified' : ' unverified'}`}>
-                {credential.verified === null ? 'Verificando firma…' : credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'}
+          {credentialSummaries.map(credential => <li key={credential.id}>
+            <button
+              type="button"
+              className={`credential-item${credential.backgroundImageUrl ? ' has-background-image' : ''}`}
+              style={credentialStyle(credential)}
+              aria-haspopup="dialog"
+              aria-label={`Ver detalle de ${credential.displayName || credential.label}`}
+              onClick={() => setSelectedCredential(credential)}
+            >
+              {credential.logoUrl
+                ? <img className="credential-logo" src={credential.logoUrl} alt="" loading="lazy" referrerPolicy="no-referrer" />
+                : <span className="credential-symbol" aria-hidden="true">▤</span>}
+              <span className="credential-copy">
+                <strong>{credential.displayName || credential.label}</strong>
+                {credential.issuer && <span className="credential-issuer">{credential.issuer}</span>}
+                <span className={`credential-state${credential.verified === null ? ' pending' : credential.verified ? ' verified' : ' unverified'}`}>
+                  {credentialSignatureLabel(credential)}
+                </span>
               </span>
-            </div>
-            <span className="claim-count">{credential.claims.length} {credential.claims.length === 1 ? 'dato' : 'datos'}</span>
+            </button>
           </li>)}
         </ul>}
         <p className="privacy-note">Las credenciales se guardan cifradas en este dispositivo. Si borrás los datos del sitio, podrías perderlas.</p>
