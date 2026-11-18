@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { credentialDisplayFromConfiguration } from './credential-display'
+import { cleanCredentialLabel, credentialDisplayFromConfiguration } from './credential-display'
 
 describe('issuer credential display metadata', () => {
+  it('cleans obsolete signature labels without changing credential names', () => {
+    expect(cleanCredentialLabel('membership_card · firma ES256 verificada')).toBe('membership_card')
+    expect(cleanCredentialLabel('Membresía · firma no verificada')).toBe('Membresía')
+    expect(cleanCredentialLabel('Membresía')).toBe('Membresía')
+  })
+
   it('prefers Spanish display and converts mobile ARGB colors to CSS', () => {
     expect(credentialDisplayFromConfiguration([
       { locale: 'en', name: 'Membership' },

@@ -54,7 +54,7 @@ describe('OID4VCI pre-authorized issuance', () => {
     const proofPayload = JSON.parse(new TextDecoder().decode(decodeBase64url(proofParts[1])))
     expect(proofPayload).toMatchObject({ aud: resource.credentialIssuer, nonce: 'nonce' })
     expect(verifySdJwtSignature).toHaveBeenCalledWith(issuedJwt, resource.credentialIssuer, 'MembershipCredential')
-    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, expect.stringContaining('firma ES256 verificada'), undefined)
+    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, 'membership_card', undefined)
   })
 
   it('persists the issuer display metadata as encrypted card styling', async () => {
@@ -70,7 +70,7 @@ describe('OID4VCI pre-authorized issuance', () => {
       } },
     }
     await issuePreAuthorizedCredential(styledResource)
-    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, 'Membresía · firma ES256 verificada', {
+    expect(saveCredential).toHaveBeenCalledWith(issuedJwt, 'Membresía', {
       name: 'Membresía', backgroundColor: '#14253A', textColor: '#FFFFFF',
       backgroundImageUrl: undefined, logoUrl: 'https://issuer.example/brand.png',
     })

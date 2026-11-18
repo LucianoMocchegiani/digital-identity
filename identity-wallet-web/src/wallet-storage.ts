@@ -1,3 +1,5 @@
+import { credentialDisplayFromConfiguration } from './credential-display'
+import { cleanCredentialLabel } from './credential-display'
 import type { CredentialDisplay } from './credential-display'
 
 const databaseName = 'kuatia-web-wallet'
@@ -167,7 +169,8 @@ export async function listCredentials(): Promise<Array<CredentialPayload & { id:
     }
     return await Promise.all(records.map(async ({ id, iv, ciphertext, createdAt }) => {
       const plaintext = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: new Uint8Array(iv) }, key, ciphertext)
-      return { ...JSON.parse(new TextDecoder().decode(plaintext)) as CredentialPayload, id, createdAt }
+      const payload = JSON.parse(new TextDecoder().decode(plaintext)) as CredentialPayload
+      return { ...payload, label: cleanCredentialLabel(payload.label), id, createdAt }
     }))
   } finally {
     db.close()
