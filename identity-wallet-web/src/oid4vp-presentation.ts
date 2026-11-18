@@ -1,6 +1,7 @@
 import { credentialDisplayFromConfiguration } from './credential-display'
 import type { CredentialDisplay } from './credential-display'
 import type { VerifiedOid4vpRequest } from './oid4vp-verification'
+import { verifySdJwtSignature } from './credential-verification'
 
 type StoredCredential = { id: string; label: string; compactSdJwt: string; display?: CredentialDisplay }
 export type PresentationOption = { queryId: string; credentialId: string; label: string; claims: Record<string, unknown> }
