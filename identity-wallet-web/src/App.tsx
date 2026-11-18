@@ -49,7 +49,7 @@ export default function App() {
       await createHolderKey()
       setHasKey(true)
     } catch {
-      setError('El navegador no pudo generar o persistir una clave P-256.')
+      setError('El navegador no pudo generar o guardar la clave de esta wallet.')
     } finally {
       setBusy(false)
     }
@@ -80,7 +80,7 @@ export default function App() {
       }
       setResource(resolved)
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo cargar o verificar el recurso del protocolo.')
+      setError(cause instanceof Error ? cause.message : 'No se pudo cargar o verificar la solicitud.')
     } finally {
       setBusy(false)
     }
@@ -98,7 +98,7 @@ export default function App() {
       setCredentialCount(credentials.length)
       setCredentialSummaries(summaries)
       setVerifiedCount(summaries.filter(credential => credential.verified).length)
-      setNotice(`${result.count} credencial(es) recibida(s) y cifrada(s); ${result.verifiedCount} con firma ES256 verificada.`)
+      setNotice(`${result.count} credencial(es) recibida(s) y guardada(s); ${result.verifiedCount} con firma verificada.`)
     } catch (cause) {
       const credentials = await listCredentials().catch(() => [])
       const summaries = await inspectStoredCredentials(credentials)
@@ -124,9 +124,9 @@ export default function App() {
       const holderKey = await getHolderSigningKey()
       await sendOid4vpPresentation(verifiedPresentation, chosenOption, credential, holderKey)
       setPresentationSent(true)
-      setNotice('Presentación enviada al verifier. La respuesta HTTP fue aceptada.')
+      setNotice('Presentación enviada. El verificador aceptó la respuesta.')
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'No se pudo enviar la presentación al verifier.')
+      setError(cause instanceof Error ? cause.message : 'No se pudo enviar la presentación.')
     } finally {
       setBusy(false)
     }
@@ -135,104 +135,114 @@ export default function App() {
   function confirmPresentationConsent() {
     if (!selectedOption || !consent) return
     setConsentConfirmed(true)
-    setNotice('Selección y consentimiento confirmados. La presentación aún no se envió.')
+    setNotice('Selección confirmada. Todavía no compartiste tus datos.')
   }
 
   return (
     <main className="shell">
-      <header><span className="mark">K</span><span>Kuatia <strong>Wallet PoC</strong></span></header>
-      <section className="hero">
-        <p className="eyebrow">PROTOTIPO WEB · SIN BACKUP</p>
-        <h1>Tu identidad,<br />en tu navegador.</h1>
-        <p>Prueba local de almacenamiento en IndexedDB y claves P-256 con Web Crypto.</p>
-      </section>
+      <header className="brand-header">
+        <span className="mark" aria-hidden="true">K</span>
+        <span className="brand-name">Kuatia <strong>Wallet</strong></span>
+      </header>
+
+      {!request && <section className="hero">
+        <p className="eyebrow">TU IDENTIDAD DIGITAL</p>
+        <h1>Tus credenciales,<br />en un solo lugar.</h1>
+        <p>Consultá y compartí tus credenciales desde este dispositivo.</p>
+      </section>}
 
       {error && <p className="notice error" role="alert">{error}</p>}
       {notice && <p className="notice" role="status">{notice}</p>}
 
-      {request && <section className="card" aria-live="polite">
-        <p className="eyebrow">{request.kind === 'issue' ? 'OFERTA DE EMISIÓN' : 'SOLICITUD DE PRESENTACIÓN'}</p>
-        <h2>{request.kind === 'issue' ? 'Cargar oferta' : 'Cargar solicitud'}</h2>
-        <p className="endpoint">{request.endpoint}</p>
-        {request.kind === 'present' && <p className="endpoint">Client ID: {request.clientId}</p>}
-        <button type="button" onClick={() => void loadResource()} disabled={busy}>
-          {busy ? 'Cargando…' : resource ? 'Volver a cargar' : 'Descargar recurso'}
-        </button>
+      {request && <section className="card flow-card" aria-live="polite">
+        <p className="eyebrow">{request.kind === 'issue' ? 'NUEVA CREDENCIAL' : 'SOLICITUD DE PRESENTACIÓN'}</p>
+        <h1>{request.kind === 'issue' ? 'Recibir credencial' : 'Compartir credencial'}</h1>
+        {!resource && <>
+          <p>{request.kind === 'issue'
+            ? 'Revisá la oferta del emisor antes de guardar una credencial.'
+            : 'Revisá quién solicita tus datos antes de elegir qué compartir.'}</p>
+          <button type="button" onClick={() => void loadResource()} disabled={busy}>
+            {busy ? 'Revisando…' : 'Revisar solicitud'}
+          </button>
+        </>}
         {resource?.kind === 'issue' && <>
-          <p>Oferta y metadata recibidas. Revisá el issuer y la configuración antes de continuar.</p>
-          <p><strong>Issuer:</strong> <span className="endpoint">{resource.credentialIssuer}</span></p>
-          <h3>Configuraciones ofrecidas</h3>
-          <ul>{resource.credentialConfigurationIds.map(id => <li key={id}>
-            <strong>{id}</strong>
-            <pre className="resource-preview">{JSON.stringify(resource.supportedConfigurations[id], null, 2)}</pre>
-          </li>)}</ul>
-          {!resource.hasPreAuthorizedCode && <p className="warning">Esta PoC solo completa ofertas preautorizadas; esta oferta no incluye un código compatible.</p>}
-          {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo resolver el token endpoint del issuer; no se puede continuar con esta oferta.</p>}
+          <div className="issuer-info"><span>Emisor</span><strong>{resource.credentialIssuer}</strong></div>
+          <p>La oferta puede usarse una sola vez. Revisá el emisor antes de continuar.</p>
+          {!resource.hasPreAuthorizedCode && <p className="warning">Este tipo de oferta todavía no se puede completar desde la wallet.</p>}
+          {resource.hasPreAuthorizedCode && !resource.tokenEndpoint && <p className="warning">No se pudo confirmar la solicitud del emisor; no es posible continuar.</p>}
           {resource.hasPreAuthorizedCode && resource.tokenEndpoint && resource.txCode && <label className="field">
-            {resource.txCode.description || 'Código de transacción requerido'}
+            {resource.txCode.description || 'Ingresá el código que te proporcionó el emisor'}
             <input type="text" inputMode={resource.txCode.inputMode === 'numeric' ? 'numeric' : 'text'} maxLength={resource.txCode.length} value={txCode} onChange={event => setTxCode(event.target.value)} autoComplete="off" />
           </label>}
           {resource.hasPreAuthorizedCode && resource.tokenEndpoint && <>
-            {!hasKey && <p className="warning">Generá primero una clave de holder para poder emitir.</p>}
-            <p className="warning">Al continuar se consumirá el código de un solo uso de esta oferta. La credencial se guarda cifrada; se verifica la firma ES256 con el DID document del issuer.</p>
+            {!hasKey && <p className="warning">Configurá la clave de tu wallet antes de recibir una credencial.</p>}
+            <p className="privacy-note">Al continuar, la credencial se recibirá y guardará cifrada en este dispositivo.</p>
             <button type="button" onClick={() => void issueCredential()} disabled={busy || !hasKey || Boolean(resource.txCode && !txCode)}>
-              {busy ? 'Emitiendo…' : 'Confirmar y emitir'}
+              {busy ? 'Recibiendo…' : 'Aceptar y guardar'}
             </button>
           </>}
         </>}
         {resource?.kind === 'present' && verifiedPresentation && <>
-          <p className="notice" role="status">Request Object firmado verificado contra el DID del verifier. No se compartieron datos.</p>
-          <p><strong>Verifier:</strong> <span className="endpoint">{verifiedPresentation.verifierDid}</span></p>
-          <p><strong>Respuesta solicitada:</strong> {String(verifiedPresentation.payload.response_mode)} · DCQL</p>
-          <h3>Credenciales que coinciden</h3>
-          {!hasKey && <p className="warning">Necesitás la clave local de holder para comprobar el binding de las credenciales.</p>}
-          {hasKey && !presentationOptions.length && <p>No se encontró una credencial que coincida con el formato, VCT, claims y clave de holder local.</p>}
+          <div className="issuer-info"><span>Solicitado por</span><strong>{verifiedPresentation.verifierDid}</strong></div>
+          <p className="verified-note" role="status">Solicitud verificada. Todavía no se compartieron datos.</p>
+          {!hasKey && <p className="warning">Configurá la clave de tu wallet para comprobar y presentar tus credenciales.</p>}
+          {hasKey && !presentationOptions.length && <p>No hay credenciales guardadas que coincidan con lo solicitado.</p>}
           {presentationOptions.length > 0 && <fieldset className="credential-options">
-            <legend>Elegí qué credencial usar (todavía no se comparte):</legend>
+            <legend>Elegí qué credencial compartir</legend>
             {presentationOptions.map(option => {
               const id = `${option.queryId}:${option.credentialId}`
               return <label className="credential-option" key={id}>
                 <input type="radio" name="presentation-credential" value={id} checked={selectedOption === id} disabled={busy || presentationSent} onChange={() => { setSelectedOption(id); setConsent(false); setConsentConfirmed(false); setNotice('') }} />
-                <span><strong>{option.label}</strong><small>Consulta: {option.queryId}</small></span>
+                <span><strong>{option.label}</strong></span>
               </label>
             })}
           </fieldset>}
           {chosenOption && <>
-            <h3>Datos solicitados de esta credencial</h3>
+            <h2 className="subheading">Datos que se compartirán</h2>
             <dl className="claim-preview">{Object.entries(chosenOption.claims).map(([name, value]) => <div key={name}><dt>{name}</dt><dd>{typeof value === 'string' ? value : JSON.stringify(value)}</dd></div>)}</dl>
-            <label className="consent-option"><input type="checkbox" checked={consent} disabled={busy || presentationSent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Entiendo qué datos solicita este verifier y confirmo esta selección.</label>
-            {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Confirmar selección y consentimiento</button>}
+            <label className="consent-option"><input type="checkbox" checked={consent} disabled={busy || presentationSent} onChange={event => { setConsent(event.target.checked); setConsentConfirmed(false); setNotice('') }} /> Confirmo que quiero compartir los datos mostrados.</label>
+            {!consentConfirmed && <button type="button" onClick={confirmPresentationConsent} disabled={!consent || busy}>Continuar</button>}
             {consentConfirmed && <button type="button" onClick={() => void sendPresentation()} disabled={busy || presentationSent}>
-              {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Firmar y enviar presentación'}
+              {busy ? 'Enviando…' : presentationSent ? 'Presentación enviada' : 'Compartir datos'}
             </button>}
-            <p className="warning">Al enviar, la wallet comparte únicamente los claims solicitados que puede seleccionar, firma la prueba de posesión con el nonce del verifier y transmite la presentación a su response_uri. No se envía antes de tu confirmación.</p>
+            <p className="privacy-note">Solo se compartirán los datos que aparecen arriba, después de tu confirmación.</p>
           </>}
         </>}
       </section>}
 
-      <section className="card">
-        <div className="row"><div><h2>Almacenamiento local</h2><p>{credentialCount} credenciales cifradas; {verifiedCount} firmas ES256 verificadas</p></div><span className="status">{hasKey ? 'CLAVE LISTA' : 'SIN CLAVE'}</span></div>
-        <p>La clave de holder P-256 se genera como CryptoKey no exportable y se persiste en IndexedDB.</p>
-        <button type="button" onClick={() => void generateKey()} disabled={busy || hasKey}>
-          {busy ? 'Procesando…' : hasKey ? 'Clave creada' : 'Generar clave de holder'}
-        </button>
-        <h3>Credenciales guardadas (solo metadatos)</h3>
-        {!credentialSummaries.length && <p>No hay credenciales guardadas.</p>}
-        <ul className="credential-inventory">
-          {credentialSummaries.map(credential => <li key={credential.id}>
-            <strong>{credential.label}</strong> · {credential.verified ? 'firma verificada' : 'firma no verificada'}
-            <dl>
-              <div><dt>Formato</dt><dd>{credential.format}</dd></div>
-              <div><dt>VCT</dt><dd>{credential.vct}</dd></div>
-              <div><dt>Claims disponibles</dt><dd>{credential.claims.join(', ') || 'ninguno legible'}</dd></div>
-            </dl>
+      <section className="card wallet-card">
+        <div className="section-heading">
+          <div><p className="eyebrow">MI WALLET</p><h2>Mis credenciales</h2></div>
+          <span className="status">{credentialCount} {credentialCount === 1 ? 'credencial' : 'credenciales'}</span>
+        </div>
+        {!hasKey && <div className="setup-panel">
+          <h3>Configurá tu wallet</h3>
+          <p>Se creará una clave segura en este dispositivo para recibir y presentar credenciales.</p>
+          <button type="button" onClick={() => void generateKey()} disabled={busy}>
+            {busy ? 'Configurando…' : 'Configurar wallet'}
+          </button>
+        </div>}
+        {hasKey && <p className="storage-note">Tu wallet está configurada en este dispositivo.</p>}
+        {!credentialSummaries.length && <div className="empty-state">
+          <span className="empty-mark" aria-hidden="true">＋</span>
+          <p>Todavía no tenés credenciales guardadas.</p>
+        </div>}
+        {credentialSummaries.length > 0 && <ul className="credential-inventory">
+          {credentialSummaries.map(credential => <li className="credential-item" key={credential.id}>
+            <div className="credential-symbol" aria-hidden="true">K</div>
+            <div className="credential-copy">
+              <strong>{credential.label}</strong>
+              <span className={credential.verified ? 'credential-state verified' : 'credential-state unverified'}>
+                {credential.verified ? 'Firma verificada' : 'No se pudo verificar la firma'}
+              </span>
+            </div>
+            <span className="claim-count">{credential.claims.length} {credential.claims.length === 1 ? 'dato' : 'datos'}</span>
           </li>)}
-        </ul>
-        <p className="warning">Esta vista descifra localmente solo para mostrar metadatos y nombres de claims; no muestra valores personales ni transmite credenciales.</p>
+        </ul>}
+        <p className="privacy-note">Las credenciales se guardan cifradas en este dispositivo. Si borrás los datos del sitio, podrías perderlas.</p>
       </section>
 
-      <p className="warning">OID4VP valida la firma del issuer, el binding cnf y la prueba de posesión al enviar. No uses esta PoC con credenciales reales.</p>
-      <footer>Sin backend · Sin backup · No usar con credenciales reales</footer>
+      <footer>Prototipo en desarrollo · No usar con credenciales reales</footer>
     </main>
   )
 }

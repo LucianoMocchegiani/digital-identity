@@ -1,6 +1,6 @@
-# Kuatia Web Wallet PoC
+# Kuatia Web Wallet
 
-SPA estática independiente para validar Vite, Web Crypto e IndexedDB sin agregar un backend ni tocar la wallet Flutter existente.
+Wallet web independiente para recibir y presentar credenciales verificables desde el navegador. La interfaz es una SPA de React/Vite y usa Web Crypto e IndexedDB, sin agregar un backend ni modificar la wallet Flutter.
 
 ## Ejecutar
 
@@ -17,11 +17,11 @@ npm test
 npm run build
 ```
 
-## Estado
+## Funcionalidad actual
 
-- Las rutas `/issue` y `/present` aceptan deep links OID4VCI/OID4VP y validan los hosts/rutas de Kuatia.
-- La clave P-256 no exportable del holder se persiste en IndexedDB; las credenciales se cifran con AES-GCM.
-- Emisión OID4VCI preautorizada: intercambio del código, proof ES256 del holder, solicitud SD-JWT VC y almacenamiento cifrado. La firma ES256 del JWT recibido se verifica contra la clave autorizada en el DID document HTTPS del tenant; también se comprueban issuer, VCT, expiración y hashes de disclosures.
-- OID4VP verifica la firma del Request Object y los campos del verifier, permite seleccionar una credencial coincidente y muestra solo los claims de nivel superior solicitados. La confirmación de consentimiento es local y no envía datos.
+- Las rutas `/issue` y `/present` aceptan deep links OID4VCI/OID4VP y validan los hosts y rutas de Kuatia.
+- La clave P-256 no exportable del holder se conserva en IndexedDB; las credenciales se cifran con AES-GCM.
+- La emisión preautorizada verifica la firma ES256 del issuer contra su DID document, comprueba issuer, VCT, expiración y disclosures, y guarda la credencial cifrada.
+- La presentación verifica el Request Object del verifier, ofrece credenciales coincidentes con la clave del holder y muestra los datos solicitados antes del consentimiento. Al confirmar, genera y envía una presentación SD-JWT con prueba de posesión.
 
-No se incluye API key ni se llaman endpoints administrativos. CORS debe permitir el origen de la wallet en issuer y verifier, incluido el DID document. Web Crypto e IndexedDB no aportan protección hardware; borrar los datos del sitio puede eliminar claves y credenciales. OID4VP todavía no verifica el binding con la clave de holder ni genera o envía presentaciones. Ejecutar `npm test` y `npm run build` antes de integrar.
+No se incluyen claves administrativas ni endpoints de administración. El navegador no ofrece protección hardware para las claves de esta aplicación. Borrar los datos del sitio puede eliminar las claves y credenciales; todavía no hay recuperación o backup. El flujo no debe usarse con credenciales reales.
