@@ -204,7 +204,12 @@ services:
         condition: service_started
       identity-verifier-service:
         condition: service_started
-
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+        reservations:
+          memory: 256M
   # ─── opcional: descomentar para custodia / holder ───
   # identity-holder-service:
   #   build:
