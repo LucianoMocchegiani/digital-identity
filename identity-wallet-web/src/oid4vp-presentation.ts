@@ -10,7 +10,9 @@ export type StoredCredentialSummary = {
   label: string
   format: 'dc+sd-jwt'
   vct: string
+  issuer?: string
   claims: string[]
+  claimValues: Record<string, unknown>
   verified: boolean | null
   displayName?: string
   backgroundColor?: string
@@ -62,7 +64,8 @@ const reservedClaims = new Set(['iss', 'iat', 'exp', 'nbf', 'vct', '_sd', '_sd_a
 export async function inspectStoredCredentials(credentials: StoredCredential[]): Promise<StoredCredentialSummary[]> {
   return Promise.all(credentials.map(async credential => {
     let vct = 'No disponible'
-    let claims: string[] = []
+    let issuer: string | undefined
+    let claimValues: Record<string, unknown> = {}
     let display: CredentialDisplay | undefined
     try {
       const segments = credential.compactSdJwt.split('~')
@@ -71,11 +74,12 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
       if (jwtParts.length !== 3) throw new Error('JWT inválido')
       const payload = decodeJson(jwtParts[1])
       if (typeof payload.vct === 'string') vct = payload.vct
+      if (typeof payload.iss === 'string') issuer = payload.iss
       const disclosed = await disclosedTopLevelClaims(segments, payload._sd)
-      claims = [...new Set([
-        ...Object.keys(payload).filter(key => !reservedClaims.has(key) && !key.startsWith('_')),
-        ...Object.keys(disclosed),
-      ])].sort()
+      claimValues = {
+        ...Object.fromEntries(Object.entries(payload).filter(([key]) => !reservedClaims.has(key) && !key.startsWith('_'))),
+        ...disclosed,
+      }
       display = credentialDisplayFromConfiguration(credential.display)
     } catch {
       // Keep the record visible, but never claim metadata could not be decoded.
@@ -93,7 +97,9 @@ export async function inspectStoredCredentials(credentials: StoredCredential[]):
       label: credential.label,
       format: 'dc+sd-jwt' as const,
       vct,
-      claims,
+      issuer,
+      claims: Object.keys(claimValues).sort(),
+      claimValues,
       verified,
       displayName: display?.name,
       backgroundColor: display?.backgroundColor,
