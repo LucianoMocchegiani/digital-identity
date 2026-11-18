@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { createHolderKey, getHolderSigningKey, hasHolderKey, listCredentials } from './wallet-storage'
 import { parseCurrentPage, type WalletRequest } from './protocol-link'
 import { resolveProtocolResource, type ResolvedResource } from './protocol-resource'
@@ -45,6 +45,7 @@ export default function App() {
   const [hasKey, setHasKey] = useState(false)
   const [credentialCount, setCredentialCount] = useState(0)
   const [busy, setBusy] = useState(false)
+  const initialized = useRef(false)
 
   async function refreshCredentialSummaries(credentials: Awaited<ReturnType<typeof listCredentials>>) {
     setCredentialSummaries(pendingCredentialSummaries(credentials))
@@ -56,6 +57,8 @@ export default function App() {
   }
 
   useEffect(() => {
+    if (initialized.current) return
+    initialized.current = true
     try {
       setRequest(parseCurrentPage(window.location.pathname, window.location.search))
     } catch (cause) {
