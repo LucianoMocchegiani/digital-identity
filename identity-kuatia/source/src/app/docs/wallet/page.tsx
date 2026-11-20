@@ -16,8 +16,8 @@ export default function DocsWalletPage() {
     <>
       <DocsTitle>Wallet</DocsTitle>
       <DocsLead>
-        App para que los titulares acepten, guarden y presenten credenciales emitidas y verificadas
-        con Kuatia.
+        App y wallet web para que los titulares acepten, guarden y presenten credenciales emitidas y
+        verificadas con Kuatia.
       </DocsLead>
 
       <DocsH2>Wallet Kuatia</DocsH2>
@@ -65,6 +65,28 @@ export default function DocsWalletPage() {
         </DocsP>
       )}
 
+      <DocsH2>Wallet web</DocsH2>
+      <DocsP>
+        También podés usar la{' '}
+        <a
+          href="https://wallet.lucianomocchegiani.xyz"
+          className="text-[var(--kuatia-accent)] hover:underline"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          wallet web de Kuatia
+        </a>
+        , sin instalar una aplicación. Escaneá con un dispositivo compatible el QR de una oferta
+        para recibir una credencial o el QR de una solicitud para presentarla; los enlaces también
+        pueden abrirse directamente en el navegador.
+      </DocsP>
+      <DocsP>
+        La clave del titular y las credenciales se guardan cifradas en el almacenamiento del
+        navegador de ese dispositivo. Si se borran los datos del sitio o se pierde acceso al
+        dispositivo, no hay recuperación ni copia de seguridad. Es una versión experimental: no
+        uses credenciales reales.
+      </DocsP>
+
       <DocsH2>Wallet en tu app</DocsH2>
       <DocsP>
         Si preferís no usar la app Kuatia, podés llevar la wallet dentro de tu producto: tu app
@@ -107,7 +129,7 @@ export default function DocsWalletPage() {
 
       <DocsH2>Responsabilidades</DocsH2>
       <DocsCode>{`Kuatia (cloud)  → issuer / verifier / API keys / cupos
-Wallet Kuatia   → app para titulares (opcional)
+Wallet Kuatia   → app y web para titulares (opcional)
 Tu producto     → negocio, UX y, si aplica, wallet propia
 Tu backend      → claims, cuándo emitir, qué exigir al verificar`}</DocsCode>
     </>
