@@ -54,15 +54,28 @@ export default function DocsEmpezarPage() {
       <DocsUl>
         <li>
           <span className="text-[var(--kuatia-text)]">Emitir</span> — elegí el issuer, pegá la API
-          key, completá claims (hay un ejemplo) y generá la oferta. La consola muestra el QR / URI
-          para escanear con la wallet.
+          key, completá claims (hay un ejemplo) y generá la oferta. La consola muestra el QR original
+          para wallets compatibles y otro QR para abrir la wallet web directamente en esa oferta.
+          Al escanear el segundo con la cámara del teléfono, la oferta queda lista para que el titular
+          la revise y acepte.
         </li>
         <li>
           <span className="text-[var(--kuatia-text)]">Verificar</span> — elegí el verifier, pegá la
-          API key, definí qué pedir (DCQL de ejemplo incluido) y generá el request. Escaneá el QR
-          desde la wallet; la consola hace poll de la sesión hasta el resultado.
+          API key, definí qué pedir (DCQL de ejemplo incluido) y generá el request. Escaneá con la
+          cámara del teléfono el QR para wallet web: abre la solicitud en la wallet, donde el titular
+          revisa qué se pide, elige una credencial y confirma antes de compartir. La consola hace
+          polling de la sesión hasta el resultado.
         </li>
       </DocsUl>
+      <DocsP>
+        Escanear el QR no acepta una credencial ni comparte datos por sí solo: el titular revisa y
+        confirma la operación en la wallet. La consola genera ambos QR automáticamente. Si integrás
+        tu propio sistema, la{' '}
+        <Link href="/docs/wallet" className="text-[var(--kuatia-accent)] hover:underline">
+          guía de wallet
+        </Link>{' '}
+        explica cómo construir el enlace web a partir de la URI.
+      </DocsP>
       <DocsP>
         Sirve para validar el flujo extremo a extremo sin escribir código. Cuando integres tu
         sistema, usás los mismos endpoints por API.

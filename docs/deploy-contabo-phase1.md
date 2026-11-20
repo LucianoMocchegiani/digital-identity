@@ -1,14 +1,14 @@
 # Deploy Contabo — phase 1
 
-Stack: **Postgres + billing + issuer + verifier + Kuatia (web)** (no holder, no RabbitMQ).
+Stack: **Postgres + billing + issuer + verifier + Kuatia web + wallet web** (no holder, no RabbitMQ). La wallet web es una SPA estática servida por Nginx; no agrega un backend ni depende de los otros servicios del compose.
 
 ## 1. VPS prep
 
 - Ubuntu 22.04/24.04
 - Docker + Docker Compose plugin
-- Open only **80/443** (o Cloudflare Tunnel). Preferí no exponer 9000/9001/9002/3000 en crudo sin TLS/proxy.
+- Open only **80/443** (o Cloudflare Tunnel). No expongas los puertos internos de los servicios directamente al público.
 
-## 2. Configure secrets
+## 2. Configure secrets and browser origins
 
 ```bash
 cp identity-billing-service/source/.env.example identity-billing-service/source/.env
@@ -27,6 +27,9 @@ Set at least:
 | `ASKAR_STORE_KEY` | issuer + verifier (strong random) |
 | `BASE_URL` | public HTTPS URL per service (issuer/verifier) |
 | `API_KEY_AUTH_ENABLED=true` | issuer + verifier |
+| `CORS_ORIGINS` | issuer and verifier `.env`: `https://wallet.kuatia.xyz` |
+
+The wallet calls the public issuer and verifier endpoints directly from the browser. Set `CORS_ORIGINS=https://wallet.kuatia.xyz` in **both** service env files (no path or trailing slash); if multiple origins are needed, separate them with commas. Keep the web wallet hostname consistent with the URLs used by your QR/deep links.
 
 ## 3. Start
 
@@ -42,26 +45,43 @@ docker compose up -d --build
 
 Servicios locales (sin proxy):
 
-| Servicio | Puerto |
-|----------|--------|
+| Servicio | URL |
+|----------|-----|
 | Kuatia (web) | http://localhost:3000 |
+| Wallet web | http://localhost:3005 |
 | Billing | http://localhost:9000 |
 | Issuer | http://localhost:9001 |
 | Verifier | http://localhost:9002 |
 
-La web llama a billing vía rewrite interno `/api/billing/*` → `http://identity-billing-service:9000/v1/*` (red Docker).
+La wallet es solo de navegador; en producción debe servirse por HTTPS para habilitar las APIs criptográficas del navegador. Nginx devuelve `index.html` para rutas SPA, por lo que `/issue` y `/present` también funcionan al abrirlas directamente o recargar.
 
-## 4. Proxy TLS (recomendado en Contabo)
+## 4. Publicar la wallet con TLS / Cloudflare Tunnel
+
+Apuntá `wallet.kuatia.xyz` a `identity-wallet-web:80` si el proxy está en la red Docker, o al puerto publicado `http://127.0.0.1:3005` si el proxy/túnel corre directamente en la VPS. Por ejemplo, para `cloudflared` instalado como servicio en el host:
+
+```yaml
+ingress:
+  - hostname: wallet.kuatia.xyz
+    service: http://127.0.0.1:3005
+  - service: http_status:404
+```
+
+Usá `https://wallet.kuatia.xyz` en `CORS_ORIGINS`. Si cambiás los `.env` del issuer/verifier después de haber iniciado Compose, recreá los tres contenedores para que tomen la configuración y reconstruí la SPA si cambió su código:
+
+```bash
+docker compose up -d --build identity-wallet-web identity-issuer-service identity-verifier-service
+```
 
 Ejemplo con Caddy / Nginx / Traefik:
 
 | Host público | Upstream |
 |--------------|----------|
 | `kuatia.xyz` / `www` | `identity-kuatia:3000` |
+| `wallet.kuatia.xyz` | `identity-wallet-web:80` o `127.0.0.1:3005` |
 | `api.kuatia.xyz` (opcional) | `identity-billing-service:9000` |
 | `issuer.…` / `verifier.…` | issuer:9001 / verifier:9002 |
 
-Solo 80/443 al mundo. Kuatia no necesita exponer billing al browser si usás el rewrite same-origin.
+Solo 80/443 al mundo. Kuatia no necesita exponer billing al browser si usás el rewrite same-origin. Para el túnel en el host, no apuntes al puerto 80 de la VPS: `3005:80` en Compose significa puerto **3005 del host → puerto 80 del contenedor**.
 
 ## 5. Onboard a customer
 
