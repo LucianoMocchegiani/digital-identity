@@ -76,9 +76,33 @@ export default function DocsWalletPage() {
         >
           wallet web de Kuatia
         </a>
-        , sin instalar una aplicación. Escaneá con un dispositivo compatible el QR de una oferta
-        para recibir una credencial o el QR de una solicitud para presentarla; los enlaces también
-        pueden abrirse directamente en el navegador.
+        , sin instalar una aplicación. En la consola, dentro de{' '}
+        <code className="text-sm">Credenciales</code>, el emisor crea una oferta y el verifier crea
+        una solicitud. Kuatia muestra para cada operación un QR original para wallets compatibles
+        y otro QR que abre la wallet web con la operación cargada.
+      </DocsP>
+      <DocsP>
+        Escaneá el QR para wallet web con la cámara del teléfono: las ofertas abren{' '}
+        <code className="text-sm">/issue</code> y las solicitudes{' '}
+        <code className="text-sm">/present</code>, listas para revisar. El titular siempre debe
+        aceptar la emisión o elegir la credencial y confirmar qué comparte; escanear el QR no acepta
+        ni envía datos automáticamente.
+      </DocsP>
+      <DocsP>
+        Si integrás tu propio sistema, convertí la <code className="text-sm">offerUri</code> a{' '}
+        <code className="text-sm">https://wallet.kuatia.xyz/issue</code> y la{' '}
+        <code className="text-sm">requestUri</code> a{' '}
+        <code className="text-sm">https://wallet.kuatia.xyz/present</code>, conservando los
+        parámetros de consulta, y generá el QR con el enlace HTTPS completo. La consola de Kuatia ya
+        hace esta conversión. Encontrás los pasos en las guías de{' '}
+        <Link href="/docs/emitir" className="text-[var(--kuatia-accent)] hover:underline">
+          emisión
+        </Link>{' '}
+        y{' '}
+        <Link href="/docs/verificar" className="text-[var(--kuatia-accent)] hover:underline">
+          verificación
+        </Link>
+        .
       </DocsP>
       <DocsP>
         La clave del titular y las credenciales se guardan cifradas en el almacenamiento del

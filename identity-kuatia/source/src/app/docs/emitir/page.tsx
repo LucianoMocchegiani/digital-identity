@@ -22,8 +22,11 @@ export default function DocsEmitirPage() {
         <Link href="/docs/glosario" className="text-[var(--kuatia-accent)] hover:underline">
           OID4VCI
         </Link>
-        ) pre-autorizada. Mostrá la URI como QR o deep link; la wallet completa el flujo. Cada offer
-        consume cuota del plan.
+        ) pre-autorizada. En la consola, Kuatia genera el QR original y el QR para abrir la{' '}
+        <Link href="/docs/wallet" className="text-[var(--kuatia-accent)] hover:underline">
+          wallet web
+        </Link>{' '}
+        con la oferta lista para revisar. Cada offer consume cuota del plan.
       </DocsLead>
 
       <DocsEndpoint
@@ -53,6 +56,18 @@ X-API-Key: iss_live_…
 }
 
 → { "offerUri": "openid-credential-offer://…", "issuanceSessionId": "…" }`}</DocsCode>
+        <p>
+          La API devuelve una URI de protocolo. Para que un teléfono abra la wallet web al escanear,
+          generá el QR con el enlace HTTPS de wallet, no con la URI original. Conservá todos sus
+          parámetros de consulta:
+        </p>
+        <DocsCode>{`openid-credential-offer://...?PARAMS
+  → https://wallet.kuatia.xyz/issue?PARAMS`}</DocsCode>
+        <p>
+          La consola de Kuatia genera ambos QR automáticamente. En la wallet web el titular revisa
+          la oferta y confirma antes de recibir/guardar la credencial; escanear no la acepta por sí
+          solo.
+        </p>
         <p>
           Los claims son responsabilidad del emisor. Kuatia firma y entrega la credencial; no
           comprueba el hecho de negocio detrás del claim (por ejemplo, que Ana sea miembro de Club

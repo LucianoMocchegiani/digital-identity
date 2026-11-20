@@ -48,6 +48,17 @@ X-API-Key: ver_live_…
 }
 
 → { "requestUri": "openid4vp://…", "verificationSessionId": "…" }`}</DocsCode>
+        <p>
+          Para crear el QR de la wallet web, usá el enlace HTTPS con la ruta <code className="text-sm">/present</code>
+          y conservá todos los parámetros de <code className="text-sm">requestUri</code>:
+        </p>
+        <DocsCode>{`openid4vp://...?PARAMS
+  → https://wallet.kuatia.xyz/present?PARAMS`}</DocsCode>
+        <p>
+          En la consola de Kuatia se generan automáticamente el QR original y el de wallet web. Al
+          abrirlo, el titular revisa la solicitud, elige qué credencial presentar y confirma el
+          envío; escanear el QR no comparte datos automáticamente.
+        </p>
       </DocsEndpoint>
 
       <DocsEndpoint
