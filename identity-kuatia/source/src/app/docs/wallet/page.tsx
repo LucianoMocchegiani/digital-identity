@@ -69,7 +69,7 @@ export default function DocsWalletPage() {
       <DocsP>
         También podés usar la{' '}
         <a
-          href="https://wallet.lucianomocchegiani.xyz"
+          href="https://wallet.kuatia.xyz"
           className="text-[var(--kuatia-accent)] hover:underline"
           target="_blank"
           rel="noopener noreferrer"

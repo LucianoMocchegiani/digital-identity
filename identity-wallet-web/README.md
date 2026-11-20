@@ -19,9 +19,9 @@ npm run build
 
 ## Docker / despliegue
 
-El servicio `identity-wallet-web` del `docker-compose.yml` construye la SPA y la sirve con Nginx en el puerto 80 del contenedor, publicado como `http://localhost:3005` en el host. Nginx configura el fallback de la SPA, así que `/issue` y `/present` cargan también en acceso directo y al recargar.
+El servicio `identity-wallet-web` del `docker-compose.yml` construye la SPA y la sirve con Nginx en el puerto 80 del contenedor, publicado como `http://localhost:3005` en el host. En producción está publicada en [https://wallet.kuatia.xyz](https://wallet.kuatia.xyz). Nginx configura el fallback de la SPA, así que `/issue` y `/present` cargan también en acceso directo y al recargar.
 
-En producción, publicala detrás de HTTPS. Si `cloudflared` corre como servicio en la VPS, su origen normalmente será `http://127.0.0.1:3005`; si el proxy corre en la red Docker, puede usar `identity-wallet-web:80`. Configurá el origen HTTPS exacto de la wallet en `CORS_ORIGINS` tanto en el `.env` del issuer como en el del verifier: la wallet hace las llamadas protocolarias desde el navegador directamente a esos servicios. Ver [`docs/deploy-contabo-phase1.md`](../docs/deploy-contabo-phase1.md) para el paso a paso.
+En producción, publicala detrás de HTTPS. Si `cloudflared` corre como servicio en la VPS, su origen normalmente será `http://127.0.0.1:3005`; si el proxy corre en la red Docker, puede usar `identity-wallet-web:80`. Configurá `https://wallet.kuatia.xyz` en `CORS_ORIGINS` tanto en el `.env` del issuer como en el del verifier: la wallet hace las llamadas protocolarias desde el navegador directamente a esos servicios. Ver [`docs/deploy-contabo-phase1.md`](../docs/deploy-contabo-phase1.md) para el paso a paso.
 
 ## Funcionalidad actual
 

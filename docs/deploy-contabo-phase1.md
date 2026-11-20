@@ -27,9 +27,9 @@ Set at least:
 | `ASKAR_STORE_KEY` | issuer + verifier (strong random) |
 | `BASE_URL` | public HTTPS URL per service (issuer/verifier) |
 | `API_KEY_AUTH_ENABLED=true` | issuer + verifier |
-| `CORS_ORIGINS` | issuer and verifier `.env`: exact public wallet origin, e.g. `https://wallet.example.com` |
+| `CORS_ORIGINS` | issuer and verifier `.env`: `https://wallet.kuatia.xyz` |
 
-The wallet calls the public issuer and verifier endpoints directly from the browser. Replace the example `CORS_ORIGINS=http://localhost:5173` in **both** service env files with the wallet's HTTPS origin (no path or trailing slash); if multiple origins are needed, separate them with commas. Keep the web wallet hostname consistent with the URLs used by your QR/deep links.
+The wallet calls the public issuer and verifier endpoints directly from the browser. Set `CORS_ORIGINS=https://wallet.kuatia.xyz` in **both** service env files (no path or trailing slash); if multiple origins are needed, separate them with commas. Keep the web wallet hostname consistent with the URLs used by your QR/deep links.
 
 ## 3. Start
 
@@ -57,16 +57,16 @@ La wallet es solo de navegador; en producción debe servirse por HTTPS para habi
 
 ## 4. Publicar la wallet con TLS / Cloudflare Tunnel
 
-Apuntá el dominio público elegido a `identity-wallet-web:80` si el proxy está en la red Docker, o al puerto publicado `http://127.0.0.1:3005` si el proxy/túnel corre directamente en la VPS. Por ejemplo, para `cloudflared` instalado como servicio en el host:
+Apuntá `wallet.kuatia.xyz` a `identity-wallet-web:80` si el proxy está en la red Docker, o al puerto publicado `http://127.0.0.1:3005` si el proxy/túnel corre directamente en la VPS. Por ejemplo, para `cloudflared` instalado como servicio en el host:
 
 ```yaml
 ingress:
-  - hostname: wallet.example.com
+  - hostname: wallet.kuatia.xyz
     service: http://127.0.0.1:3005
   - service: http_status:404
 ```
 
-Usá el hostname real de tu wallet en el ingress y en `CORS_ORIGINS`. Si cambiás los `.env` del issuer/verifier después de haber iniciado Compose, recreá los tres contenedores para que tomen la configuración y reconstruí la SPA si cambió su código:
+Usá `https://wallet.kuatia.xyz` en `CORS_ORIGINS`. Si cambiás los `.env` del issuer/verifier después de haber iniciado Compose, recreá los tres contenedores para que tomen la configuración y reconstruí la SPA si cambió su código:
 
 ```bash
 docker compose up -d --build identity-wallet-web identity-issuer-service identity-verifier-service
@@ -77,7 +77,7 @@ Ejemplo con Caddy / Nginx / Traefik:
 | Host público | Upstream |
 |--------------|----------|
 | `kuatia.xyz` / `www` | `identity-kuatia:3000` |
-| `wallet.example.com` | `identity-wallet-web:80` o `127.0.0.1:3005` |
+| `wallet.kuatia.xyz` | `identity-wallet-web:80` o `127.0.0.1:3005` |
 | `api.kuatia.xyz` (opcional) | `identity-billing-service:9000` |
 | `issuer.…` / `verifier.…` | issuer:9001 / verifier:9002 |
 
