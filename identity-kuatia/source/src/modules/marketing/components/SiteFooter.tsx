@@ -1,5 +1,5 @@
-﻿import { BrandMark } from '@/design-system'
-import { mailto, siteConfig } from '@/shared/config/site'
+import { BrandMark } from '@/design-system'
+import { siteConfig } from '@/shared/config/site'
 import Link from 'next/link'
 import { MarketingShell } from './MarketingShell'
 
@@ -12,7 +12,6 @@ export function SiteFooter() {
           <BrandMark size="sm" />
           <p className="mt-3 max-w-xs text-base text-[var(--kuatia-muted)]">
             Infraestructura para emitir y verificar credenciales digitales con estándares abiertos.
-            Un producto de {siteConfig.companyName}.
           </p>
         </div>
         <div>
@@ -72,11 +71,6 @@ export function SiteFooter() {
           </p>
           <ul className="mt-3 space-y-2 text-base text-[var(--kuatia-text)]/80">
             <li>
-              <a href={mailto()} className="hover:text-[var(--kuatia-accent)]">
-                {siteConfig.contactEmail}
-              </a>
-            </li>
-            <li>
               <a
                 href={siteConfig.demoCalendarUrl}
                 className="hover:text-[var(--kuatia-accent)]"
@@ -90,7 +84,7 @@ export function SiteFooter() {
         </div>
       </MarketingShell>
       <div className="border-t border-[var(--kuatia-border-subtle)] py-4 text-center text-sm text-[var(--kuatia-muted)]">
-        © {new Date().getFullYear()} {siteConfig.name} · Desarrollado por {siteConfig.companyName}
+        © {new Date().getFullYear()} {siteConfig.name}
       </div>
     </footer>
   )
